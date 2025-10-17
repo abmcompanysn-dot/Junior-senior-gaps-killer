@@ -753,7 +753,14 @@ function loadCoursePage(catalog) {
         // Prix et bouton d'achat
         const priceContainer = document.getElementById('course-price-container');
         priceContainer.innerHTML = `<span class="text-3xl font-bold text-gold">${Number(course.Prix).toLocaleString('fr-FR')} F CFA</span>`;
-        document.getElementById('buy-course-button').textContent = `Acheter ce cours – ${Number(course.Prix).toLocaleString('fr-FR')} F CFA`;
+        const buyButton = document.getElementById('buy-course-button');
+        buyButton.textContent = `Acheter ce cours – ${Number(course.Prix).toLocaleString('fr-FR')} F CFA`;
+        // NOUVEAU: Ajout de l'action d'ajout au panier et de redirection
+        buyButton.onclick = (event) => {
+            addToCart(event, course.ID_Cours, course.Nom_Cours, course.Prix, course.Image_Couverture);
+            // Redirection immédiate vers le panier
+            window.location.href = 'panier.html';
+        };
 
         // Vidéo
         const videoPlayer = document.getElementById('course-video-player');
