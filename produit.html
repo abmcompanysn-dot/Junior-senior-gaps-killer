@@ -110,7 +110,15 @@
                 <div id="video-preview-container" class="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-lg mb-4">
                     <div id="video-skeleton" class="w-full h-full bg-gray-200 animate-pulse"></div>
                     <iframe id="course-video-player" class="absolute top-0 left-0 w-full h-full hidden" src="" title="Aperçu du cours" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                    <div id="freemium-banner" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm hidden"></div>
+                    <!-- NOUVEAU: Bannière rouge pour le mode freemium -->
+                    <div id="freemium-banner" class="absolute top-2 left-2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold hidden animate-pulse"></div>
+                    <!-- NOUVEAU: Superposition à la fin de l'aperçu -->
+                    <div id="freemium-overlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-center text-white p-8 hidden">
+                        <h3 class="text-2xl font-bold mb-4">Aperçu gratuit terminé</h3>
+                        <p class="mb-6">Veuillez confirmer votre achat pour débloquer ce cours et toutes les autres vidéos.</p>
+                        <button id="overlay-buy-button" class="bg-gold text-black px-8 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition text-lg">
+                        </button>
+                    </div>
                 </div>
             </div>
 

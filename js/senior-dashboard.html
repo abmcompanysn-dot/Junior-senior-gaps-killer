@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Senior</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-color: #F97316;
+            --dark-color: #1E3A8A;
+        }
+        .text-gold { color: var(--gold-color); }
+        .bg-gold { background-color: var(--gold-color); }
+        .border-gold { border-color: var(--gold-color); }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 font-montserrat">
+
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center">
+                <img src="https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png" alt="Logo" class="h-10">
+            </a>
+            <div class="flex items-center space-x-4">
+                <span id="user-name-display" class="font-semibold"></span>
+                <button id="logout-button" class="text-sm font-semibold text-red-600 hover:underline">Déconnexion</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-12">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Tableau de Bord Senior</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Menu de navigation -->
+            <aside class="md:col-span-1">
+                <nav class="bg-white p-4 rounded-lg shadow space-y-2">
+                    <a href="#" class="flex items-center space-x-3 p-3 bg-yellow-100 text-yellow-800 rounded-lg font-semibold"><span>Statistiques</span></a>
+                    <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"><span>Gestion des Cours</span></a>
+                    <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"><span>Questions & Réponses</span></a>
+                    <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"><span>Revenus & Paiements</span></a>
+                    <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"><span>Profil & Expériences</span></a>
+                </nav>
+            </aside>
+
+            <!-- Contenu principal -->
+            <div class="md:col-span-2">
+                <div class="bg-white p-8 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-6">Vos Statistiques</h3>
+                    
+                    <!-- Section des statistiques -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-3xl font-bold text-blue-800">5</p>
+                            <p class="text-sm text-blue-600">Cours déployés</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-3xl font-bold text-green-800">1,250</p>
+                            <p class="text-sm text-green-600">Apprenants inscrits</p>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <p class="text-3xl font-bold text-yellow-800">3,500,000 F</p>
+                            <p class="text-sm text-yellow-600">Revenu total</p>
+                        </div>
+                    </div>
+
+                    <!-- Section des questions en attente -->
+                    <div class="mt-8 border-t pt-6">
+                        <h4 class="text-lg font-semibold mb-4">Questions en attente</h4>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-gray-50 rounded-md">
+                                <p class="text-sm">"Comment gérer le versioning d'API dans un contexte microservice ?" - par <strong>Alioune S.</strong></p>
+                                <a href="#" class="text-sm text-blue-600 font-semibold">Répondre</a>
+                            </div>
+                            <p class="text-gray-500 text-sm">Vous avez répondu à toutes les questions. Excellent travail !</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('abmcyUser'));
+            if (!user || user.Role !== 'Senior') {
+                window.location.href = 'senior-auth.html';
+                return;
+            }
+            document.getElementById('user-name-display').textContent = user.Nom;
+            document.getElementById('logout-button').addEventListener('click', () => {
+                localStorage.removeItem('abmcyUser');
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

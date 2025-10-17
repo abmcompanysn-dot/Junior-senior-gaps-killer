@@ -731,10 +731,12 @@ function loadCoursePage(catalog) {
 
         // Vidéo
         const videoPlayer = document.getElementById('course-video-player');
-        if (course.URL_Vidéo_Intro) {
+        if (course.URL_Vidéo_Intro) { // Assumons que la vidéo d'intro est celle du freemium
             document.getElementById('video-skeleton').classList.add('hidden');
             videoPlayer.src = course.URL_Vidéo_Intro;
             videoPlayer.classList.remove('hidden');
+            // NOUVEAU: Initialiser le lecteur freemium
+            setupFreemiumPlayer(videoPlayer, course);
         } else {
             // Afficher l'image de couverture si pas de vidéo
             document.getElementById('video-preview-container').innerHTML = `<img src="${course.Image_Couverture || CONFIG.DEFAULT_PRODUCT_IMAGE}" alt="${course.Nom_Cours}" class="w-full h-full object-cover">`;
@@ -748,50 +750,48 @@ function loadCoursePage(catalog) {
 
         // Structure du cours (Modules et Chapitres)
         const structureContainer = document.getElementById('course-structure-container');
-        if (course.modules && course.modules.length > 0) {
+        if (course.modules && course.modules.length > 0) { // NOUVELLE LOGIQUE D'AFFICHAGE
             structureContainer.innerHTML = course.modules.map((module, moduleIndex) => {
-                // Section des chapitres du module
-                const chaptersHTML = (module.chapitres || []).map(chap => `
-                    <li class="p-4 flex justify-between items-center text-sm">
-                        <span class="flex items-center">
-                            <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            ${chap.Nom_Chapitre}
-                        </span>
-                        <span class="text-gray-500">${chap.Durée}</span>
-                    </li>
-                `).join('');
-
-                // Section du quiz du module (si un quiz existe pour ce module)
-                const quizHTML = (module.quiz || []).map((q, quizIndex) => {
-                    const questionId = `m${moduleIndex}q${quizIndex}`;
-                    const options = [q.Réponse_1, q.Réponse_2, q.Réponse_3, q.Réponse_4].filter(Boolean); // Filtre les réponses vides
-                    const correctIndex = options.indexOf(q.Bonne_Réponse);
-
-                    const optionsHTML = options.map((opt, optIndex) => `
-                        <div>
-                            <div class="quiz-option border rounded-lg p-3 cursor-pointer transition" onclick="checkQuizAnswer(this, ${optIndex === correctIndex}, '${questionId}', '${q.Bonne_Réponse}')">
-                                ${opt}
+                // NOUVEAU: Chaque chapitre est maintenant un bloc interactif
+                const chaptersHTML = (module.chapitres || []).map((chap, chapIndex) => {
+                    const chapterId = `m${moduleIndex}-ch${chapIndex}`;
+                    const quizHTML = (chap.quiz || []).map((q, quizIndex) => {
+                        const questionId = `${chapterId}-q${quizIndex}`;
+                        const options = [q.Réponse_1, q.Réponse_2, q.Réponse_3, q.Réponse_4].filter(Boolean);
+                        const correctIndex = options.indexOf(q.Bonne_Réponse);
+                        const optionsHTML = options.map((opt, optIndex) => `
+                            <div>
+                                <div class="quiz-option border rounded-lg p-3 cursor-pointer transition" onclick="checkQuizAnswer(this, ${optIndex === correctIndex}, '${questionId}', '${q.Bonne_Réponse}')">
+                                    ${opt}
+                                </div>
+                                <div class="quiz-feedback border-l-4 p-3 mt-2 text-sm">
+                                    <!-- Le feedback sera injecté ici par JS -->
+                                </div>
                             </div>
-                            <div class="quiz-feedback border-l-4 p-3 mt-2 text-sm">
-                                <!-- Le feedback sera injecté ici par JS -->
-                            </div>
-                        </div>
-                    `).join('');
+                        `).join('');
+                        return `<div class="mt-4 p-4 border-t"><p class="font-semibold mb-3">${q.Question}</p><div id="${questionId}" class="space-y-2">${optionsHTML}</div></div>`;
+                    }).join('');
 
-                    return `<div class="mt-4 p-4 border-t"><p class="font-semibold mb-3">${q.Question}</p><div id="${questionId}" class="space-y-2">${optionsHTML}</div></div>`;
+                    return `
+                        <li class="p-4">
+                            <div class="flex justify-between items-center">
+                                <span class="flex items-center font-semibold">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    ${chap.Nom_Chapitre}
+                                </span>
+                                <span class="text-gray-500 text-sm">${chap.Durée}</span>
+                            </div>
+                            ${chap.URL_Vidéo_Chapitre ? `<button onclick="document.getElementById('course-video-player').src='${chap.URL_Vidéo_Chapitre}'" class="text-sm text-blue-600 font-semibold mt-2">Lancer la vidéo</button>` : ''}
+                            ${quizHTML ? `<div class="bg-blue-50/50 mt-2 rounded-md">${quizHTML}</div>` : ''}
+                        </li>
+                    `;
                 }).join('');
 
-                // NOUVEAU: Affichage de la vidéo et de la description du module
-                return `<div class="border rounded-lg overflow-hidden mb-4">
-                    <div class="p-4 bg-gray-50 border-b">
-                        <h3 class="font-bold text-lg">${module.Ordre_Module}. ${module.Nom_Module}</h3>
-                        <p class="text-sm text-gray-600 mt-1">${module.Description_Module || ''}</p>
-                        ${module.URL_Vidéo_Module ? `<button onclick="document.getElementById('course-video-player').src='${module.URL_Vidéo_Module}'" class="text-sm text-blue-600 font-semibold mt-2">Voir la vidéo du module</button>` : ''}
-                    </div>
+                return `<div class="border rounded-lg overflow-hidden">
+                    <h3 class="font-bold text-lg p-4 bg-gray-50 border-b">${module.Ordre_Module}. ${module.Nom_Module}</h3>
                     <ul class="divide-y">
                         ${chaptersHTML}
                     </ul>
-                    ${quizHTML ? `<div class="bg-blue-50/50">${quizHTML}</div>` : ''}
                 </div>`;
             }).join('');
         }
@@ -856,6 +856,56 @@ function checkQuizAnswer(selectedOptionEl, isCorrect, questionId, correctAnswerT
         feedbackEl.innerHTML = `<p><strong class="font-bold">Incorrect.</strong> La bonne réponse est "${correctAnswerText}". Voici pourquoi : [Explication de la mauvaise réponse ici]</p>`;
         feedbackEl.classList.add('incorrect');
     }
+}
+
+/**
+ * NOUVEAU: Gère la logique du lecteur en mode freemium.
+ * @param {HTMLIFrameElement} videoPlayer - L'iframe du lecteur vidéo.
+ * @param {object} course - L'objet cours contenant les données.
+ */
+function setupFreemiumPlayer(videoPlayer, course) {
+    const freemiumBanner = document.getElementById('freemium-banner');
+    const freemiumOverlay = document.getElementById('freemium-overlay');
+    const overlayBuyButton = document.getElementById('overlay-buy-button');
+    const mainBuyButton = document.getElementById('buy-course-button');
+
+    // Durée de l'aperçu en secondes (20 minutes)
+    const freemiumDuration = 20 * 60; 
+    let timerInterval;
+
+    // Copier le texte et l'action du bouton principal
+    overlayBuyButton.innerHTML = mainBuyButton.innerHTML;
+    overlayBuyButton.onclick = () => mainBuyButton.click();
+
+    videoPlayer.onload = () => {
+        // Cette partie nécessite une API de lecteur vidéo (Vimeo, YouTube, etc.)
+        // pour écouter les événements de lecture.
+        // Pour la démo, nous simulons le début de la lecture.
+        console.log("Le lecteur vidéo est prêt. La logique de freemium peut commencer.");
+
+        // Simulation: on imagine que l'utilisateur clique sur "play"
+        // Dans un cas réel, vous utiliseriez l'API de votre lecteur vidéo ici.
+        let timeWatched = 0;
+        freemiumBanner.classList.remove('hidden');
+
+        timerInterval = setInterval(() => {
+            timeWatched++;
+            const timeLeft = freemiumDuration - timeWatched;
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+
+            if (timeLeft > 0) {
+                freemiumBanner.textContent = `Mode Aperçu : ${minutes}:${String(seconds).padStart(2, '0')} restant`;
+            } else {
+                clearInterval(timerInterval);
+                freemiumBanner.classList.add('hidden');
+                freemiumOverlay.classList.remove('hidden');
+                freemiumOverlay.classList.add('flex'); // Pour centrer le contenu
+                // Ici, vous utiliseriez l'API du lecteur pour mettre la vidéo en pause.
+                // videoPlayer.pause(); 
+            }
+        }, 1000);
+    };
 }
 
 /**
@@ -1683,6 +1733,97 @@ function renderAllCategoriesSection(catalog) {
         container.innerHTML = '<p class="text-center text-red-500">Impossible de charger la liste des catégories.</p>';
     }
 }
+
+// --- NOUVEAU: LOGIQUE DU TABLEAU DE BORD SENIOR ---
+
+/**
+ * Remplit le sélecteur de catégories dans la modale de création de cours.
+ */
+async function populateCourseCategorySelect() {
+    const selectEl = document.getElementById('course-category-select');
+    if (!selectEl) return;
+
+    try {
+        const catalog = await getCatalogAndRefreshInBackground();
+        const categories = (catalog.data.categories || []).filter(cat => cat.ScriptURL && !cat.ScriptURL.startsWith('REMPLIR_'));
+
+        if (categories.length > 0) {
+            selectEl.innerHTML = '<option value="">-- Choisissez une catégorie --</option>' + categories.map(cat => 
+                `<option value="${cat.IDCategorie}">${cat.NomCategorie}</option>`
+            ).join('');
+        } else {
+            selectEl.innerHTML = '<option value="">Aucune catégorie disponible</option>';
+        }
+    } catch (error) {
+        console.error("Erreur de chargement des catégories:", error);
+        selectEl.innerHTML = '<option value="">Erreur de chargement</option>';
+    }
+}
+
+/**
+ * Gère la soumission du formulaire de création de cours.
+ * @param {Event} event 
+ */
+async function handleAddCourseSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Création...';
+
+    const categoryId = document.getElementById('course-category-select').value;
+    const user = JSON.parse(localStorage.getItem('abmcyUser'));
+
+    if (!categoryId) {
+        alert("Veuillez sélectionner une catégorie.");
+        submitButton.disabled = false;
+        submitButton.textContent = 'Créer le cours';
+        return;
+    }
+
+    // Trouver l'URL du script de la catégorie sélectionnée
+    const catalog = await getCatalogAndRefreshInBackground();
+    const targetCategory = catalog.data.categories.find(cat => cat.IDCategorie === categoryId);
+
+    if (!targetCategory || !targetCategory.ScriptURL) {
+        alert("Erreur: Impossible de trouver l'URL pour cette catégorie.");
+        return;
+    }
+
+    const payload = {
+        action: 'addCourseFromDashboard',
+        data: {
+            nom: document.getElementById('course-name-input').value,
+            resume: document.getElementById('course-summary-input').value,
+            prix: parseFloat(document.getElementById('course-price-input').value),
+            formateurNom: user.Nom,
+            formateurTitre: user.Titre || 'Formateur Expert' // À compléter depuis le profil
+        }
+    };
+
+    try {
+        const response = await fetch(targetCategory.ScriptURL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Cours créé avec succès !');
+            document.getElementById('add-course-modal').classList.add('hidden');
+            form.reset();
+            // Ici, on pourrait rafraîchir la liste des cours du dashboard
+        } else {
+            throw new Error(result.error || "Une erreur est survenue.");
+        }
+    } catch (error) {
+        alert(`Erreur lors de la création du cours : ${error.message}`);
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Créer le cours';
+    }
+}
 // --- LOGIQUE D'AUTHENTIFICATION ---
 
 /**
@@ -1729,12 +1870,13 @@ function logAppEvent(type, data) {
  * Gère la soumission des formulaires de connexion et d'inscription.
  * @param {Event} event L'événement de soumission du formulaire.
  * @param {string} type 'login' ou 'register'.
+ * @param {string} role 'Client' ou 'Senior'.
  */
-async function handleAuthForm(event, type) {
+async function handleAuthForm(event, type, role = 'Client') {
     event.preventDefault();
     const form = event.target;
     const statusDiv = document.getElementById('auth-status');
-    statusDiv.className = 'mt-4 text-center font-semibold'; // Reset classes
+    if (statusDiv) statusDiv.className = 'mt-4 text-center font-semibold'; // Reset classes
     statusDiv.textContent = 'Veuillez patienter...';
 
     let payload;
@@ -1742,8 +1884,8 @@ async function handleAuthForm(event, type) {
     if (type === 'register') {
         const password = form.querySelector('#register-password').value;
         const passwordConfirm = form.querySelector('#register-password-confirm').value;
-
-        if (password !== passwordConfirm) {
+        
+        if (passwordConfirm && password !== passwordConfirm) {
             statusDiv.textContent = 'Les mots de passe ne correspondent pas.';
             statusDiv.classList.add('text-red-600');
             return;
@@ -1756,7 +1898,8 @@ async function handleAuthForm(event, type) {
                 email: form.querySelector('#register-email').value,
                 motDePasse: password,
                 adresse: '',
-                telephone: ''
+                telephone: '',
+                role: role // NOUVEAU: Envoyer le rôle
             }
         };
     } else { // type === 'login'
@@ -1803,9 +1946,13 @@ async function handleAuthForm(event, type) {
             } else { // type === 'login'
                 statusDiv.textContent = 'Connexion réussie ! Redirection...';
                 statusDiv.classList.add('text-green-600');
-                // Stocker les informations de l'utilisateur et rediriger
                 localStorage.setItem('abmcyUser', JSON.stringify(result.user));
-                window.location.href = 'compte.html'; // Redirection vers la page de compte
+                // NOUVEAU: Rediriger en fonction du rôle
+                if (result.user.Role === 'Senior') {
+                    window.location.href = 'senior-dashboard.html';
+                } else {
+                    window.location.href = 'compte.html';
+                }
             }
         } else {
             logAppEvent('API_ERROR', {

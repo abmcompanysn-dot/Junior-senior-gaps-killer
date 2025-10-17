@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Senior - Connexion / Inscription</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-color: #F97316;
+            --dark-color: #1E3A8A;
+        }
+        .text-gold { color: var(--gold-color); }
+        .bg-gold { background-color: var(--gold-color); }
+        .border-gold { border-color: var(--gold-color); }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 font-montserrat">
+
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center">
+                <img src="https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png" alt="Logo" class="h-10">
+            </a>
+            <a href="authentification.html" class="text-sm font-semibold text-blue-600 hover:underline">Espace Apprenant</a>
+        </div>
+    </header>
+
+    <main class="flex items-center justify-center py-12 px-4">
+        <div id="auth-forms" class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-800">Espace Senior</h1>
+                <p class="text-gray-500">Partagez votre expertise. Gérez vos cours.</p>
+            </div>
+
+            <!-- Onglets -->
+            <div class="flex border-b mb-6">
+                <button id="login-tab" onclick="switchTab('login')" class="flex-1 py-2 text-center font-semibold border-b-2 border-gold">Connexion</button>
+                <button id="register-tab" onclick="switchTab('register')" class="flex-1 py-2 text-center font-semibold text-gray-500 border-b-2 border-transparent">Devenir Formateur</button>
+            </div>
+
+            <!-- Formulaire de Connexion -->
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="login-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+                    <input type="password" id="login-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">Se connecter</button>
+            </form>
+
+            <!-- Formulaire d'Inscription -->
+            <form id="register-form" class="space-y-4 hidden">
+                <div>
+                    <label for="register-nom" class="block text-sm font-medium text-gray-700">Nom complet</label>
+                    <input type="text" id="register-nom" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <div>
+                    <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="register-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <div>
+                    <label for="register-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+                    <input type="password" id="register-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">Créer mon compte Senior</button>
+            </form>
+
+            <div id="auth-status" class="mt-4 text-center font-semibold"></div>
+
+        </div>
+    </main>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Logique spécifique à la page d'authentification Senior
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('login-form').addEventListener('submit', (e) => handleAuthForm(e, 'login', 'Senior'));
+            document.getElementById('register-form').addEventListener('submit', (e) => handleAuthForm(e, 'register', 'Senior'));
+        });
+    </script>
+</body>
+</html>

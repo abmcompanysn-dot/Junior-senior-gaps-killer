@@ -86,10 +86,18 @@ function doGet(e) {
  * Point d'entrée pour les requêtes POST. Actuellement non utilisé, mais prêt pour de futures actions.
  */
 function doPost(e) {
-  const origin = e.headers ? e.headers.Origin : null;
+  const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
   try {
     const request = JSON.parse(e.postData.contents);
-    return createJsonResponse({ success: false, error: `Action POST non reconnue: ${request.action}` }, origin);
+    const { action, data } = request;
+
+    switch (action) {
+      case 'addCourseFromDashboard':
+        return addCourseFromDashboard(data, origin);
+      default:
+        return createJsonResponse({ success: false, error: `Action POST non reconnue: ${action}` }, origin);
+    }
+
   } catch (error) {
     Logger.log("ERREUR dans doPost : " + error.toString());
     return createJsonResponse({ success: false, error: error.message }, origin);
@@ -274,8 +282,8 @@ function setupCourseSheets() {
 
   const sheetStructures = {
     [`Cours_${categoryName}`]: ["ID_Cours", "Nom_Cours", "Résumé", "Durée_Totale", "Niveau", "Prix", "URL_Vidéo_Intro", "Image_Couverture", "Freemium_Start", "Freemium_End", "Objectifs", "Prérequis", "Avantage_Senior", "Public_Cible", "Formateur_Nom", "Formateur_Titre", "Formateur_Bio", "Note_Moyenne", "Avis"],
-    [`Modules_${categoryName}`]: ["ID_Cours", "ID_Module", "Nom_Module", "Description_Module", "URL_Vidéo_Module", "Durée_Module", "Ordre_Module"],
-    [`Chapitres_${categoryName}`]: ["ID_Module", "ID_Chapitre", "Nom_Chapitre", "Durée", "Ressource", "Ordre_Chapitre"],
+    [`Modules_${categoryName}`]: ["ID_Cours", "ID_Module", "Nom_Module", "Description_Module", "Durée_Module", "Ordre_Module"],
+    [`Chapitres_${categoryName}`]: ["ID_Module", "ID_Chapitre", "Nom_Chapitre", "URL_Vidéo_Chapitre", "Durée", "Ressource", "Ordre_Chapitre"],
     [`Quiz_Chapitres_${categoryName}`]: ["ID_Chapitre", "Question", "Réponse_1", "Réponse_2", "Réponse_3", "Réponse_4", "Bonne_Réponse"],
     [`Quiz_Modules_${categoryName}`]: ["ID_Module", "Question", "Réponse_1", "Réponse_2", "Réponse_3", "Réponse_4", "Bonne_Réponse"]
   };
@@ -332,15 +340,15 @@ function seedDefaultCourseData(categoryName) {
 
     // Modules
     const modulesData = [
-      ["C-001", "M-001-1", "Fondations et Anti-Patterns", "Comprendre les erreurs communes qui mènent à l'échec.", "https://www.youtube.com/embed/video_module_1", "1h 05min", 1],
-      ["C-001", "M-001-2", "Communication Inter-Services", "Choisir la bonne stratégie de communication (synchrone vs asynchrone).", "https://www.youtube.com/embed/video_module_2", "55min", 2]
+      ["C-001", "M-001-1", "Fondations et Anti-Patterns", "Comprendre les erreurs communes qui mènent à l'échec.", "1h 05min", 1],
+      ["C-001", "M-001-2", "Communication Inter-Services", "Choisir la bonne stratégie de communication (synchrone vs asynchrone).", "55min", 2]
     ];
 
     // Chapitres
     const chapitresData = [
-      ["M-001-1", "CH-001-1-1", "Introduction : Pourquoi les microservices échouent (Freemium)", "20min", "PDF: Checklist des prérequis", 1],
-      ["M-001-1", "CH-001-1-2", "Le piège du Monolithe Distribué", "45min", "Code: Exemple à ne pas suivre", 2],
-      ["M-001-2", "CH-001-2-1", "REST vs gRPC vs Message Queues", "55min", "Quiz d'évaluation", 3]
+      ["M-001-1", "CH-001-1-1", "Introduction : Pourquoi les microservices échouent (Freemium)", "https://www.youtube.com/embed/video_chap_1", "20min", "PDF: Checklist des prérequis", 1],
+      ["M-001-1", "CH-001-1-2", "Le piège du Monolithe Distribué", "https://www.youtube.com/embed/video_chap_2", "45min", "Code: Exemple à ne pas suivre", 2],
+      ["M-001-2", "CH-001-2-1", "REST vs gRPC vs Message Queues", "https://www.youtube.com/embed/video_chap_3", "55min", "Quiz d'évaluation", 3]
     ];
 
     // Quiz
@@ -474,7 +482,7 @@ function addModule() {
 
   const newId = `M-${courseId.split('-')[1]}-${nextOrder}`;
 
-  modulesSheet.appendRow([courseId, newId, moduleName, moduleDesc, "", "", nextOrder]);
+  modulesSheet.appendRow([courseId, newId, moduleName, moduleDesc, "", nextOrder]);
   ui.alert(`Module "${moduleName}" (Ordre: ${nextOrder}) ajouté au cours ${courseId}.`);
 }
 
@@ -510,6 +518,32 @@ function addChapter() {
 
   const newId = `CH-${moduleId.split('-')[1]}-${moduleId.split('-')[2]}-${nextOrder}`;
 
-  chapitresSheet.appendRow([moduleId, newId, chapterName, duration, "", nextOrder]);
+  chapitresSheet.appendRow([moduleId, newId, chapterName, "", duration, "", nextOrder]);
   ui.alert(`Chapitre "${chapterName}" (Ordre: ${nextOrder}) ajouté au module ${moduleId}.`);
+}
+
+/**
+ * NOUVEAU: Ajoute un cours à partir d'une requête POST (ex: tableau de bord).
+ */
+function addCourseFromDashboard(data, origin) {
+  try {
+    const categoryName = getCategoryName();
+    const coursSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(`Cours_${categoryName}`);
+    if (!coursSheet) {
+      throw new Error(`Feuille "Cours_${categoryName}" introuvable.`);
+    }
+
+    const newId = `C-${new Date().getTime().toString().slice(-6)}`;
+    
+    // Préparer la ligne avec les données fournies
+    const newRow = [
+      newId, data.nom, data.resume, "", "", data.prix, "", "", "", "", "", "", "", "", data.formateurNom, data.formateurTitre, "", "", ""
+    ];
+
+    coursSheet.appendRow(newRow);
+    invalidateGlobalCache(); // Important pour que le nouveau cours apparaisse
+    return createJsonResponse({ success: true, id: newId, message: "Cours ajouté avec succès." }, origin);
+  } catch (e) {
+    return createJsonResponse({ success: false, error: e.message }, origin);
+  }
 }

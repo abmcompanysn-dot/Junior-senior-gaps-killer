@@ -117,7 +117,7 @@ function creerCompteClient(data) {
 
         sheet.appendRow([
             idClient, data.nom, data.email, passwordHash, salt, data.telephone || '',
-            data.adresse || '', new Date(), "Actif", "Client"
+            data.adresse || '', new Date(), "Actif", data.role || "Client" // NOUVEAU: Gérer le rôle
         ]);
 
         logAction('creerCompteClient', { email: data.email, id: idClient });
