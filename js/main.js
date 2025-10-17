@@ -731,9 +731,9 @@ function loadCoursePage(catalog) {
 
         // Vidéo
         const videoPlayer = document.getElementById('course-video-player');
-        if (course.URL_Vidéo) {
+        if (course.URL_Vidéo_Intro) {
             document.getElementById('video-skeleton').classList.add('hidden');
-            videoPlayer.src = course.URL_Vidéo;
+            videoPlayer.src = course.URL_Vidéo_Intro;
             videoPlayer.classList.remove('hidden');
         } else {
             // Afficher l'image de couverture si pas de vidéo
@@ -749,19 +749,51 @@ function loadCoursePage(catalog) {
         // Structure du cours (Modules et Chapitres)
         const structureContainer = document.getElementById('course-structure-container');
         if (course.modules && course.modules.length > 0) {
-            structureContainer.innerHTML = course.modules.map(module => `
-                <div class="border rounded-lg">
-                    <h3 class="font-semibold p-4 bg-gray-50 rounded-t-lg border-b">${module.Nom_Module}</h3>
+            structureContainer.innerHTML = course.modules.map((module, moduleIndex) => {
+                // Section des chapitres du module
+                const chaptersHTML = (module.chapitres || []).map(chap => `
+                    <li class="p-4 flex justify-between items-center text-sm">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            ${chap.Nom_Chapitre}
+                        </span>
+                        <span class="text-gray-500">${chap.Durée}</span>
+                    </li>
+                `).join('');
+
+                // Section du quiz du module (si un quiz existe pour ce module)
+                const quizHTML = (module.quiz || []).map((q, quizIndex) => {
+                    const questionId = `m${moduleIndex}q${quizIndex}`;
+                    const options = [q.Réponse_1, q.Réponse_2, q.Réponse_3, q.Réponse_4].filter(Boolean); // Filtre les réponses vides
+                    const correctIndex = options.indexOf(q.Bonne_Réponse);
+
+                    const optionsHTML = options.map((opt, optIndex) => `
+                        <div>
+                            <div class="quiz-option border rounded-lg p-3 cursor-pointer transition" onclick="checkQuizAnswer(this, ${optIndex === correctIndex}, '${questionId}', '${q.Bonne_Réponse}')">
+                                ${opt}
+                            </div>
+                            <div class="quiz-feedback border-l-4 p-3 mt-2 text-sm">
+                                <!-- Le feedback sera injecté ici par JS -->
+                            </div>
+                        </div>
+                    `).join('');
+
+                    return `<div class="mt-4 p-4 border-t"><p class="font-semibold mb-3">${q.Question}</p><div id="${questionId}" class="space-y-2">${optionsHTML}</div></div>`;
+                }).join('');
+
+                // NOUVEAU: Affichage de la vidéo et de la description du module
+                return `<div class="border rounded-lg overflow-hidden mb-4">
+                    <div class="p-4 bg-gray-50 border-b">
+                        <h3 class="font-bold text-lg">${module.Ordre_Module}. ${module.Nom_Module}</h3>
+                        <p class="text-sm text-gray-600 mt-1">${module.Description_Module || ''}</p>
+                        ${module.URL_Vidéo_Module ? `<button onclick="document.getElementById('course-video-player').src='${module.URL_Vidéo_Module}'" class="text-sm text-blue-600 font-semibold mt-2">Voir la vidéo du module</button>` : ''}
+                    </div>
                     <ul class="divide-y">
-                        ${(module.chapitres || []).map(chap => `
-                            <li class="p-4 flex justify-between items-center text-sm">
-                                <span>${chap.Nom_Chapitre}</span>
-                                <span class="text-gray-500">${chap.Durée}</span>
-                            </li>
-                        `).join('')}
+                        ${chaptersHTML}
                     </ul>
-                </div>
-            `).join('');
+                    ${quizHTML ? `<div class="bg-blue-50/50">${quizHTML}</div>` : ''}
+                </div>`;
+            }).join('');
         }
 
         // --- Remplissage de la colonne latérale (droite) ---
@@ -792,6 +824,37 @@ function loadCoursePage(catalog) {
         console.error("Erreur de chargement du cours:", error);
         const mainContent = document.querySelector('main');
         if(mainContent) mainContent.innerHTML = `<p class="text-center text-red-500">Impossible de charger les informations du cours. Veuillez réessayer.</p>`;
+    }
+}
+
+/**
+ * NOUVEAU: Gère l'interaction avec les quiz.
+ * @param {HTMLElement} selectedOptionEl - L'élément de l'option cliquée.
+ * @param {boolean} isCorrect - Si la réponse est correcte.
+ * @param {string} questionId - L'ID du conteneur de la question.
+ * @param {string} correctAnswerText - Le texte de la bonne réponse.
+ */
+function checkQuizAnswer(selectedOptionEl, isCorrect, questionId, correctAnswerText) {
+    const questionContainer = document.getElementById(questionId);
+    const allOptions = questionContainer.querySelectorAll('.quiz-option');
+
+    // Désactiver toutes les options pour cette question pour éviter de recliquer
+    allOptions.forEach(opt => {
+        opt.classList.add('disabled');
+    });
+
+    // Afficher le feedback pour l'option cliquée
+    const feedbackEl = selectedOptionEl.nextElementSibling;
+    feedbackEl.style.display = 'block';
+
+    if (isCorrect) {
+        selectedOptionEl.classList.add('selected', 'correct');
+        feedbackEl.innerHTML = `<p><strong class="font-bold">Bonne réponse !</strong> Voici pourquoi : [Explication de la bonne réponse ici]</p>`;
+        feedbackEl.classList.add('correct');
+    } else {
+        selectedOptionEl.classList.add('selected', 'incorrect');
+        feedbackEl.innerHTML = `<p><strong class="font-bold">Incorrect.</strong> La bonne réponse est "${correctAnswerText}". Voici pourquoi : [Explication de la mauvaise réponse ici]</p>`;
+        feedbackEl.classList.add('incorrect');
     }
 }
 

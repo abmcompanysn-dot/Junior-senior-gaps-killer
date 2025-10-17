@@ -22,6 +22,10 @@ function onOpen() {
   ui.createMenu('Gestion des Cours')
       .addItem('🚀 Initialiser les feuilles de cours', 'setupCourseSheets')
       .addSeparator()
+      .addItem('➕ Ajouter un Cours', 'addCourse')
+      .addItem('➕ Ajouter un Module', 'addModule')
+      .addItem('➕ Ajouter un Chapitre', 'addChapter')
+      .addSeparator()
       .addItem('🗑️ Supprimer les données de démo', 'clearDemoData')
       .addSeparator()
       .addItem('Forcer la mise à jour du cache global', 'invalidateGlobalCache')
@@ -269,8 +273,8 @@ function setupCourseSheets() {
   ss.rename(categoryName); // Renomme la feuille de calcul elle-même
 
   const sheetStructures = {
-    [`Cours_${categoryName}`]: ["ID_Cours", "Nom_Cours", "Résumé", "Durée_Totale", "Niveau", "Prix", "URL_Vidéo", "Image_Couverture", "Freemium_Start", "Freemium_End", "Objectifs", "Prérequis", "Avantage_Senior", "Public_Cible", "Formateur_Nom", "Formateur_Titre", "Formateur_Bio", "Note_Moyenne", "Avis"],
-    [`Modules_${categoryName}`]: ["ID_Cours", "ID_Module", "Nom_Module", "Ordre_Module"],
+    [`Cours_${categoryName}`]: ["ID_Cours", "Nom_Cours", "Résumé", "Durée_Totale", "Niveau", "Prix", "URL_Vidéo_Intro", "Image_Couverture", "Freemium_Start", "Freemium_End", "Objectifs", "Prérequis", "Avantage_Senior", "Public_Cible", "Formateur_Nom", "Formateur_Titre", "Formateur_Bio", "Note_Moyenne", "Avis"],
+    [`Modules_${categoryName}`]: ["ID_Cours", "ID_Module", "Nom_Module", "Description_Module", "URL_Vidéo_Module", "Durée_Module", "Ordre_Module"],
     [`Chapitres_${categoryName}`]: ["ID_Module", "ID_Chapitre", "Nom_Chapitre", "Durée", "Ressource", "Ordre_Chapitre"],
     [`Quiz_Chapitres_${categoryName}`]: ["ID_Chapitre", "Question", "Réponse_1", "Réponse_2", "Réponse_3", "Réponse_4", "Bonne_Réponse"],
     [`Quiz_Modules_${categoryName}`]: ["ID_Module", "Question", "Réponse_1", "Réponse_2", "Réponse_3", "Réponse_4", "Bonne_Réponse"]
@@ -328,8 +332,8 @@ function seedDefaultCourseData(categoryName) {
 
     // Modules
     const modulesData = [
-      ["C-001", "M-001-1", "Fondations et Anti-Patterns", 1],
-      ["C-001", "M-001-2", "Communication Inter-Services", 2]
+      ["C-001", "M-001-1", "Fondations et Anti-Patterns", "Comprendre les erreurs communes qui mènent à l'échec.", "https://www.youtube.com/embed/video_module_1", "1h 05min", 1],
+      ["C-001", "M-001-2", "Communication Inter-Services", "Choisir la bonne stratégie de communication (synchrone vs asynchrone).", "https://www.youtube.com/embed/video_module_2", "55min", 2]
     ];
 
     // Chapitres
@@ -406,4 +410,106 @@ function clearDemoData() {
   } catch (e) {
     ui.alert("Erreur lors de la suppression des données : " + e.message);
   }
+}
+
+// --- NOUVEAU: Fonctions de gestion de contenu via le menu ---
+
+/**
+ * Affiche une boîte de dialogue pour ajouter un nouveau cours.
+ */
+function addCourse() {
+  const ui = SpreadsheetApp.getUi();
+  const categoryName = getCategoryName();
+  const coursSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(`Cours_${categoryName}`);
+
+  if (!coursSheet) {
+    ui.alert(`La feuille "Cours_${categoryName}" est introuvable.`);
+    return;
+  }
+
+  const result = ui.prompt(
+    'Ajouter un nouveau cours',
+    'Entrez le nom du nouveau cours :',
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (result.getSelectedButton() == ui.Button.OK && result.getResponseText()) {
+    const courseName = result.getResponseText().trim();
+    const newId = `C-${new Date().getTime().toString().slice(-6)}`;
+    
+    // Ajoute une nouvelle ligne avec l'ID et le nom, les autres champs sont à remplir manuellement.
+    coursSheet.appendRow([newId, courseName]);
+    ui.alert(`Cours "${courseName}" ajouté avec l'ID ${newId}. Veuillez compléter les autres informations dans la ligne.`);
+  }
+}
+
+/**
+ * Affiche une boîte de dialogue pour ajouter un nouveau module à un cours.
+ */
+function addModule() {
+  const ui = SpreadsheetApp.getUi();
+  const categoryName = getCategoryName();
+  const modulesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(`Modules_${categoryName}`);
+
+  if (!modulesSheet) {
+    ui.alert(`La feuille "Modules_${categoryName}" est introuvable.`);
+    return;
+  }
+
+  let courseId = ui.prompt('ID du Cours', 'À quel ID de cours ce module appartient-il ? (ex: C-001)', ui.ButtonSet.OK_CANCEL);
+  if (courseId.getSelectedButton() !== ui.Button.OK || !courseId.getResponseText()) return;
+  courseId = courseId.getResponseText().trim();
+
+  let moduleName = ui.prompt('Nom du Module', 'Entrez le nom du nouveau module :', ui.ButtonSet.OK_CANCEL);
+  if (moduleName.getSelectedButton() !== ui.Button.OK || !moduleName.getResponseText()) return;
+  moduleName = moduleName.getResponseText().trim();
+
+  let moduleDesc = ui.prompt('Description du Module', 'Entrez une courte description pour ce module :', ui.ButtonSet.OK_CANCEL);
+  moduleDesc = moduleDesc.getResponseText().trim();
+
+  // Calculer le prochain numéro d'ordre pour ce cours
+  const allModules = sheetToJSON(modulesSheet);
+  const modulesForCourse = allModules.filter(m => m.ID_Cours == courseId);
+  const nextOrder = modulesForCourse.length + 1;
+
+  const newId = `M-${courseId.split('-')[1]}-${nextOrder}`;
+
+  modulesSheet.appendRow([courseId, newId, moduleName, moduleDesc, "", "", nextOrder]);
+  ui.alert(`Module "${moduleName}" (Ordre: ${nextOrder}) ajouté au cours ${courseId}.`);
+}
+
+/**
+ * Affiche une boîte de dialogue pour ajouter un nouveau chapitre à un module.
+ */
+function addChapter() {
+  const ui = SpreadsheetApp.getUi();
+  const categoryName = getCategoryName();
+  const chapitresSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(`Chapitres_${categoryName}`);
+
+  if (!chapitresSheet) {
+    ui.alert(`La feuille "Chapitres_${categoryName}" est introuvable.`);
+    return;
+  }
+
+  let moduleId = ui.prompt('ID du Module', 'À quel ID de module ce chapitre appartient-il ? (ex: M-001-1)', ui.ButtonSet.OK_CANCEL);
+  if (moduleId.getSelectedButton() !== ui.Button.OK || !moduleId.getResponseText()) return;
+  moduleId = moduleId.getResponseText().trim();
+
+  let chapterName = ui.prompt('Nom du Chapitre', 'Entrez le nom du nouveau chapitre :', ui.ButtonSet.OK_CANCEL);
+  if (chapterName.getSelectedButton() !== ui.Button.OK || !chapterName.getResponseText()) return;
+  chapterName = chapterName.getResponseText().trim();
+
+  let duration = ui.prompt('Durée', 'Entrez la durée du chapitre (ex: 7min, 1h15) :', ui.ButtonSet.OK_CANCEL);
+  if (duration.getSelectedButton() !== ui.Button.OK || !duration.getResponseText()) return;
+  duration = duration.getResponseText().trim();
+
+  // Calculer le prochain numéro d'ordre pour ce module
+  const allChapters = sheetToJSON(chapitresSheet);
+  const chaptersForModule = allChapters.filter(c => c.ID_Module == moduleId);
+  const nextOrder = chaptersForModule.length + 1;
+
+  const newId = `CH-${moduleId.split('-')[1]}-${moduleId.split('-')[2]}-${nextOrder}`;
+
+  chapitresSheet.appendRow([moduleId, newId, chapterName, duration, "", nextOrder]);
+  ui.alert(`Chapitre "${chapterName}" (Ordre: ${nextOrder}) ajouté au module ${moduleId}.`);
 }
