@@ -706,6 +706,24 @@ function displayPromotionProducts(catalog) {
 }
 
 /**
+ * NOUVEAU: Bascule la visibilité d'un champ de mot de passe.
+ * @param {string} inputId L'ID de l'input de type mot de passe.
+ */
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.nextElementSibling;
+    if (input.type === "password") {
+        input.type = "text";
+        // Changer l'icône pour "oeil barré"
+        button.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a10.05 10.05 0 013.454-5.194M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1l22 22"></path></svg>`;
+    } else {
+        input.type = "password";
+        // Changer l'icône pour "oeil"
+        button.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`;
+    }
+}
+
+/**
  * NOUVEAU: Gère la soumission du formulaire de mise à jour du profil.
  * @param {Event} event
  */
@@ -2078,13 +2096,6 @@ async function handleAuthForm(event, type, role = 'Client') {
 
     if (type === 'register') {
         const password = form.querySelector('#register-password').value;
-        const passwordConfirm = form.querySelector('#register-password-confirm').value;
-        
-        if (passwordConfirm && password !== passwordConfirm) {
-            statusDiv.textContent = 'Les mots de passe ne correspondent pas.';
-            statusDiv.classList.add('text-red-600');
-            return;
-        }
 
         payload = {
             action: 'creerCompteClient',
