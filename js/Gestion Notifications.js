@@ -80,9 +80,10 @@ function createNotification(data) {
  */
 function getNotificationsForUser(userId) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.NOTIFICATIONS);
+    if (!sheet) return createJsonResponse({ success: false, error: "La feuille de notifications est introuvable." });
     const allNotifs = sheet.getDataRange().getValues();
     const headers = allNotifs.shift();
-    const userIdIndex = headers.indexOf("ID Client"); // Assumons que l'ID utilisateur est dans cette colonne
+    const userIdIndex = headers.indexOf("ID_Client"); // CORRECTION: Utiliser le bon nom de colonne
 
     const userNotifsData = allNotifs.filter(row => row[userIdIndex] === userId);
 
@@ -100,11 +101,31 @@ function getNotificationsForUser(userId) {
  * Marque les notifications d'un utilisateur comme lues.
  */
 function markNotificationsAsRead(data) {
-    // Pour la simplicité, cette fonction est un placeholder.
-    // Une implémentation complète marquerait des IDs spécifiques comme "Lue".
-    const { userId } = data;
-    console.log(`Marquer les notifications comme lues pour l'utilisateur ${userId}`);
-    return createJsonResponse({ success: true, message: "Notifications marquées comme lues." });
+    const { userId, notificationIds } = data;
+    if (!userId || !notificationIds || !Array.isArray(notificationIds)) {
+        return createJsonResponse({ success: false, error: "Données manquantes pour marquer les notifications comme lues." });
+    }
+
+    try {
+        const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.NOTIFICATIONS);
+        const allNotifs = sheet.getDataRange().getValues();
+        const headers = allNotifs[0];
+        const idIndex = headers.indexOf("ID Notification");
+        const statusIndex = headers.indexOf("Statut");
+
+        // Parcourir toutes les lignes pour trouver et mettre à jour les notifications
+        for (let i = 1; i < allNotifs.length; i++) {
+            const rowId = allNotifs[i][idIndex];
+            if (notificationIds.includes(rowId)) {
+                // +1 pour l'index de tableau, +1 pour la ligne d'en-tête
+                sheet.getRange(i + 1, statusIndex + 1).setValue("Lue");
+            }
+        }
+
+        return createJsonResponse({ success: true, message: "Notifications mises à jour." });
+    } catch (error) {
+        return createJsonResponse({ success: false, error: `Erreur lors de la mise à jour des notifications: ${error.message}` });
+    }
 }
 
 /**
@@ -169,7 +190,7 @@ function setupProject() {
   const ui = SpreadsheetApp.getUi();
 
   const sheetsToCreate = {
-    [SHEET_NAMES.NOTIFICATIONS]: ["ID Notification", "Email Client", "Type", "Message", "Statut", "Date"],
+    [SHEET_NAMES.NOTIFICATIONS]: ["ID Notification", "ID_Client", "Type", "Message", "Statut", "Date"],
     [SHEET_NAMES.CONFIG]: ["Clé", "Valeur"]
   };
 

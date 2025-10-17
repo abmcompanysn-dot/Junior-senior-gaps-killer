@@ -1,10 +1,10 @@
 const CONFIG = {
     // URL de l'API pour la gestion des comptes (authentification, etc.)
-    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbz6f67hZG1GKAlU-1O5p674grOWYI2s1XfgucVue398D9EXTlD7r6GUD0EkHd54xWw8vA/exec",
+    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbzBHd8-Q0dVUor6-rBhvPpoc_AJofQkN05Tebb89TFm40y90EBR30xJHeP-H-XK4cOl0w/exec ",
     // NOUVEAU: URL de l'API centrale pour la gestion des cours, achats, et progression.
     COURSE_API_URL: "https://script.google.com/macros/s/AKfycbzk0tAsVhQNBpSKnNCPz2hJYT9F9sQtqDsXqVeNQNeJUdQNXze9qh32mhGG7Y_8V3BjBg/exec",
     // NOUVEAU: URL de l'API dédiée aux notifications
-    NOTIFICATION_API_URL: "URL_DU_SCRIPT_GESTION_NOTIFICATIONS",
+    NOTIFICATION_API_URL: "https://script.google.com/macros/s/AKfycbwH5Nr0uJsDg72jo_8iZq0YsiK4fS3GMcph-LdD8vtNitmezi7GWlj91czmhZPddgfGUw/exec",
 
     // URL du script central pour le catalogue de produits.
     CENTRAL_API_URL: "https://script.google.com/macros/s/AKfycbxh1olxmG44KS1Gq_RA6zviC6M1xQkIUYr_0KeAS4qNILwypNLXYNQHcqFwiP9Rg5tWFw/exec",
