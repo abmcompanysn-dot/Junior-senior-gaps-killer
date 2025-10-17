@@ -8,8 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold-color: #D4AF37;
-            --dark-color: #1a1a1a;
+            --gold-color: #F97316; /* Orange */
+            --dark-color: #1E3A8A; /* Bleu foncé */
         }
         .text-gold { color: var(--gold-color); }
         .bg-gold { background-color: var(--gold-color); }
@@ -62,7 +62,7 @@
         </header>
 
         <!-- Navigation principale -->
-        <nav class="border-b border-t">
+        <nav class="border-b border-t bg-dark-color">
             <div class="container mx-auto px-4">
                 <div class="flex items-center text-sm font-semibold">
                     <div class="relative dropdown">
@@ -83,7 +83,7 @@
 
     <!-- Contenu de la page Promotions -->
     <main class="container mx-auto px-4 py-12">
-        <h1 class="text-3xl font-bold text-red-600 mb-2">Tous les cours</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Tous les cours</h1>
         <p id="promotion-results-count" class="text-gray-600 mb-8"></p>
         <div id="promotion-results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Les produits en promotion seront injectés ici par JS -->

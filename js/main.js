@@ -1,7 +1,7 @@
 const CONFIG = {
     // URL de l'API pour la gestion des comptes (authentification, etc.)
-    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbzBHd8-Q0dVUor6-rBhvPpoc_AJofQkN05Tebb89TFm40y90EBR30xJHeP-H-XK4cOl0w/exec ",
-    // NOUVEAU: URL de l'API centrale pour la gestion des cours, achats, et progression.
+    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbwa2GNjYJ_gH2GpDkv7jYV61f_5J-acAB9cNL7p-_cxthJg-btrsHWcfw9EDPLhYgeYEA/exec",
+    // NOUVEAU: URL de l'API centrale pour la gestion des cours, achats, et progression
     COURSE_API_URL: "https://script.google.com/macros/s/AKfycbzk0tAsVhQNBpSKnNCPz2hJYT9F9sQtqDsXqVeNQNeJUdQNXze9qh32mhGG7Y_8V3BjBg/exec",
     // NOUVEAU: URL de l'API dédiée aux notifications
     NOTIFICATION_API_URL: "https://script.google.com/macros/s/AKfycbwH5Nr0uJsDg72jo_8iZq0YsiK4fS3GMcph-LdD8vtNitmezi7GWlj91czmhZPddgfGUw/exec",
