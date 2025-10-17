@@ -103,24 +103,26 @@ function doOptions(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Réponse JSON.
  */
 function creerCompteClient(data) {
+    const { nom, email, motDePasse, role = 'Client' } = data; // Déstructuration et valeur par défaut
     try {
         const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.USERS);
         const usersData = sheet.getRange(2, 1, sheet.getLastRow(), 3).getValues();
-        const emailExists = usersData.some(row => row[1] === data.email);
+        // L'index 2 correspond à la colonne Email (C)
+        const emailExists = usersData.some(row => row[2] === email);
 
         if (emailExists) {
             return createJsonResponse({ success: false, error: 'Un compte avec cet email existe déjà.' });
         }
 
         const idClient = "CLT-" + new Date().getTime();
-        const { passwordHash, salt } = hashPassword(data.motDePasse);
+        const { passwordHash, salt } = hashPassword(motDePasse);
 
         sheet.appendRow([
-            idClient, data.nom, data.email, passwordHash, salt, data.telephone || '',
-            data.adresse || '', new Date(), "Actif", data.role || "Client" // NOUVEAU: Gérer le rôle
+            idClient, nom, email, passwordHash, salt, data.telephone || '',
+            data.adresse || '', new Date(), "Actif", role // Utilisation du rôle fourni
         ]);
 
-        logAction('creerCompteClient', { email: data.email, id: idClient });
+        logAction('creerCompteClient', { email: email, id: idClient, role: role });
         return createJsonResponse({ success: true, id: idClient });
 
     } catch (error) {
