@@ -76,8 +76,8 @@ async function initializeApp() {
         if (window.location.pathname.endsWith('recherche.html')) displaySearchResults(catalog);
         if (window.location.pathname.endsWith('categorie.html')) fillCategoryProducts(catalog);
         if (window.location.pathname.endsWith('categorie.html')) updateWhatsAppLinkForCategory(catalog); // NOUVEAU
-        if (window.location.pathname.endsWith('promotions.html')) displayPromotionProducts(catalog);
-        if (window.location.pathname.endsWith('produit.html')) loadProductPage(catalog);
+        if (window.location.pathname.endsWith('promotions.html')) displayPromotionProducts(catalog); // Gardé pour la page promo
+        if (window.location.pathname.endsWith('produit.html')) loadCoursePage(catalog); // MODIFIÉ
         
         // Remplir les sections de la page d'accueil
         if (document.getElementById('superdeals-products')) {
@@ -684,147 +684,114 @@ function displayPromotionProducts(catalog) {
 // --- LOGIQUE DE LA PAGE PRODUIT ---
 
 /**
- * Charge les données d'un produit spécifique sur la page produit.
+ * MODIFIÉ: Charge les données d'un cours spécifique sur la page de détail.
  */
-function loadProductPage(catalog) {
+function loadCoursePage(catalog) {
     const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
+    const courseId = params.get('id');
 
-    if (!productId) {
+    if (!courseId) {
         document.querySelector('main').innerHTML = '<p class="text-center text-red-500">Erreur: ID de produit manquant.</p>';
         return;
     }
 
     try {
         const { data } = catalog;
-        const product = data.products.find(p => p.IDProduit == productId);
+        // Les données de cours viennent maintenant de `data.products` qui contient les fiches de cours
+        const course = data.products.find(c => c.ID_Cours == courseId);
 
-        if (!product) {
-            throw new Error("Produit non trouvé.");
+        if (!course) {
+            throw new Error("Cours non trouvé.");
         }
 
-        // Mettre à jour le HTML de la page avec les données du produit
-        const nameEl = document.getElementById('product-name');
-        const descriptionEl = document.getElementById('product-description');
-        const priceContainer = document.getElementById('product-price-container');
-        const mainImage = document.getElementById('main-product-image');
-        const thumbnailsContainer = document.getElementById('product-thumbnails');
-        const addToCartButton = document.getElementById('add-to-cart-button');
-
-        // NOUVEAU: Conteneurs pour les détails dynamiques
-        const variantsContainer = document.getElementById('product-variants-container');
-        const specsContainer = document.getElementById('product-specs-container');
-        // Enlever les classes de chargement
-        nameEl.classList.remove('h-12', 'bg-gray-200', 'animate-pulse');
-        
-        const deliveryContent = document.getElementById('delivery-content');
-        if (product.LivraisonGratuite === true || product.LivraisonGratuite === "TRUE" || product.LivraisonGratuite === "Oui") {
-            deliveryContent.innerHTML = `
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">🎉 Livraison Gratuite !</h3>
-                    <p class="font-bold">🎉 Livraison Gratuite !</p>
-                    <p>Ce produit bénéficie de la livraison gratuite partout au Sénégal.</p>
-                </div>
-            `;
-        } else {
-            // NOUVEAU: Remplir les sélecteurs de livraison si elle n'est pas gratuite
-            populateDeliverySelectors();
-            updateDeliveryCost();
-        }
-
-        // NOUVEAU: Conteneur pour les boutons d'action
-        const actionButtonsContainer = document.getElementById('action-buttons-container');
-        const contactSellerButton = document.getElementById('contact-seller-button');
-
-        descriptionEl.classList.remove('h-20', 'bg-gray-200', 'animate-pulse');
-        mainImage.parentElement.classList.remove('animate-pulse');
-
-        // Remplir les données
-        nameEl.textContent = product.Nom;
-        descriptionEl.textContent = product.Description;
-
-        // NOUVEAU: Mettre à jour les méta-tags Open Graph pour le partage
-        document.querySelector('meta[property="og:title"]').setAttribute('content', product.Nom);
-        document.querySelector('meta[property="og:description"]').setAttribute('content', product.Description || `Découvrez ${product.Nom} sur ABMCY MARKET.`);
-        document.querySelector('meta[property="og:image"]').setAttribute('content', product.ImageURL || CONFIG.DEFAULT_PRODUCT_IMAGE);
+        // --- Remplissage des métadonnées de la page ---
+        document.title = `${course.Nom_Cours} - J-S Gap Killer`;
+        document.querySelector('meta[property="og:title"]').setAttribute('content', course.Nom_Cours);
+        document.querySelector('meta[property="og:description"]').setAttribute('content', course.Résumé);
+        document.querySelector('meta[property="og:image"]').setAttribute('content', course.Image_Couverture || CONFIG.DEFAULT_PRODUCT_IMAGE);
         document.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href);
-        document.querySelector('title').textContent = `${product.Nom} - ABMCY MARKET`;
 
-        // CORRECTION: Charger l'image immédiatement
-        mainImage.src = product.ImageURL || CONFIG.DEFAULT_PRODUCT_IMAGE;
-        mainImage.alt = product.Nom;
+        // --- Remplissage de la section principale ---
+        document.getElementById('course-title').textContent = course.Nom_Cours;
+        document.getElementById('course-summary').textContent = course.Résumé;
 
-        // Gérer l'affichage du prix
-        let priceHTML = `<span class="text-3xl font-bold text-gold">${product.PrixActuel.toLocaleString('fr-FR')} F CFA</span>`;
-        if (product.PrixAncien && product.PrixAncien > product.PrixActuel) {
-            priceHTML += `<span class="text-xl text-gray-500 line-through">${product.PrixAncien.toLocaleString('fr-FR')} F CFA</span>`;
-        }
-        if (product['Réduction%'] > 0) {
-            priceHTML += `<span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">-${product['Réduction%']}%</span>`;
-        }
-        priceContainer.innerHTML = priceHTML;
+        // Tags
+        const tagsContainer = document.getElementById('course-tags-container');
+        tagsContainer.innerHTML = `
+            <span class="flex items-center"><svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${course.Durée_Totale}</span>
+            <span class="flex items-center"><svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg> ${course.Niveau}</span>
+            <span class="flex items-center"><svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg> ${course.Catégorie || 'Non classé'}</span>
+            <span class="flex items-center"><svg class="w-4 h-4 mr-1.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg> ${course.Note_Moyenne} (${course.Avis})</span>
+        `;
 
-        // NOUVEAU: Construire la galerie de miniatures
-        let galleryImages = [];
-        if (product.ImageURL) galleryImages.push(product.ImageURL); // L'image principale est la première
-        if (product.Galerie) {
-            const galleryUrls = product.Galerie.split(',').map(url => url.trim()).filter(url => url);
-            galleryImages = [...galleryImages, ...galleryUrls];
-        }
-        
-        // Rendre les URLs uniques pour éviter les doublons
-        // Limiter la galerie à 5 photos au maximum
-        galleryImages = galleryImages.slice(0, 5);
+        // Prix et bouton d'achat
+        const priceContainer = document.getElementById('course-price-container');
+        priceContainer.innerHTML = `<span class="text-3xl font-bold text-gold">${Number(course.Prix).toLocaleString('fr-FR')} F CFA</span>`;
+        document.getElementById('buy-course-button').textContent = `Acheter ce cours – ${Number(course.Prix).toLocaleString('fr-FR')} F CFA`;
 
-        thumbnailsContainer.innerHTML = galleryImages.map((imgUrl, index) => `
-            <div class="border-2 ${index === 0 ? 'border-gold' : 'border-transparent'} rounded-lg cursor-pointer overflow-hidden thumbnail-item">
-                <img src="${imgUrl}" alt="Miniature ${index + 1}" class="h-full w-full object-cover" onclick="changeMainImage('${imgUrl}')" loading="lazy" width="80" height="80">
-            </div>
-        `).join('');
-
-        // Ajouter les écouteurs d'événements pour la bordure active
-        document.querySelectorAll('.thumbnail-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.thumbnail-item').forEach(i => i.classList.remove('border-gold'));
-                item.classList.add('border-gold');
-            });
-        });
-
-        // NOUVEAU: Afficher les détails spécifiques à la catégorie
-        renderCategorySpecificDetails(product, variantsContainer, specsContainer, catalog);
-
-        // Mettre à jour le bouton "Ajouter au panier"
-        addToCartButton.setAttribute('onclick', `addToCart(event, '${product.IDProduit}', '${product.Nom}', ${product.PrixActuel}, '${product.ImageURL || CONFIG.DEFAULT_PRODUCT_IMAGE}')`);
-        const hasVariants = variantsContainer.innerHTML.trim() !== '';
-        // Le bouton est désactivé si le produit est en rupture de stock ET qu'il n'y a pas de variantes.
-        addToCartButton.disabled = (product.Stock <= 0 && !hasVariants);
-
-        // NOUVEAU: Charger et afficher les produits similaires
-        const similarProductsContainer = document.getElementById('similar-products-container');
-        renderSimilarProducts(product, data.products, similarProductsContainer);
-
-        // NOUVEAU: Mettre à jour le lien WhatsApp avec le numéro de la catégorie du produit
-        const category = data.categories.find(cat => cat.NomCategorie === product.Catégorie);
-        updateWhatsAppLink(category ? category.Numero : null);
-
-        // NOUVEAU: Configurer le bouton "Contacter le vendeur"
-        if (category && category.Numero) {
-            const cleanedNumber = String(category.Numero).replace(/[\s+()-]/g, '');
-            contactSellerButton.href = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(`Bonjour, je suis intéressé(e) par le produit : ${product.Nom}`)}`;
-            contactSellerButton.classList.remove('hidden');
+        // Vidéo
+        const videoPlayer = document.getElementById('course-video-player');
+        if (course.URL_Vidéo) {
+            document.getElementById('video-skeleton').classList.add('hidden');
+            videoPlayer.src = course.URL_Vidéo;
+            videoPlayer.classList.remove('hidden');
         } else {
-            contactSellerButton.classList.add('hidden');
+            // Afficher l'image de couverture si pas de vidéo
+            document.getElementById('video-preview-container').innerHTML = `<img src="${course.Image_Couverture || CONFIG.DEFAULT_PRODUCT_IMAGE}" alt="${course.Nom_Cours}" class="w-full h-full object-cover">`;
         }
-        // Rendre le conteneur de boutons visible
-        actionButtonsContainer.classList.remove('hidden');
 
-        // NOUVEAU: Activer le zoom sur l'image principale
-        activateInternalZoom("image-zoom-wrapper");
+        // --- Remplissage des détails dans la colonne de gauche ---
+
+        // Objectifs
+        const objectivesList = document.getElementById('course-objectives-list');
+        objectivesList.innerHTML = (course.Objectifs || "").split(';').map(obj => `<li>${obj.trim()}</li>`).join('');
+
+        // Structure du cours (Modules et Chapitres)
+        const structureContainer = document.getElementById('course-structure-container');
+        if (course.modules && course.modules.length > 0) {
+            structureContainer.innerHTML = course.modules.map(module => `
+                <div class="border rounded-lg">
+                    <h3 class="font-semibold p-4 bg-gray-50 rounded-t-lg border-b">${module.Nom_Module}</h3>
+                    <ul class="divide-y">
+                        ${(module.chapitres || []).map(chap => `
+                            <li class="p-4 flex justify-between items-center text-sm">
+                                <span>${chap.Nom_Chapitre}</span>
+                                <span class="text-gray-500">${chap.Durée}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+
+        // --- Remplissage de la colonne latérale (droite) ---
+
+        // Profil du formateur
+        const instructorContainer = document.getElementById('instructor-profile-container');
+        instructorContainer.innerHTML = `
+            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(course.Formateur_Nom)}&background=D4AF37&color=fff" alt="${course.Formateur_Nom}" class="w-12 h-12 rounded-full">
+            <div>
+                <p class="font-bold">${course.Formateur_Nom}</p>
+                <p class="text-sm text-gray-500">${course.Formateur_Titre}</p>
+            </div>
+        `;
+        document.getElementById('instructor-bio').textContent = course.Formateur_Bio;
+
+        // Avantage Senior
+        document.getElementById('senior-advantage-text').textContent = course.Avantage_Senior;
+
+        // Prérequis et Public Cible
+        document.getElementById('prerequisites-list').innerHTML = (course.Prérequis || "").split(';').map(req => `<li>${req.trim()}</li>`).join('');
+        document.getElementById('target-audience-text').textContent = course.Public_Cible;
+
+        // --- Cours similaires ---
+        const similarCoursesContainer = document.getElementById('similar-courses-container');
+        renderSimilarProducts(course, data.products, similarCoursesContainer);
 
     } catch (error) {
-        console.error("Erreur de chargement du produit:", error);
+        console.error("Erreur de chargement du cours:", error);
         const mainContent = document.querySelector('main');
-        if(mainContent) mainContent.innerHTML = `<p class="text-center text-red-500">Impossible de charger les informations du produit. Veuillez réessayer.</p>`;
+        if(mainContent) mainContent.innerHTML = `<p class="text-center text-red-500">Impossible de charger les informations du cours. Veuillez réessayer.</p>`;
     }
 }
 
@@ -1342,43 +1309,42 @@ async function getCatalogAndRefreshInBackground() {
  * @param {object} product - L'objet produit.
  * @returns {string} Le HTML de la carte.
  */
-function renderProductCard(product) { // This function remains synchronous as it only formats data
-    const price = product.PrixActuel || 0;
-    const oldPrice = product.PrixAncien || 0;
-    const discount = product['Réduction%'] || 0;
-    const stock = product.Stock || 0;
+function renderProductCard(course) { // MODIFIÉ: La fonction prend maintenant un objet "course"
+    const price = course.Prix || 0;
+    const courseId = course.ID_Cours || course.IDProduit; // Compatibilité
+    const courseName = course.Nom_Cours || course.Nom; // Compatibilité
+    const instructorName = course.Formateur_Nom || '';
+    const coverImage = course.Image_Couverture || course.ImageURL || CONFIG.DEFAULT_PRODUCT_IMAGE;
 
-    // Pour la nouvelle carte de type AliExpress, on simplifie l'affichage
     return `
     <div class="product-card bg-white rounded-lg shadow overflow-hidden flex flex-col justify-between group">
         <div>
-            <a href="produit.html?id=${product.IDProduit}" class="block">
+            <a href="produit.html?id=${courseId}" class="block">
                 <div class="relative">
                     <div class="h-40 bg-gray-200 flex items-center justify-center">
-                        <img src="${product.ImageURL || CONFIG.DEFAULT_PRODUCT_IMAGE}" alt="${product.Nom}" class="h-full w-full object-cover" loading="lazy" width="160" height="160" onerror="this.onerror=null;this.src='${CONFIG.DEFAULT_PRODUCT_IMAGE}';">
+                        <img src="${coverImage}" alt="${courseName}" class="h-full w-full object-cover" loading="lazy" width="160" height="160" onerror="this.onerror=null;this.src='${CONFIG.DEFAULT_PRODUCT_IMAGE}';">
                     </div>
-                    ${discount > 0 ? `<span class="discount-badge absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">-${Math.round(discount)}%</span>` : ''}
                     
                     <!-- NOUVEAU: Conteneur pour les icônes d'action qui apparaissent au survol -->
                     <div class="absolute top-2 right-2 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <button onclick="addToCart(event, '${product.IDProduit}', '${product.Nom}', ${price}, '${product.ImageURL}')" title="Ajouter au panier" class="bg-white p-2 rounded-full shadow-lg hover:bg-gold hover:text-white">
+                        <button onclick="addToCart(event, '${courseId}', '${courseName}', ${price}, '${coverImage}')" title="Ajouter au panier" class="bg-white p-2 rounded-full shadow-lg hover:bg-gold hover:text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                         </button>
-                        <button onclick="shareProduct(event, '${product.IDProduit}')" title="Partager" class="bg-white p-2 rounded-full shadow-lg hover:bg-gold hover:text-white">
+                        <button onclick="shareProduct(event, '${courseId}')" title="Partager" class="bg-white p-2 rounded-full shadow-lg hover:bg-gold hover:text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg>
                         </button>
                     </div>
                 </div>
                 <div class="p-3">
-                    <p class="text-sm text-gray-700 truncate" title="${product.Nom}">${product.Nom}</p>
+                    <p class="text-sm font-semibold text-gray-800 truncate" title="${courseName}">${courseName}</p>
+                    <p class="text-xs text-gray-500 mt-1">Par ${instructorName}</p>
                     <p class="font-bold text-lg mt-1">${price.toLocaleString('fr-FR')} F CFA</p>
-                    ${oldPrice > price ? `<p class="text-xs text-gray-400 line-through">${oldPrice.toLocaleString('fr-FR')} F CFA</p>` : ''}
                 </div>
             </a>
         </div>
         <div class="p-3 pt-0">
-            <a href="produit.html?id=${product.IDProduit}" class="w-full block text-center bg-gray-100 text-gray-800 py-1.5 rounded-lg font-semibold text-xs hover:bg-gray-200 transition">
-                Voir le produit
+            <a href="produit.html?id=${courseId}" class="w-full block text-center bg-gray-100 text-gray-800 py-1.5 rounded-lg font-semibold text-xs hover:bg-gray-200 transition">
+                Voir le cours
             </a>
         </div>
     </div>

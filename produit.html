@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
+   <meta charset="UTF-8">
     <!-- NOUVEAU: Méta-tags Open Graph pour un partage enrichi -->
-    <meta property="og:title" content="Découvrez ce produit sur ABMCY MARKET">
-    <meta property="og:description" content="Les meilleures offres du Sénégal et du Bénin, livrées chez vous.">
+    <meta property="og:title" content="Découvrez ce cours sur Junior-Senior Gap Killer">
+    <meta property="og:description" content="Comblez le fossé générationnel. Apprenez des meilleurs.">
     <meta property="og:image" content="https://i.postimg.cc/6QZBH1JJ/Sleek-Wordmark-Logo-for-ABMCY-MARKET.png">
     <meta property="og:url" content="https://abmcymarket.vercel.app">
-    <meta property="og:site_name" content="ABMCY MARKET">
+    <meta property="og:site_name" content="J-S Gap Killer">
     <meta property="og:type" content="website">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +15,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+
         :root {
             --gold-color: #D4AF37; /* Or */
             --dark-color: #1a1a1a; /* Noir doux */
@@ -22,18 +23,21 @@
         .text-gold { color: var(--gold-color); }
         .bg-gold { background-color: var(--gold-color); }
         .border-gold { border-color: var(--gold-color); }
+
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
         body { 
             padding-bottom: 100px; /* Espace pour la nav mobile + marge */ 
             overflow-x: hidden; /* GARANTIT qu'aucun élément ne peut déborder horizontalement */
         } 
         @media (min-width: 768px) {
+
             body { padding-bottom: 0; }
             .mobile-nav { display: none; }
         }
         .variant-btn { transition: all 0.2s ease; }
         .variant-btn.selected { border-color: var(--gold-color); background-color: #fefce8; }
         /* NOUVEAU: Styles pour le zoom interne */
+
         #image-zoom-wrapper { cursor: crosshair; }
         #image-zoom-wrapper > img {
             transition: transform 0.2s ease-out;
@@ -57,7 +61,7 @@
 
                     <!-- Barre de recherche -->
                     <form id="search-form-header" class="flex-1 mx-4" onsubmit="initializeSearch()">
-                        <div class="relative">
+                       <div class="relative">
                             <input type="search" placeholder="Rechercher des produits, des marques et plus..." class="w-full p-2 pl-10 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold">
                             <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
@@ -100,146 +104,101 @@
     <main class="w-full max-w-7xl mx-auto px-4 py-12">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
             <!-- Galerie d'images -->
+
             <div id="product-gallery">
-                <div id="image-zoom-wrapper" class="relative w-full h-96 bg-gray-200 rounded-lg overflow-hidden shadow-inner mb-4 animate-pulse">
-                    <img id="main-product-image" src="https://i.postimg.cc/6QZBH1JJ/Sleek-Wordmark-Logo-for-ABMCY-MARKET.png" alt="Image principale du produit" class="absolute top-0 left-0 w-full h-full object-contain">
-                </div>
-                <div id="product-thumbnails" class="grid grid-cols-5 gap-2">
-                    <!-- Les miniatures seront injectées ici par JS -->
-                </div>
-
-                <!-- NOUVEAU: Section Livraison & Services (placée sous la galerie) -->
-                <div id="delivery-options-section" class="mt-8 bg-white p-6 rounded-lg shadow-md border">
-                    <div id="delivery-content">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4">Options de Livraison</h3>
-                        
-                        <!-- Sélecteur de Localité (pré-rempli) -->
-                        <div class="mb-4">
-                            <label for="delivery-location" class="block text-sm font-semibold text-gray-700 mb-1">Choisir ma localité</label>
-                            <select id="delivery-location" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold" onchange="updateDeliveryCost()">
-                                <option value="">-- Choisir une localité --</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Sélecteur de Mode de Livraison (pré-rempli) -->
-                        <div class="mb-4">
-                            <label for="delivery-method" class="block text-sm font-semibold text-gray-700 mb-1">Choisir le mode</label>
-                            <select id="delivery-method" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold" onchange="updateDeliveryCost()">
-                                <option value="">-- D'abord choisir une localité --</option>
-                            </select>
-                        </div>
-    
-                        <!-- Estimation des frais (pré-rempli) -->
-                        <div class="text-sm text-gray-800 bg-gray-100 p-3 rounded-md">
-                            Estimation des frais : <span id="delivery-cost-estimate" class="font-bold">Veuillez sélectionner une option</span>
-                        </div>
-                    </div>
-
-                    <!-- NOUVEAU: Conteneur pour les détails du mode de livraison -->
-                    <div id="delivery-method-details" class="mt-2 text-xs text-gray-500">
-                        <!-- Les détails s'afficheront ici -->
-                    </div>
+                <!-- NOUVEAU: Lecteur vidéo pour l'aperçu -->
+                <div id="video-preview-container" class="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-lg mb-4">
+                    <div id="video-skeleton" class="w-full h-full bg-gray-200 animate-pulse"></div>
+                    <iframe id="course-video-player" class="absolute top-0 left-0 w-full h-full hidden" src="" title="Aperçu du cours" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    <div id="freemium-banner" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm hidden"></div>
                 </div>
             </div>
 
             <!-- Informations produit -->
             <div>
-                <h1 id="product-name" class="text-4xl font-bold text-gray-800 mb-2 h-12 bg-gray-200 rounded animate-pulse"></h1>
-                <div class="flex items-center mb-4">
-                    <span class="text-yellow-500">★★★★☆</span>
-                    <span class="text-gray-600 ml-2">(Avis)</span>
+                <!-- Titre et résumé -->
+                <h1 id="course-title" class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-3"></h1>
+                <p id="course-summary" class="text-lg text-gray-600 mb-6"></p>
+
+                <!-- Tags du cours -->
+                <div id="course-tags-container" class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-700 mb-6">
+                    <!-- Les tags (durée, niveau, etc.) seront injectés ici -->
                 </div>
-                <!-- La description sera injectée dans la section "Détails" plus bas -->
-                <div id="product-price-container" class="flex items-center space-x-3 mb-6 h-10">
+
+                <!-- Prix -->
+                <div id="course-price-container" class="flex items-baseline space-x-3 mb-6">
                     <!-- Le prix sera injecté ici par JS -->
                 </div>
 
-                <!-- NOUVEAU: Section pour les variantes (taille, couleur, etc.) -->
-                <div id="product-variants-container" class="mb-8 space-y-4">
-                    <!-- Les sélecteurs de variantes seront injectés ici -->
-                </div>
-
-                <div class="flex items-center space-x-4 mb-8">
-                    <label for="quantity" class="font-semibold">Quantité:</label>
-                    <input type="number" id="quantity" value="1" min="1" class="w-20 border border-gray-300 rounded p-2 text-center">
-                </div>
-
-                <!-- NOUVEAU: Conteneur pour les boutons d'action principaux -->
-                <div id="action-buttons-container" class="hidden mt-8 space-y-3">
-                    <button id="add-to-cart-button" class="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition text-lg" disabled>
-                        Ajouter au panier
+                <!-- Boutons d'action -->
+                <div id="action-buttons-container" class="space-y-3">
+                    <button id="buy-course-button" class="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition text-lg">
+                        Acheter ce cours
                     </button>
-                    <a id="contact-seller-button" href="#" target="_blank" rel="noopener noreferrer" class="w-full block text-center bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition text-lg hidden">
-                        Contacter le Vendeur
-                    </a>
-                </div>
-
-                <!-- NOUVEAU: Section Détails du produit (déplacée ici pour un meilleur alignement) -->
-                <div class="mt-8 border-t pt-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Détails du produit</h3>
-                    <p id="product-description" class="text-gray-600 mb-6 h-20 bg-gray-200 rounded animate-pulse"></p>
-                    <div id="product-specs-container" class="text-sm space-y-2">
-                        <!-- Les spécifications seront injectées ici -->
-                    </div>
+                    <button id="wishlist-button" class="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-100 transition text-lg">
+                        Ajouter à la liste de souhaits
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Section Produits similaires -->
-        <section class="mt-16 border-t pt-8">
-            <h3 class="text-2xl font-bold text-gray-800 mb-8">Produits similaires</h3>
-            <div id="similar-products-container" class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <!-- Détails complets du cours -->
+        <div class="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <!-- Colonne principale (gauche) -->
+            <div class="lg:col-span-2 space-y-12">
+                <!-- Objectifs -->
+                <section id="course-objectives-section">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Ce que vous allez apprendre</h2>
+                    <ul id="course-objectives-list" class="space-y-2 list-disc list-inside text-gray-700"></ul>
+                </section>
 
-        <!-- Les produits similaires seront injectés ici par JS -->
+                <!-- Structure du cours -->
+                <section id="course-structure-section">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Contenu du cours</h2>
+                    <div id="course-structure-container" class="space-y-2"></div>
+                </section>
+
+                <!-- Avis -->
+                <section id="course-reviews-section">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Avis des participants</h2>
+                    <div id="course-reviews-container"></div>
+                </section>
             </div>
-        </section>
-         <section class="mt-16 border-t pt-8">
-          <div class="md:flex md:flex-row">
-                <!--Left part-->
-                 <div class=" md:w-1/2">
-                       <h3 class="text-2xl font-bold text-gray-800 mb-8">Statut (Tags)</h3>
-                        <div id="course-statut">
-                            <div id="durre-total">
-                                <!--Durée totale du cours-->
-                            </div>
-                            <div id="niveau-cibler">
-                                <!--Niveau ciblé (ex: "Intermédiaire vers Expert")-->
-                            </div>
-                            <div id="categorie">
-                                <!--Catégorie-->
-                            </div>
-                            <div id="note-moyenne">
-                                <!--Note moyenne des avis-->
-                            </div>
-                        </div>
-                         <div class="mt-16 border-t pt-8">
-                              <h3 class="text-2xl font-bold text-gray-800 mb-8">Crédibilité (Profil du Formateur)</h3>
-                            <div id="Credibilite">
-                                <div id="Photo">
-                                    <!--Photo professionnelle + nom-->
-                                </div>
-                                <div id="experience">
-                                    <!--Titre actuel (CTO, Architecte, etc.) + années d’expérience-->
-                                </div>
-                                <div id="Biographie">
-                                    <!--Biographie axée sur les leçons apprises (succès + échecs)-->
-                                </div>
-                            </div>
-                         </div>
-                     </div>
-                     <!-- Right part-->
-                     <div class=" md:w-1/2">
-                        <div class="mt-16 border-t pt-8">
-                             <h3 class="text-2xl font-bold text-gray-800 mb-8">Structure du Cours (Table des Matières)</h3>
-                                <div id="Structure">
-                                        <!--Modules principaux : titres clairs-->
-                                </div>
-                         </div>
-                     </div>
-           </div>
-            <h3 class="text-2xl font-bold text-gray-800 mb-8">Objectifs détaillés</h3>
-            <div id="Objectifs-détaillés">
-                <!-- Les produits similaires seront injectés ici par JS -->
+
+            <!-- Colonne latérale (droite) -->
+            <aside class="lg:col-span-1 space-y-8">
+                <!-- Profil du formateur -->
+                <section id="instructor-profile-section" class="bg-white p-6 rounded-lg shadow-md border">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Votre Formateur</h2>
+                    <div id="instructor-profile-container" class="flex items-center space-x-4"></div>
+                    <p id="instructor-bio" class="text-sm text-gray-600 mt-4"></p>
+                </section>
+
+                <!-- Avantage Senior Gap Killer -->
+                <section id="senior-advantage-section" class="bg-gold/10 p-6 rounded-lg border border-gold/30">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">⚡ Avantage Senior Gap Killer</h2>
+                    <p id="senior-advantage-text" class="text-gray-700"></p>
+                </section>
+
+                <!-- Prérequis et public cible -->
+                <section id="requirements-section" class="bg-white p-6 rounded-lg shadow-md border">
+                    <div id="prerequisites-container">
+                        <h3 class="font-semibold mb-2">Prérequis</h3>
+                        <ul id="prerequisites-list" class="list-disc list-inside text-sm text-gray-600"></ul>
+                    </div>
+                    <div id="target-audience-container" class="mt-4">
+                        <h3 class="font-semibold mb-2">Pour qui est ce cours ?</h3>
+                        <p id="target-audience-text" class="text-sm text-gray-600"></p>
+                    </div>
+                </section>
+            </aside>
+        </div>
+
+        <!-- Section Cours similaires -->
+        <section class="mt-16 border-t pt-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-8">Autres cours qui pourraient vous plaire</h2>
+            <div id="similar-courses-container" class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Les cours similaires seront injectés ici par JS -->
             </div>
         </section>
     </main>
@@ -287,5 +246,6 @@
     </nav>
 
     <script src="js/main.js"></script>
+
 </body>
 </html>t 
