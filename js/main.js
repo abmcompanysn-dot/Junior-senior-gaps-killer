@@ -1,12 +1,8 @@
 const CONFIG = {
     // URL de l'API pour la gestion des comptes (authentification, etc.)
     ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbz6f67hZG1GKAlU-1O5p674grOWYI2s1XfgucVue398D9EXTlD7r6GUD0EkHd54xWw8vA/exec",
-    // NOUVEAU: URL de l'API dédiée à la gestion des commandes
-    ORDER_API_URL: "https://script.google.com/macros/s/AKfycbwrLOxtez1UrrXVj2iugSiLtAYOhhaef9x-HlpvvvxmQxsMVYRVQeShy4V56vfhjBxq/exec",
-
-    // NOUVEAU: URL de l'API dédiée à la gestion des livraisons
-    DELIVERY_API_URL: "URL_DU_SCRIPT_GESTION_LIVRAISONS",
-
+    // NOUVEAU: URL de l'API centrale pour la gestion des cours, achats, et progression.
+    COURSE_API_URL: "https://script.google.com/macros/s/AKfycbzk0tAsVhQNBpSKnNCPz2hJYT9F9sQtqDsXqVeNQNeJUdQNXze9qh32mhGG7Y_8V3BjBg/exec",
     // NOUVEAU: URL de l'API dédiée aux notifications
     NOTIFICATION_API_URL: "URL_DU_SCRIPT_GESTION_NOTIFICATIONS",
 
@@ -216,7 +212,7 @@ function saveCart(cart) {
  * @param {string} imageUrl - L'URL de l'image du produit.
  */
 function addToCart(event, productId, name, price, imageUrl) {
-    if (event) { // Empêche la navigation si on clique sur un bouton dans un lien <a>
+    if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
@@ -224,13 +220,15 @@ function addToCart(event, productId, name, price, imageUrl) {
     const cart = getCart();
     const quantityInput = document.getElementById('quantity');
     const quantity = quantityInput ? parseInt(quantityInput.value, 10) : 1;
+    const course = allLoadedProducts.find(p => (p.ID_Cours || p.IDProduit) === productId);
+    const instructor = course ? course.Formateur_Nom : 'N/A';
 
     // NOUVEAU: Récupérer les variantes sélectionnées (taille, couleur, etc.)
     const locationSelect = document.getElementById('delivery-location');
     const methodSelect = document.getElementById('delivery-method');
 
     let selectedDelivery = {};
-    const product = allLoadedProducts.find(p => p.IDProduit === productId);
+    const product = allLoadedProducts.find(p => (p.ID_Cours || p.IDProduit) === productId);
 
     if (product && (product.LivraisonGratuite === true || product.LivraisonGratuite === "TRUE" || product.LivraisonGratuite === "Oui")) {
         selectedDelivery = { location: 'Spéciale', method: 'Gratuite', cost: 0 };
@@ -260,7 +258,7 @@ function addToCart(event, productId, name, price, imageUrl) {
         cart[existingProductIndex].quantity += quantity;
     } else {
         // Nouveau produit
-        cart.push({ productId, name, price, imageUrl, quantity, variants: selectedVariants, delivery: selectedDelivery });
+        cart.push({ productId, name, price, imageUrl, quantity, variants: selectedVariants, delivery: selectedDelivery, instructor: instructor });
     }
     
     saveCart(cart);
@@ -704,6 +702,125 @@ function displayPromotionProducts(catalog) {
         console.error("Erreur lors de l'affichage des promotions:", error);
         resultsCount.textContent = `Erreur lors du chargement des promotions.`;
         resultsContainer.innerHTML = `<p class="col-span-full text-center text-red-500">Impossible de charger les promotions.</p>`;
+    }
+}
+
+/**
+ * NOUVEAU: Gère la soumission du formulaire de mise à jour du profil.
+ * @param {Event} event
+ */
+async function handleProfileUpdate(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Enregistrement...';
+
+    const user = JSON.parse(localStorage.getItem('abmcyUser'));
+    const fileInput = document.getElementById('profile-pic-input');
+    let imageUrl = user.ImageURL; // Garder l'ancienne image par défaut
+
+    try {
+        // 1. Uploader la nouvelle image si elle existe
+        if (fileInput.files.length > 0) {
+            showToast("Téléversement de l'image...");
+            imageUrl = await uploadImageToImgBB(fileInput.files[0]);
+        }
+
+        // 2. Préparer les données du profil
+        const profileData = {
+            userId: user.IDClient,
+            titre: document.getElementById('profile-title-input').value,
+            bio: document.getElementById('profile-bio-input').value,
+            imageUrl: imageUrl
+        };
+
+        // 3. Envoyer la mise à jour au backend
+        const response = await fetch(CONFIG.ACCOUNT_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'updateProfile', data: profileData })
+        });
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.error || "Erreur lors de la mise à jour du profil.");
+        }
+
+        // 4. Mettre à jour le localStorage avec les nouvelles infos
+        const updatedUser = { ...user, Titre: profileData.titre, Bio: profileData.bio, ImageURL: profileData.imageUrl };
+        localStorage.setItem('abmcyUser', JSON.stringify(updatedUser));
+
+        showToast("Profil mis à jour avec succès !", false);
+
+    } catch (error) {
+        showToast(`Erreur : ${error.message}`, true);
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Enregistrer les modifications';
+    }
+}
+
+/**
+ * NOUVEAU: Initialise le formulaire de profil avec les données de l'utilisateur.
+ * @param {object} user L'objet utilisateur du localStorage.
+ */
+function initializeProfileForm(user) {
+    if (!user) return;
+    document.getElementById('profile-title-input').value = user.Titre || '';
+    document.getElementById('profile-bio-input').value = user.Bio || '';
+    if (user.ImageURL) {
+        document.getElementById('profile-pic-preview').src = user.ImageURL;
+    } else {
+        document.getElementById('profile-pic-preview').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.Nom)}&background=F97316&color=fff`;
+    }
+
+    // Gérer l'aperçu de l'image
+    const fileInput = document.getElementById('profile-pic-input');
+    const preview = document.getElementById('profile-pic-preview');
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+    });
+}
+
+/**
+ * NOUVEAU: Téléverse une image vers ImgBB et retourne l'URL.
+ * @param {File} file Le fichier image à téléverser.
+ * @returns {Promise<string>} L'URL de l'image téléversée.
+ */
+async function uploadImageToImgBB(file) {
+    const apiKey = '96ff1e4e9603661db4d410f53df99454';
+    const apiUrl = 'https://api.imgbb.com/1/upload';
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const response = await fetch(`${apiUrl}?key=${apiKey}`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur ImgBB: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+            return result.data.url;
+        } else {
+            throw new Error(result.error.message || "Erreur inconnue de l'API ImgBB.");
+        }
+    } catch (error) {
+        console.error("Erreur d'upload sur ImgBB:", error);
+        throw error; // Propage l'erreur pour qu'elle soit gérée par la fonction appelante
     }
 }
 
@@ -1215,66 +1332,52 @@ function renderSimilarProducts(currentProduct, allProducts, container) {
  * @param {Event} event - L'événement du formulaire.
  */
 async function processCheckout(event) {
-    event.preventDefault(); // Empêche le rechargement de la page
+    event.preventDefault();
 
     const form = event.target;
     const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;
     submitButton.textContent = 'Traitement en cours...';
 
-    // 1. Récupérer les données du formulaire
-    const deliveryData = {
-        firstname: form.querySelector('#firstname').value,
-        lastname: form.querySelector('#lastname').value,
-        address: form.querySelector('#address').value,
-        city: form.querySelector('#city').value,
-        zip: form.querySelector('#zip').value,
-    };
-
-    // 2. Récupérer les données du panier depuis le localStorage
+    // 1. Récupérer le panier et l'utilisateur
     const cart = getCart();
     if (cart.length === 0) {
         alert("Votre panier est vide.");
+        submitButton.disabled = false;
+        submitButton.textContent = 'Confirmer la commande';
         return;
     }
 
-    // 3. Vérifier si l'utilisateur est connecté
     const user = JSON.parse(localStorage.getItem('abmcyUser'));
-    let clientId = "INVITÉ-" + new Date().getTime(); // ID unique pour l'invité
-    let clientName = deliveryData.firstname + " " + deliveryData.lastname;
-
-    if (user && user.IDClient) {
-        clientId = user.IDClient;
-        clientName = user.Nom;
+    if (!user) {
+        // Cette vérification est déjà faite dans proceedToCheckout, mais c'est une sécurité supplémentaire.
+        showToast("Erreur: Utilisateur non connecté.", true);
+        return;
     }
 
-    // 3. Préparer l'objet de la commande pour le backend
-    const orderPayload = {
-        action: 'enregistrerCommande', // Correspond à la fonction du Script 2
+    // 2. Préparer les données pour l'API "Gestion Cours"
+    const purchasePayload = {
+        action: 'acheterCours',
         data: {
-            idClient: clientId,
-            produits: cart.map(item => item.id), // On utilise l'ID du produit
-            quantites: cart.map(item => item.quantity),
-            adresseLivraison: `${deliveryData.address}, ${deliveryData.zip} ${deliveryData.city}`,
-            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + (cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) > 30000 ? 0 : 5000),
-            moyenPaiement: "Carte de crédit", // Exemple
-            notes: "Client: " + clientName
+            userId: user.IDClient,
+            items: cart,
+            total: document.getElementById('checkout-total').textContent
         }
     };
 
-    // 4. Envoyer la commande à l'API Client (Script 2)
+    // 3. Envoyer la demande d'achat à la nouvelle API
     try {
-        const response = await fetch(CONFIG.ORDER_API_URL, { // NOUVEAU: Utilise l'API des commandes
+        const response = await fetch(CONFIG.COURSE_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderPayload)
+            body: JSON.stringify(purchasePayload)
         });
         const result = await response.json();
 
         if (result.success) {
-            alert(`Commande ${result.id} enregistrée avec succès !`);
+            showToast("Achat réussi ! Vous pouvez retrouver vos cours dans votre espace personnel.", false);
             saveCart([]); // Vider le panier après la commande
-            window.location.href = 'index.html'; // Rediriger vers la page d'accueil
+            window.location.href = 'compte.html'; // Rediriger vers la page de compte
         } else {
             // NOUVEAU: Envoyer une notification même si la commande réussit
             fetch(CONFIG.NOTIFICATION_API_URL, {
@@ -1282,14 +1385,14 @@ async function processCheckout(event) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'sendOrderConfirmation',
-                    data: { orderId: result.id, ...orderPayload.data }
+                    data: { purchaseId: result.id, ...purchasePayload.data }
                 }),
                 keepalive: true
             });
             throw new Error(result.error || "Une erreur inconnue est survenue.");
         }
     } catch (error) {
-        alert(`Erreur lors de la commande: ${error.message}`);
+        alert(`Erreur lors de l'achat : ${error.message}`);
         submitButton.disabled = false;
         submitButton.textContent = 'Payer';
     }
@@ -1508,7 +1611,7 @@ function renderProductCard(course) {
     return `
     <div class="product-card bg-white rounded-lg shadow overflow-hidden flex flex-col justify-between group">
         <div>
-            <a href="produit.html?id=${courseId}" class="block">
+            <a href="produit.html?id=${courseId}" class="block" data-instructor="${instructorName}">
                 <div class="relative">
                     <div class="h-40 bg-gray-200 flex items-center justify-center">
                         <img src="${coverImage}" alt="${courseName}" class="h-full w-full object-cover" loading="lazy" width="160" height="160" onerror="this.onerror=null;this.src='${CONFIG.DEFAULT_PRODUCT_IMAGE}';">
@@ -1857,6 +1960,15 @@ async function handleAddCourseSubmit(event) {
         return;
     }
 
+    // NOUVEAU: Uploader l'image de couverture avant de créer le cours
+    const coverImageFile = document.getElementById('course-cover-input').files[0];
+    if (!coverImageFile) {
+        alert("Veuillez sélectionner une image de couverture pour le cours.");
+        submitButton.disabled = false;
+        submitButton.textContent = 'Créer le cours';
+        return;
+    }
+
     // Trouver l'URL du script de la catégorie sélectionnée
     const catalog = await getCatalogAndRefreshInBackground();
     const targetCategory = catalog.data.categories.find(cat => cat.IDCategorie === categoryId);
@@ -1866,18 +1978,25 @@ async function handleAddCourseSubmit(event) {
         return;
     }
 
-    const payload = {
-        action: 'addCourseFromDashboard',
-        data: {
-            nom: document.getElementById('course-name-input').value,
-            resume: document.getElementById('course-summary-input').value,
-            prix: parseFloat(document.getElementById('course-price-input').value),
-            formateurNom: user.Nom,
-            formateurTitre: user.Titre || 'Formateur Expert' // À compléter depuis le profil
-        }
-    };
-
     try {
+        // 1. Uploader l'image
+        showToast("Téléversement de l'image de couverture...");
+        const coverImageUrl = await uploadImageToImgBB(coverImageFile);
+
+        // 2. Préparer les données du cours avec l'URL de l'image
+        const payload = {
+            action: 'addCourseFromDashboard',
+            data: {
+                nom: document.getElementById('course-name-input').value,
+                resume: document.getElementById('course-summary-input').value,
+                prix: parseFloat(document.getElementById('course-price-input').value),
+                formateurNom: user.Nom,
+                formateurTitre: user.Titre || 'Formateur Expert',
+                imageCouverture: coverImageUrl // Utiliser l'URL de l'image téléversée
+            }
+        };
+
+        // 3. Envoyer la requête de création de cours
         const response = await fetch(targetCategory.ScriptURL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2106,7 +2225,6 @@ function initializeAccountPage() {
     document.getElementById('user-initials').textContent = initials;
 
     // Logique de déconnexion
-    const logoutLink = document.getElementById('logout-link');
     const logoutNav = document.getElementById('logout-nav-link');
     
     const logoutAction = (e) => {
@@ -2117,70 +2235,138 @@ function initializeAccountPage() {
         }
     };
 
-    logoutLink.addEventListener('click', logoutAction);
     logoutNav.addEventListener('click', logoutAction);
 
-    // Charger et afficher les commandes récentes
-    loadRecentOrdersForAccount(user.IDClient);
+    // NOUVEAU: Gérer les onglets et charger les cours
+    switchAccountTab('courses'); // Afficher l'onglet "Mes Cours" par défaut
+    loadMyCourses(user.IDClient);
 }
 
 /**
- * NOUVEAU: Charge les commandes récentes pour la page de compte.
+ * NOUVEAU: Gère l'affichage des onglets dans l'espace compte.
+ * @param {string} tabId L'ID de l'onglet à afficher ('courses', 'notifications', 'profile').
  */
-async function loadRecentOrdersForAccount(clientId) {
-    const ordersSection = document.getElementById('recent-orders-section');
-    if (!ordersSection) return;
-    ordersSection.innerHTML = '<div class="loader mx-auto"></div><p class="text-center text-gray-500 mt-2">Chargement de vos commandes...</p>';
+function switchAccountTab(tabId) {
+    // Cacher tous les contenus
+    document.querySelectorAll('.account-content').forEach(el => el.classList.add('hidden'));
+    // Retirer le style actif de tous les onglets
+    document.querySelectorAll('.account-tab').forEach(el => el.classList.remove('active'));
+
+    // Afficher le contenu et activer l'onglet sélectionné
+    document.getElementById(`content-${tabId}`).classList.remove('hidden');
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+}
+
+/**
+ * NOUVEAU: Charge et affiche les cours achetés par l'utilisateur.
+ * @param {string} userId L'ID de l'utilisateur.
+ */
+async function loadMyCourses(userId) {
+    const container = document.getElementById('my-courses-list');
+    if (!container) return;
+    container.innerHTML = '<div class="loader mx-auto"></div><p class="text-center text-gray-500 mt-2">Chargement de vos cours...</p>';
+
+    try {
+        // 1. Récupérer les IDs des cours achetés
+        const purchasedResponse = await fetch(`${CONFIG.COURSE_API_URL}?action=getCoursAchetes&userId=${userId}`);
+        const purchasedResult = await purchasedResponse.json();
+        if (!purchasedResult.success) throw new Error(purchasedResult.error);
+        const purchasedCourseIds = purchasedResult.data;
+
+        if (purchasedCourseIds.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center">Vous n\'avez encore acheté aucun cours.</p>';
+            return;
+        }
+
+        // 2. Récupérer le catalogue complet pour avoir les détails des cours
+        const catalog = await getCatalogAndRefreshInBackground();
+        const myCourses = catalog.data.products.filter(course => purchasedCourseIds.includes(course.ID_Cours));
+
+        // 3. Afficher les cartes des cours
+        container.innerHTML = myCourses.map(course => {
+            const progress = Math.floor(Math.random() * 100); // Progression simulée
+            return `
+                <div class="border rounded-lg p-4 flex flex-col md:flex-row items-center gap-4">
+                    <img src="${course.Image_Couverture || CONFIG.DEFAULT_PRODUCT_IMAGE}" alt="${course.Nom_Cours}" class="w-32 h-20 object-cover rounded-md flex-shrink-0">
+                    <div class="flex-grow">
+                        <h4 class="font-bold">${course.Nom_Cours}</h4>
+                        <p class="text-sm text-gray-500">Par ${course.Formateur_Nom}</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${progress}%"></div>
+                        </div>
+                        <p class="text-xs text-right mt-1">${progress}% complété</p>
+                    </div>
+                    <a href="produit.html?id=${course.ID_Cours}" class="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 transition w-full md:w-auto text-center">
+                        Continuer
+                    </a>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error("Erreur lors du chargement des cours de l'utilisateur:", error);
+        container.innerHTML = '<p class="text-red-500 text-center">Une erreur est survenue lors du chargement de vos cours.</p>';
+    }
+}
+
+/**
+ * NOUVEAU: Charge et affiche le journal d'activité de l'utilisateur.
+ * @param {string} userId L'ID de l'utilisateur.
+ */
+async function loadUserActivityLog(userId) {
+    const activitySection = document.getElementById('activity-log-section');
+    if (!activitySection) return;
+    activitySection.innerHTML = '<div class="loader mx-auto"></div><p class="text-center text-gray-500 mt-2">Chargement de votre historique...</p>';
 
     try {
         const response = await fetch(CONFIG.ACCOUNT_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: 'getOrdersByClientId',
-                data: { clientId: clientId }
+                action: 'getLogsByUserId',
+                data: { userId: userId }
             })
         });
         const result = await response.json();
 
         if (!result.success) {
-            throw new Error(result.error || "Impossible de récupérer les commandes.");
+            throw new Error(result.error || "Impossible de récupérer le journal d'activité.");
         }
 
-        if (result.data.length === 0) {
-            ordersSection.innerHTML = '<h4 class="text-lg font-semibold mb-4">Mes commandes récentes</h4><p class="text-gray-500">Vous n\'avez passé aucune commande pour le moment.</p>';
+        if (result.logs.length === 0) {
+            activitySection.innerHTML = '<h4 class="text-lg font-semibold mb-4">Mon Activité</h4><p class="text-gray-500">Aucune activité récente à afficher.</p>';
             return;
         }
 
-        const ordersHTML = `
-            <h4 class="text-lg font-semibold mb-4">Mes commandes récentes</h4>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-left">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="p-3 font-semibold">Commande</th>
-                            <th class="p-3 font-semibold">Date</th>
-                            <th class="p-3 font-semibold">Statut</th>
-                            <th class="p-3 font-semibold text-right">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${result.data.map(order => `
-                            <tr class="border-b">
-                                <td class="p-3 font-medium text-blue-600">#${order.IDCommande.split('-')[1]}</td>
-                                <td class="p-3">${new Date(order.Date).toLocaleDateString('fr-FR')}</td>
-                                <td class="p-3"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-200 text-yellow-800">${order.Statut}</span></td>
-                                <td class="p-3 text-right font-semibold">${Number(order.Total).toLocaleString('fr-FR')} F CFA</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+        const logsHTML = `
+            <h4 class="text-lg font-semibold mb-4">Mon Activité</h4>
+            <div class="space-y-3">
+                ${result.logs.map(log => {
+                    // log est un tableau: [Date, Source, Action, Détails]
+                    const timestamp = new Date(log[0]).toLocaleString('fr-FR');
+                    const action = log[2];
+                    let description = '';
+
+                    // Simplifier l'affichage pour l'utilisateur
+                    if (action === 'connecterClient') description = 'Connexion à votre compte.';
+                    if (action === 'creerCompteClient') description = 'Création de votre compte.';
+                    
+                    return `
+                        <div class="flex items-start p-3 bg-gray-50 rounded-md">
+                            <div class="text-gray-400 mr-3 pt-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+                            <div>
+                                <p class="font-semibold text-sm">${description || action}</p>
+                                <p class="text-xs text-gray-500">${timestamp}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
             </div>
         `;
-        ordersSection.innerHTML = ordersHTML;
+        activitySection.innerHTML = logsHTML;
 
     } catch (error) {
-        console.error("Erreur lors du chargement des commandes:", error);
-        ordersSection.innerHTML = '<h4 class="text-lg font-semibold mb-4">Mes commandes récentes</h4><p class="text-red-500">Une erreur est survenue lors du chargement de vos commandes.</p>';
+        console.error("Erreur lors du chargement du journal d'activité:", error);
+        activitySection.innerHTML = '<h4 class="text-lg font-semibold mb-4">Mon Activité</h4><p class="text-red-500">Une erreur est survenue lors du chargement de votre activité.</p>';
     }
 }

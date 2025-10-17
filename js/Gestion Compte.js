@@ -12,7 +12,6 @@
 // Noms des feuilles de calcul utilisées
 const SHEET_NAMES = {
     USERS: "Utilisateurs",
-    ORDERS: "Commandes",
     LOGS: "Logs",
     CONFIG: "Config"
 };
@@ -66,8 +65,8 @@ function doPost(e) {
                 return creerCompteClient(data);
             case 'connecterClient':
                 return connecterClient(data);
-            case 'getOrdersByClientId':
-                return getOrdersByClientId(data);
+            case 'updateProfile': // NOUVEAU
+                return updateProfile(data);
             case 'logClientEvent':
                 return logClientEvent(data);
             default:
@@ -107,10 +106,12 @@ function creerCompteClient(data) {
     const { nom, email, motDePasse, role = 'Client' } = data; // Déstructuration et valeur par défaut
     try {
         const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.USERS);
-        // Vérification de l'existence de l'email
-        const emailIndex = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].indexOf("Email");
-        const usersData = sheet.getRange(2, emailIndex + 1, sheet.getLastRow() - 1, 1).getValues().flat();
-        const emailExists = usersData.some(existingEmail => existingEmail === email);
+        // AMÉLIORATION: Recherche d'email plus robuste
+        const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        const emailIndex = headers.indexOf("Email");
+        if (emailIndex === -1) throw new Error("La colonne 'Email' est introuvable.");
+        const emailColumnValues = sheet.getRange(2, emailIndex + 1, sheet.getLastRow()).getValues().flat();
+        const emailExists = emailColumnValues.some(existingEmail => existingEmail.toLowerCase() === email.toLowerCase());
 
         if (emailExists) {
             return createJsonResponse({ success: false, error: 'Un compte avec cet email existe déjà.' });
@@ -120,8 +121,8 @@ function creerCompteClient(data) {
         const { passwordHash, salt } = hashPassword(motDePasse);
 
         sheet.appendRow([
-            idClient, nom, email, passwordHash, salt, data.telephone || '',
-            data.adresse || '', new Date(), "Actif", role // Utilisation du rôle fourni
+            idClient, nom, email, passwordHash, salt, data.telephone || '', data.adresse || '',
+            new Date(), "Actif", role, "" // Laisser ImageURL vide au début
         ]);
 
         logAction('creerCompteClient', { email: email, id: idClient, role: role });
@@ -181,29 +182,42 @@ function connecterClient(data) {
 }
 
 /**
- * Récupère les commandes d'un client spécifique.
- * @param {object} data - Contient { clientId }.
- * @returns {GoogleAppsScript.Content.TextOutput} Réponse JSON avec la liste des commandes.
+ * NOUVEAU: Met à jour le profil d'un utilisateur.
  */
-function getOrdersByClientId(data) {
+function updateProfile(data) {
     try {
-        const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.ORDERS);
-        const allOrders = sheet.getDataRange().getValues();
-        const headers = allOrders.shift();
-        const idClientIndex = headers.indexOf("ID Client"); // Attention aux espaces dans les en-têtes
+        if (!data || !data.userId) {
+            throw new Error("ID utilisateur manquant pour la mise à jour.");
+        }
+        const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.USERS);
+        const allUsers = sheet.getDataRange().getValues();
+        const headers = allUsers.shift();
 
-        const clientOrdersData = allOrders.filter(row => row[idClientIndex] === data.clientId);
+        const idIndex = headers.indexOf("IDClient");
+        const rowIndex = allUsers.findIndex(row => row[idIndex] === data.userId);
 
-        const clientOrders = clientOrdersData.map(row => {
-            return headers.reduce((obj, header, index) => {
-                obj[header.replace(/\s/g, '')] = row[index]; // Normalise les clés (ex: "ID Client" -> IDClient)
-                return obj;
-            }, {});
-        }).reverse(); // Afficher les plus récentes en premier
+        if (rowIndex === -1) {
+            throw new Error("Utilisateur non trouvé.");
+        }
 
-        return createJsonResponse({ success: true, data: clientOrders });
+        // Mettre à jour les colonnes spécifiques
+        const rowToUpdate = rowIndex + 2; // +1 pour l'index 0, +1 pour la ligne d'en-tête
+        if (data.bio) {
+            const bioIndex = headers.indexOf("Bio"); // Assurez-vous que cette colonne existe
+            if (bioIndex !== -1) sheet.getRange(rowToUpdate, bioIndex + 1).setValue(data.bio);
+        }
+        if (data.titre) {
+            const titreIndex = headers.indexOf("Titre"); // Assurez-vous que cette colonne existe
+            if (titreIndex !== -1) sheet.getRange(rowToUpdate, titreIndex + 1).setValue(data.titre);
+        }
+        if (data.imageUrl) {
+            const imageUrlIndex = headers.indexOf("ImageURL");
+            if (imageUrlIndex !== -1) sheet.getRange(rowToUpdate, imageUrlIndex + 1).setValue(data.imageUrl);
+        }
+
+        return createJsonResponse({ success: true, message: "Profil mis à jour." });
     } catch (error) {
-        logError(JSON.stringify({ action: 'getOrdersByClientId', data }), error);
+        logError(JSON.stringify({ action: 'updateProfile', data }), error);
         return createJsonResponse({ success: false, error: error.message });
     }
 }
@@ -371,8 +385,7 @@ function setupProject() {
   const ui = SpreadsheetApp.getUi();
 
   const sheetsToCreate = {
-    [SHEET_NAMES.USERS]: ["IDClient", "Nom", "Email", "PasswordHash", "Salt", "Telephone", "Adresse", "Date d'inscription", "Statut", "Role"],
-    [SHEET_NAMES.ORDERS]: ["ID Commande", "ID Client", "Produits", "Quantités", "Montant Total", "Statut", "Date", "Adresse Livraison", "Moyen Paiement", "Notes"],
+    [SHEET_NAMES.USERS]: ["IDClient", "Nom", "Email", "PasswordHash", "Salt", "Telephone", "Adresse", "Date d'inscription", "Statut", "Role", "ImageURL", "Titre", "Bio"],
     [SHEET_NAMES.LOGS]: ["Timestamp", "Source", "Action", "Détails"],
     [SHEET_NAMES.CONFIG]: ["Clé", "Valeur"]
   };
@@ -405,7 +418,7 @@ function setupProject() {
     }
   });
 
-  ui.alert("Projet 'Gestion Compte' initialisé avec succès ! Les onglets 'Utilisateurs', 'Commandes', 'Logs' et 'Config' sont prêts.");
+  ui.alert("Projet 'Gestion Compte' initialisé avec succès ! Les onglets 'Utilisateurs', 'Logs' et 'Config' sont prêts.");
 }
 
 /**

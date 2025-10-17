@@ -15,6 +15,11 @@
         .bg-gold { background-color: var(--gold-color); }
         .border-gold { border-color: var(--gold-color); }
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        /* NOUVEAU: Style pour l'onglet actif du tableau de bord */
+        .dashboard-tab.active {
+            background-color: #FEF3C7; /* yellow-100 */
+            color: #92400E; /* yellow-800 */
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-montserrat">
@@ -38,20 +43,20 @@
             <!-- Menu de navigation -->
             <aside class="md:col-span-1">
                 <nav class="bg-white p-4 rounded-lg shadow space-y-2">
-                    <a href="#" class="flex items-center space-x-3 p-3 bg-yellow-100 text-yellow-800 rounded-lg font-semibold"><span>Statistiques</span></a>
-                    <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"><span>Gestion des Cours</span></a>
-                    <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"><span>Questions & Réponses</span></a>
-                    <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"><span>Revenus & Paiements</span></a>
-                    <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"><span>Profil & Expériences</span></a>
+                    <a href="#" onclick="switchDashboardTab('stats')" id="tab-stats" class="dashboard-tab flex items-center space-x-3 p-3 rounded-lg font-semibold"><span>Statistiques</span></a>
+                    <a href="#" onclick="switchDashboardTab('courses')" id="tab-courses" class="dashboard-tab flex items-center space-x-3 p-3 rounded-lg font-semibold"><span>Gestion des Cours</span></a>
+                    <a href="#" onclick="switchDashboardTab('qa')" id="tab-qa" class="dashboard-tab flex items-center space-x-3 p-3 rounded-lg font-semibold"><span>Questions & Réponses</span></a>
+                    <a href="#" onclick="switchDashboardTab('revenue')" id="tab-revenue" class="dashboard-tab flex items-center space-x-3 p-3 rounded-lg font-semibold"><span>Revenus</span></a>
+                    <a href="#" onclick="switchDashboardTab('profile')" id="tab-profile" class="dashboard-tab flex items-center space-x-3 p-3 rounded-lg font-semibold"><span>Mon Profil</span></a>
                 </nav>
             </aside>
 
             <!-- Contenu principal -->
             <div class="md:col-span-2">
-                <div class="bg-white p-8 rounded-lg shadow">
+                <!-- Section Statistiques (F-FOR-02) -->
+                <div id="content-stats" class="dashboard-content bg-white p-8 rounded-lg shadow">
                     <h3 class="text-xl font-bold mb-6">Vos Statistiques</h3>
-                    
-                    <!-- Section des statistiques -->
+
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                         <div class="bg-blue-50 p-4 rounded-lg">
                             <p class="text-3xl font-bold text-blue-800">5</p>
@@ -67,17 +72,59 @@
                         </div>
                     </div>
 
-                    <!-- Section des questions en attente -->
+                    <!-- Cours les plus populaires -->
                     <div class="mt-8 border-t pt-6">
-                        <h4 class="text-lg font-semibold mb-4">Questions en attente</h4>
-                        <div class="space-y-3">
-                            <div class="p-3 bg-gray-50 rounded-md">
-                                <p class="text-sm">"Comment gérer le versioning d'API dans un contexte microservice ?" - par <strong>Alioune S.</strong></p>
-                                <a href="#" class="text-sm text-blue-600 font-semibold">Répondre</a>
-                            </div>
-                            <p class="text-gray-500 text-sm">Vous avez répondu à toutes les questions. Excellent travail !</p>
-                        </div>
+                        <h4 class="text-lg font-semibold mb-4">Vos cours les plus populaires</h4>
+                        <p class="text-gray-500 text-sm">Cette section affichera vos cours les plus vendus.</p>
                     </div>
+                </div>
+
+                <!-- Section Gestion des Cours -->
+                <div id="content-courses" class="dashboard-content bg-white p-8 rounded-lg shadow hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold">Gestion des Cours</h3>
+                        <button id="add-course-btn" class="bg-black text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-800 transition">
+                            + Créer un cours
+                        </button>
+                    </div>
+                    <div id="courses-list">
+                        <!-- La liste des cours du Senior sera injectée ici -->
+                        <p class="text-gray-500">Vous n'avez pas encore créé de cours.</p>
+                    </div>
+                </div>
+
+                <!-- Section Questions & Réponses (F-FOR-05) -->
+                <div id="content-qa" class="dashboard-content bg-white p-8 rounded-lg shadow hidden">
+                    <h3 class="text-xl font-bold mb-6">Questions des Apprenants</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-gray-50 rounded-md">
+                            <p class="text-sm">"Comment gérer le versioning d'API dans un contexte microservice ?" - par <strong>Alioune S.</strong></p>
+                            <a href="#" class="text-sm text-blue-600 font-semibold">Répondre</a>
+                        </div>
+                        <p class="text-gray-500 text-sm">Vous avez répondu à toutes les questions. Excellent travail !</p>
+                    </div>
+                </div>
+
+                <!-- Section Revenus (F-FOR-04) -->
+                <div id="content-revenue" class="dashboard-content bg-white p-8 rounded-lg shadow hidden">
+                    <h3 class="text-xl font-bold mb-6">Suivi des Revenus</h3>
+                    <p>Cette section affichera le détail de vos ventes, vos revenus et l'historique de vos paiements.</p>
+                </div>
+
+                <!-- Section Profil (F-FOR-07) -->
+                <div id="content-profile" class="dashboard-content bg-white p-8 rounded-lg shadow hidden">
+                    <h3 class="text-xl font-bold mb-6">Modifier mon Profil Public</h3>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Titre (ex: CTO, Développeur Senior)</label>
+                            <input type="text" class="mt-1 block w-full p-2 border rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Biographie</label>
+                            <textarea rows="4" class="mt-1 block w-full p-2 border rounded-md"></textarea>
+                        </div>
+                        <button type="submit" class="px-4 py-2 bg-black text-white rounded-lg font-bold">Enregistrer les modifications</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -96,7 +143,22 @@
                 localStorage.removeItem('abmcyUser');
                 window.location.href = 'index.html';
             });
+
+            // Logique des onglets du tableau de bord
+            switchDashboardTab('stats'); // Afficher le premier onglet par défaut
         });
+
+        function switchDashboardTab(tabId) {
+            // Cacher tous les contenus
+            document.querySelectorAll('.dashboard-content').forEach(el => el.classList.add('hidden'));
+            // Retirer le style actif de tous les onglets
+            document.querySelectorAll('.dashboard-tab').forEach(el => {
+                el.classList.remove('active');
+            });
+            // Afficher le contenu et activer l'onglet sélectionné
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
     </script>
 </body>
 </html>
