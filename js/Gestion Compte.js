@@ -3,7 +3,7 @@
  * @description Gère l'authentification des clients,
  * la journalisation des événements et la récupération des données spécifiques au client.
  *
- * @version 3.1.0 (Correction CORS pour Apps Script)
+ * @version 3.1.1 (Correction TypeError addHeader/setHeader)
  * @author Gemini Code Assist
  */
 
@@ -26,18 +26,19 @@ const SHEET_NAMES = {
  * @returns {GoogleAppsScript.Content.TextOutput} La réponse JSON.
  */
 function doGet(e) {
-    const origin = e && e.headers ? e.headers.Origin || e.headers.origin : null;
+    // L'origine n'est pas nécessaire ici car nous utilisons createJsonResponse.
     const action = e && e.parameter ? e.parameter.action : null;
 
     if (action === 'getAppLogs') {
-        return addCorsHeaders(getAppLogs(e.parameter));
+        // Retourne la réponse JSON directement
+        return getAppLogs(e.parameter);
     }
 
     // Réponse par défaut pour un simple test de l'API
-    return addCorsHeaders(createJsonResponse({
+    return createJsonResponse({
       success: true,
       message: 'API Gestion Compte - Active'
-    }));
+    });
 }
 
 /**
@@ -48,7 +49,7 @@ function doGet(e) {
  */
 function doPost(e) {
     try {
-        if (!e || !e.postData ||  !e.postData.contents) {
+        if (!e || !e.postData ||  !e.postData.contents) {
             throw new Error("Requête POST invalide ou vide.");
         }
 
@@ -56,38 +57,38 @@ function doPost(e) {
         const { action, data } = request;
 
         if (!action) {
-            return addCorsHeaders(createJsonResponse({ success: false, error: 'Action non spécifiée.' }));
+            return createJsonResponse({ success: false, error: 'Action non spécifiée.' });
         }
 
         // Routeur pour les actions POST
         switch (action) {
             case 'creerCompteClient':
-                return addCorsHeaders(creerCompteClient(data));
+                return creerCompteClient(data);
             case 'connecterClient':
-                return addCorsHeaders(connecterClient(data));
+                return connecterClient(data);
             case 'getOrdersByClientId':
-                return addCorsHeaders(getOrdersByClientId(data));
+                return getOrdersByClientId(data);
             case 'logClientEvent':
-                return addCorsHeaders(logClientEvent(data));
+                return logClientEvent(data);
             default:
                 logAction('doPost', { error: 'Action non reconnue', action: action });
-                return addCorsHeaders(createJsonResponse({ success: false, error: `Action non reconnue: ${action}` }));
+                return createJsonResponse({ success: false, error: `Action non reconnue: ${action}` });
         }
 
     } catch (error) {
         logError(e.postData ? e.postData.contents : 'No postData', error);
-        return addCorsHeaders(createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }));
+        return createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` });
     }
 }
 
 /**
  * Gère les requêtes HTTP OPTIONS pour la pré-vérification CORS.
- * CORRECTION: Simplification pour Apps Script, car TextOutput n'a pas setHeader.
+ * NOTE: C'est le seul endroit où setHeader/addHeader fonctionne correctement pour CORS.
  * @param {object} e - L'objet événement de la requête.
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
-    // Autorise toutes les origines pour les requêtes de pré-vol.
+    // Autorise le domaine Vercel pour le pre-flight CORS.
     return ContentService.createTextOutput(null)
         .addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app')
         .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -106,9 +107,10 @@ function creerCompteClient(data) {
     const { nom, email, motDePasse, role = 'Client' } = data; // Déstructuration et valeur par défaut
     try {
         const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.USERS);
-        const usersData = sheet.getRange(2, 1, sheet.getLastRow(), 3).getValues();
-        // L'index 2 correspond à la colonne Email (C)
-        const emailExists = usersData.some(row => row[2] === email);
+        // Vérification de l'existence de l'email
+        const emailIndex = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].indexOf("Email");
+        const usersData = sheet.getRange(2, emailIndex + 1, sheet.getLastRow() - 1, 1).getValues().flat();
+        const emailExists = usersData.some(existingEmail => existingEmail === email);
 
         if (emailExists) {
             return createJsonResponse({ success: false, error: 'Un compte avec cet email existe déjà.' });
@@ -169,6 +171,7 @@ function connecterClient(data) {
             return obj;
         }, {});
 
+        logAction('connecterClient', { email: data.email, success: true, id: userObject.IDClient });
         return createJsonResponse({ success: true, user: userObject });
 
     } catch (error) {
@@ -187,13 +190,13 @@ function getOrdersByClientId(data) {
         const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.ORDERS);
         const allOrders = sheet.getDataRange().getValues();
         const headers = allOrders.shift();
-        const idClientIndex = headers.indexOf("IDClient");
+        const idClientIndex = headers.indexOf("ID Client"); // Attention aux espaces dans les en-têtes
 
         const clientOrdersData = allOrders.filter(row => row[idClientIndex] === data.clientId);
 
         const clientOrders = clientOrdersData.map(row => {
             return headers.reduce((obj, header, index) => {
-                obj[header] = row[index];
+                obj[header.replace(/\s/g, '')] = row[index]; // Normalise les clés (ex: "ID Client" -> IDClient)
                 return obj;
             }, {});
         }).reverse(); // Afficher les plus récentes en premier
@@ -253,6 +256,7 @@ function getAppLogs(params) {
  * @returns {GoogleAppsScript.Content.TextOutput} Un objet TextOutput.
  */
 function createJsonResponse(data) {
+  // CRUCIAL: Suppression de setHeader/addHeader. On retourne l'objet TextOutput nu.
   return ContentService.createTextOutput(JSON.stringify(data))
       .setMimeType(ContentService.MimeType.JSON);
 }
@@ -265,7 +269,6 @@ function createJsonResponse(data) {
  */
 function hashPassword(password, salt) {
     const saltValue = salt || Utilities.getUuid();
-    // CORRECTION: Utiliser computeDigest pour un hachage standard, pas HMAC.
     // On combine le mot de passe et le sel avant de hacher.
     const toHash = password + saltValue;
     const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, toHash);
@@ -406,17 +409,14 @@ function setupProject() {
 }
 
 /**
- * NOUVEAU: Ajoute l'en-tête CORS à une réponse.
- * @param {GoogleAppsScript.Content.TextOutput} output - L'objet réponse.
- * @returns {GoogleAppsScript.Content.TextOutput} La réponse avec l'en-tête.
+ * DÉPRÉCIÉ ET SUPPRIMÉ: La fonction addCorsHeaders n'est pas nécessaire et causait le TypeError.
+ * La suppression du corps de la fonction est la correction.
  */
-function addCorsHeaders(output) {
-    // CORRECTION: Utiliser la bonne origine et la bonne méthode.
-    output.addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app');
-    output.addHeader('Access-Control-Allow-Credentials', 'true');
-    return output;
-}
-
+// function addCorsHeaders(output) {
+//     output.addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app');
+//     output.addHeader('Access-Control-Allow-Credentials', 'true');
+//     return output;
+// }
 
 
 /**
