@@ -14,7 +14,7 @@ const CONFIG = {
     CENTRAL_API_URL: "https://script.google.com/macros/s/AKfycbwYJ20BjaSTD1MjOAJbGXbmPKZGdbrVgp4j6w0eg8dVEMmPfpxkoTyvT69rlbe7Fx8R/exec",
     
     // Autres configurations
-    DEFAULT_PRODUCT_IMAGE: "https://i.postimg.cc/6QZBH1JJ/Sleek-Wordmark-Logo-for-ABMCY-MARKET.png",
+    DEFAULT_PRODUCT_IMAGE: "https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png",
 };
 
 // Variables globales pour le chargement progressif de la page d'accueil
@@ -216,7 +216,7 @@ function saveCart(cart) {
  * @param {string} imageUrl - L'URL de l'image du produit.
  */
 function addToCart(event, productId, name, price, imageUrl) {
-    if (event) {
+    if (event) { // Empêche la navigation si on clique sur un bouton dans un lien <a>
         event.preventDefault();
         event.stopPropagation();
     }
@@ -264,7 +264,7 @@ function addToCart(event, productId, name, price, imageUrl) {
     }
     
     saveCart(cart);
-    showToast(`${name} a été ajouté au panier !`); // NOUVEAU: Notification non-bloquante
+    showToast(`${name} a été ajouté au panier !`);
 }
 
 /**
@@ -691,7 +691,7 @@ function loadCoursePage(catalog) {
     const courseId = params.get('id');
 
     if (!courseId) {
-        document.querySelector('main').innerHTML = '<p class="text-center text-red-500">Erreur: ID de produit manquant.</p>';
+        document.querySelector('main').innerHTML = '<p class="text-center text-red-500">Erreur: ID de cours manquant.</p>';
         return;
     }
 
@@ -705,7 +705,7 @@ function loadCoursePage(catalog) {
         }
 
         // --- Remplissage des métadonnées de la page ---
-        document.title = `${course.Nom_Cours} - J-S Gap Killer`;
+        document.title = `${course.Nom_Cours} - Junior Senior Gaps Killer`;
         document.querySelector('meta[property="og:title"]').setAttribute('content', course.Nom_Cours);
         document.querySelector('meta[property="og:description"]').setAttribute('content', course.Résumé);
         document.querySelector('meta[property="og:image"]').setAttribute('content', course.Image_Couverture || CONFIG.DEFAULT_PRODUCT_IMAGE);
@@ -720,7 +720,7 @@ function loadCoursePage(catalog) {
         tagsContainer.innerHTML = `
             <span class="flex items-center"><svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${course.Durée_Totale}</span>
             <span class="flex items-center"><svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg> ${course.Niveau}</span>
-            <span class="flex items-center"><svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg> ${course.Catégorie || 'Non classé'}</span>
+            <span class="flex items-center"><svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg> ${course.Catégorie || 'Général'}</span>
             <span class="flex items-center"><svg class="w-4 h-4 mr-1.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg> ${course.Note_Moyenne} (${course.Avis})</span>
         `;
 
@@ -1127,7 +1127,7 @@ function renderDailyDealsHomepage(catalog) {
         if (categories.length > 0) {
             boutiquesContainer.innerHTML = categories.slice(0, 6).map(cat => `
             <a href="categorie.html?id=${cat.IDCategorie}&name=${encodeURIComponent(cat.NomCategorie)}" class="product-card bg-white rounded-lg shadow-md overflow-hidden block text-center">
-                <div class="h-32 bg-gray-100 flex items-center justify-center p-2">
+                <div class="h-32 bg-gray-100 flex items-center justify-center p-2 group-hover:bg-gold/10">
                     <img src="${cat.ImageURL || CONFIG.DEFAULT_PRODUCT_IMAGE}" alt="${cat.NomCategorie}" class="max-h-full max-w-full object-contain">
                 </div>
                 <div class="p-2">
@@ -1136,7 +1136,7 @@ function renderDailyDealsHomepage(catalog) {
             </a>
         `).join('');
         } else {
-            boutiquesContainer.innerHTML = '<p class="col-span-full text-center text-gray-500">Aucune boutique à afficher.</p>';
+            boutiquesContainer.innerHTML = '<p class="col-span-full text-center text-gray-500">Aucun cours à afficher.</p>';
         }
 
         // --- Étape 5: Remplir la section "SuperDeals" avec les produits ---
@@ -1309,7 +1309,7 @@ async function getCatalogAndRefreshInBackground() {
  * @param {object} product - L'objet produit.
  * @returns {string} Le HTML de la carte.
  */
-function renderProductCard(course) { // MODIFIÉ: La fonction prend maintenant un objet "course"
+function renderProductCard(course) {
     const price = course.Prix || 0;
     const courseId = course.ID_Cours || course.IDProduit; // Compatibilité
     const courseName = course.Nom_Cours || course.Nom; // Compatibilité
@@ -1360,10 +1360,10 @@ async function shareProduct(event, productId) {
     event.preventDefault();
     event.stopPropagation();
     const productUrl = `${window.location.origin}/produit.html?id=${productId}`;
-    const product = (await getCatalogAndRefreshInBackground()).data.products.find(p => p.IDProduit === productId);
+    const course = (await getCatalogAndRefreshInBackground()).data.products.find(p => (p.ID_Cours || p.IDProduit) === productId);
     const shareData = {
-        title: product ? `Découvrez ${product.Nom} sur ABMCY MARKET` : "Une offre à ne pas manquer sur ABMCY MARKET",
-        text: product ? `Wow, regarde cette offre incroyable pour "${product.Nom}" sur ABMCY MARKET ! Je pense que ça va te plaire.` : "J'ai trouvé une super boutique en ligne, ABMCY MARKET, jette un oeil !",
+        title: course ? `Découvrez le cours "${course.Nom_Cours || course.Nom}"` : "Un cours à ne pas manquer sur Junior Senior Gaps Killer",
+        text: course ? `Wow, regarde ce cours sur "${course.Nom_Cours || course.Nom}" ! Je pense que ça va t'intéresser.` : "J'ai trouvé une super plateforme de cours, jette un oeil !",
         url: productUrl,
     };
 
@@ -1387,8 +1387,8 @@ async function shareProduct(event, productId) {
  */
 async function shareSite() {
     const shareData = {
-        title: "ABMCY MARKET",
-        text: "J'ai trouvé une super boutique en ligne, ABMCY MARKET, jette un oeil !",
+        title: "Junior Senior Gaps Killer",
+        text: "J'ai trouvé une super plateforme pour monter en compétence, jette un oeil !",
         url: window.location.origin,
     };
     try {
@@ -1405,7 +1405,7 @@ async function shareSite() {
  */
 function copySiteLink() {
     navigator.clipboard.writeText(window.location.origin).then(() => {
-        showToast('Lien de la boutique copié !');
+        showToast('Lien du site copié !');
     }).catch(err => {
         showToast('Impossible de copier le lien.', true);
     });

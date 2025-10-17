@@ -4,18 +4,12 @@
  * @description Gère la liste des catégories de cours et agrège les données de chaque catégorie pour le front-end.
  * A déployer en tant qu'application web avec accès "Tous les utilisateurs".
  * @version 2.0.0
- * @author abmcy tech 
+ * @author Gemini Code Assist
  */
 
 // --- CONFIGURATION ---
-const CENTRAL_SHEET_ID = "1kTQsUgcvcWxJNgHuITi4nlMhAqwyVAMhQbzIMIODcBg"; // IMPORTANT: ID de la feuille centrale
+const CENTRAL_SHEET_ID = "1xcW_lPim1AvD-RWDD0FtpAMYSrWq-FSv9XGa1ys2Xv4"; // IMPORTANT: ID de la feuille centrale
 const DEFAULT_IMAGE_URL = "https://i.postimg.cc/pX3dYj8B/course-microservices.jpg";
-
-// Liste des origines autorisées pour CORS.
-const ALLOWED_ORIGINS_FRONTEND = [
-  "https://junior-senior-gaps-killer.vercel.app/", // URL de production
-  "http://127.0.0.1:5500"          // URL de développement local
-];
 
 // --- GESTIONNAIRE DE MENU ---
 function onOpen() {
@@ -86,7 +80,7 @@ function doGet(e) {
     }
 
     // Comportement par défaut (peut être utilisé pour des tests ou l'ancienne logique)
-    return createJsonResponse({ success: true, message: "API Centrale ABMCY Market - Active" }, origin);
+    return createJsonResponse({ success: true, message: "API Centrale Junior-Senior Gaps Killer - Active" }, origin);
 
   } catch (error) {
     return createJsonResponse({ success: false, error: error.message }, origin);

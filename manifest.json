@@ -1,14 +1,14 @@
 {
-    "name": "ABMCY MARKET",
-    "short_name": "ABMCY",
+    "name": "Junior Senior Gaps Killer",
+    "short_name": "JSGK",
     "start_url": "index.html",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#1a1a1a",
-    "description": "Votre marché en ligne pour le Sénégal et le Bénin.",
+    "theme_color": "#1E3A8A",
+    "description": "Accélérateur de compétences. Révélateur de shortcuts.",
     "icons": [
         {
-            "src": "https://i.postimg.cc/6QZBH1JJ/Sleek-Wordmark-Logo-for-ABMCY-MARKET.png",
+            "src": "https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png",
             "sizes": "192x192",
             "type": "image/png"
         }

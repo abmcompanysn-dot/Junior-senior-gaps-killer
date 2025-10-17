@@ -8,9 +8,9 @@
     <!-- NOUVEAU: Préchargement de l'image principale pour un affichage plus rapide -->
     <link rel="preload" as="image" href="https://images.pexels.com/photos/3769747/pexels-photo-3769747.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
     <!-- NOUVEAU: Favicon pour le site -->
-    <link rel="icon" href="https://i.postimg.cc/6QZBH1JJ/Sleek-Wordmark-Logo-for-ABMCY-MARKET.png" type="image/png">
-    
-    <title>ABMCY MARKET - Votre Marché en Ligne</title>
+    <link rel="icon" href="https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png" type="image/png">
+
+    <title>Junior Senior Gaps Killer - Accélérateur de compétences</title>
     <!-- CORRECTION: Charger TailwindCSS comme une feuille de style pour ne pas bloquer le rendu -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
@@ -20,10 +20,10 @@
         .dropdown:hover .dropdown-menu { display: block; }
         .dropdown-menu { display: none; }
         .product-card:hover { transform: translateY(-4px); transition: transform 0.3s ease; }
-        .discount-badge { animation: pulse 2s infinite; }        
+        .discount-badge { animation: pulse 2s infinite; }
         :root {
-            --gold-color: #D4AF37; /* Or */
-            --dark-color: #1a1a1a; /* Noir doux */
+            --gold-color: #F97316; /* Orange (énergie) */
+            --dark-color: #1E3A8A; /* Bleu foncé (sérieux) */
         }
         .text-gold { color: var(--gold-color); }
         .bg-gold { background-color: var(--gold-color); }
@@ -31,7 +31,7 @@
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
 
         /* Espace pour la barre de navigation inférieure */
-        body { 
+        body {
             padding-bottom: 100px; /* Espace pour la nav mobile + marge */ 
             overflow-x: hidden; /* GARANTIT qu'aucun élément ne peut déborder horizontalement */
         } 
@@ -101,7 +101,7 @@
                 <div class="flex items-center justify-between">
                     <!-- Logo -->
                     <a href="index.html" class="flex items-center">
-                        <img src="https://i.postimg.cc/6QZBH1JJ/Sleek-Wordmark-Logo-for-ABMCY-MARKET.png" alt="ABMCY MARKET Logo" class="h-10">
+                        <img src="https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png" alt="Junior Senior Gaps Killer Logo" class="h-10">
                     </a>
 
                     <!-- NOUVEAU: Bouton d'aide (WhatsApp) -->
@@ -132,7 +132,7 @@
         </header>
 
         <!-- Navigation principale -->
-        <nav class="border-b border-t bg-gradient-to-r from-sky-500 to-sky-300">
+        <nav class="border-b border-t bg-dark-color">
             <div class="container mx-auto px-4">
                 <div class="flex items-center text-sm font-semibold">
                     <div class="relative dropdown">
@@ -152,16 +152,16 @@
     </div>
 
     <!-- Bannière Principale Améliorée -->
-    <section class="relative bg-gradient-to-r from-sky-500 to-sky-300 text-white h-64 md:h-80 flex items-center justify-center text-center overflow-hidden">
+    <section class="relative bg-dark-color text-white h-64 md:h-80 flex items-center justify-center text-center overflow-hidden">
         <img src="https://i.postimg.cc/fyGF7FcF/Sc-ne-Un-senior-souriant-partage-ses-exp-riences-avec-un-junior-dans-un-cadre-lumineux-et-professi.jpg" alt="Bannière shopping" class="absolute inset-0 w-full h-full object-cover opacity-40">
         <div class="relative z-10 p-4">
-            <h2 class="text-4xl md:text-6xl font-extrabold mb-3 leading-tight">Comblez le fossé générationnel..</h2>
+            <h2 class="text-4xl md:text-6xl font-extrabold mb-3 leading-tight">Accélérateur de compétences.</h2>
             <!-- NOUVELLE BARRE DE NAVIGATION SECONDAIRE -->
             <nav class="bg-white/10 backdrop-blur-sm rounded-full p-1 max-w-2xl mx-auto mt-8 mb-8">
                 <!-- Les liens de la bannière seront injectés ici -->
                 <div id="banner-nav-links" class="flex items-center justify-center text-xs text-white font-semibold"></div>
             </nav>
-            <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Accédez à des décennies d'expérience pratique et accélérez votre carrière grâce au mentorat de seniors passionnés.</p>
+            <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Révélateur de shortcuts.</p>
             <a href="#superdeals-products" class="bg-gold text-black px-8 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition text-lg">
                 Voir les Plus Populaires
             </a>
@@ -233,20 +233,18 @@
     <footer class="bg-dark-color text-white pt-12 pb-8">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div><h4 class="font-bold text-lg mb-4 text-gold">Junior-Senior Gap Killer</h4><p class="text-gray-400 text-sm">Comblez le fossé générationnel. Apprenez des meilleurs.</p></div>
+                <div><h4 class="font-bold text-lg mb-4 text-gold">Junior Senior Gaps Killer</h4><p class="text-gray-400 text-sm">Accélérateur de compétences. Révélateur de shortcuts.</p></div>
                 <div>
                     <h4 class="font-bold text-lg mb-4">Navigation</h4>
                     <ul class="space-y-2 text-sm">
                         <li><a href="index.html" class="text-gray-400 hover:text-white">Accueil</a></li>
-                        <li><a href="promotions.html" class="text-gray-400 hover:text-white">Promotions</a></li>
+                        <li><a href="promotions.html" class="text-gray-400 hover:text-white">Tous les cours</a></li>
                         <li><a href="compte.html" class="text-gray-400 hover:text-white">Mon Compte</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="font-bold text-lg mb-4 text-gold">Aide & Contact</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="livraison.html" class="text-gray-400 hover:text-white">Options de livraison</a></li>
-                        <li><a href="politique-retour.html" class="text-gray-400 hover:text-white">Politique de retour</a></li>
                         <li><a href="politique-confidentialite.html" class="text-gray-400 hover:text-white">Politique de confidentialité</a></li>
                     </ul>
                 </div>
@@ -255,7 +253,6 @@
                     <div class="flex space-x-4">
                         <a href="#" class="text-gray-400 hover:text-white">FB</a>
                         <a href="#" class="text-gray-400 hover:text-white">IG</a>
-                        <a href="#" class="text-gray-400 hover:text-white">TW</a>
                     </div>
                 </div>
             </div>
@@ -266,7 +263,7 @@
     </footer>
 
     <!-- Barre de navigation inférieure -->
-    <nav class="mobile-nav bg-gradient-to-r from-sky-500 to-sky-300 border-t-2 border-gray-200 fixed bottom-0 left-0 right-0 z-40">
+    <nav class="mobile-nav bg-dark-color border-t-2 border-gray-700 fixed bottom-0 left-0 right-0 z-40">
         <div class="w-full overflow-x-auto whitespace-nowrap">
             <div class="relative flex justify-around items-center h-16 min-w-max px-4">
                 <a href="index.html" class="flex flex-col items-center text-white hover:text-yellow-300 transition"><svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg><span class="text-xs font-semibold">Accueil</span></a>
