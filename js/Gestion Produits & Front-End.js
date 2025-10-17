@@ -1,15 +1,15 @@
-
 /**
  * @file SCRIPT CENTRAL - Gestionnaire de Catalogue
  * @description Gère la liste des catégories de cours et agrège les données de chaque catégorie pour le front-end.
  * A déployer en tant qu'application web avec accès "Tous les utilisateurs".
- * @version 2.0.0
+ * @version 2.0.2 (Suppression setXFrameOptionsMode)
  * @author Gemini Code Assist
  */
 
 // --- CONFIGURATION ---
 const CENTRAL_SHEET_ID = "1xcW_lPim1AvD-RWDD0FtpAMYSrWq-FSv9XGa1ys2Xv4"; // IMPORTANT: ID de la feuille centrale
 const DEFAULT_IMAGE_URL = "https://i.postimg.cc/pX3dYj8B/course-microservices.jpg";
+const ALLOWED_ORIGIN = 'https://junior-senior-gaps-killer.vercel.app'; // Domaine autorisé pour CORS
 
 // --- GESTIONNAIRE DE MENU ---
 function onOpen() {
@@ -21,7 +21,7 @@ function onOpen() {
 }
 
 /**
- * NOUVEAU: Se déclenche à chaque modification de la feuille de calcul centrale.
+ * Se déclenche à chaque modification de la feuille de calcul centrale.
  * Si la feuille "Catégories" est modifiée, le cache est invalidé.
  */
 function onEdit(e) {
@@ -31,9 +31,12 @@ function onEdit(e) {
   // On ne s'intéresse qu'aux modifications sur la feuille des catégories
   if (sheetName === "Catégories") {
     Logger.log(`Modification détectée sur la feuille '${sheetName}'. Invalidation du cache.`);
-    const cache = PropertiesService.getScriptProperties();
+    // Utiliser CacheService pour le cache rapide et PropertiesService pour la version
+    const properties = PropertiesService.getScriptProperties();
     const newVersion = new Date().getTime().toString();
-    cache.setProperty('cacheVersion', newVersion);
+    properties.setProperty('cacheVersion', newVersion);
+    // On invalide aussi le cache des données agrégées si on l'avait mis en place (meilleure pratique)
+    CacheService.getScriptCache().remove('publicCatalogData'); 
   }
 }
 
@@ -41,49 +44,52 @@ function onEdit(e) {
  * Gère les requêtes OPTIONS pour le pré-vol CORS.
  */
 function doOptions(e) {
-  // Autorise toutes les origines pour les requêtes de pré-vol.
+  // Répond aux requêtes de pré-vérification CORS
   return ContentService.createTextOutput()
-    .addHeader('Access-Control-Allow-Origin', '*')
-    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .addHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    .setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN)
+    .setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+    .setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With'); // Ajout d'en-têtes communs
 }
 
 /**
- * Fournit la liste des catégories au front-end (AdminInterface.html).
+ * Fournit la liste des catégories au front-end (main.js).
  */
 function doGet(e) {
-  // CORRECTION: Déclarer 'origin' ici pour qu'il soit accessible dans les blocs try et catch.
-  const origin = e.headers ? e.headers.Origin : null;
+  // L'origine n'est plus utilisée directement par createJsonResponse
+  const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null; 
+
   try {
     const action = e.parameter.action;
 
-    // CORRECTION: Gérer l'invalidation du cache appelée par les feuilles de catégorie
+    // Gérer l'invalidation du cache
     if (action === 'invalidateCache') {
-      const cache = PropertiesService.getScriptProperties();
+      const properties = PropertiesService.getScriptProperties();
       const newVersion = new Date().getTime().toString();
-      cache.setProperty('cacheVersion', newVersion);
-      return createJsonResponse({ success: true, message: `Cache invalidé. Nouvelle version: ${newVersion}` }, origin);
+      properties.setProperty('cacheVersion', newVersion);
+      // Invalider le cache de données
+      CacheService.getScriptCache().remove('publicCatalogData');
+      return createJsonResponse({ success: true, message: `Cache invalidé. Nouvelle version: ${newVersion}` });
     }
 
-    // NOUVEAU: Point d'entrée léger pour juste vérifier la version du cache
+    // Point d'entrée léger pour juste vérifier la version du cache
     if (action === 'getCacheVersion') {
       const cacheVersion = PropertiesService.getScriptProperties().getProperty('cacheVersion') || '0';
-      return createJsonResponse({ success: true, cacheVersion: cacheVersion }, origin);
+      return createJsonResponse({ success: true, cacheVersion: cacheVersion });
     }
 
-    // NOUVEAU: Point d'entrée unique pour le front-end public (main.js)
-    // Renvoie la liste des catégories et tous les cours de toutes les catégories.
+    // Point d'entrée unique pour le front-end public (main.js)
     if (action === 'getPublicCatalog') {
       const catalog = getPublicCatalog();
       const cacheVersion = PropertiesService.getScriptProperties().getProperty('cacheVersion');
-      return createJsonResponse({ success: true, data: catalog, cacheVersion: cacheVersion }, origin);
+      return createJsonResponse({ success: true, data: catalog, cacheVersion: cacheVersion });
     }
 
-    // Comportement par défaut (peut être utilisé pour des tests ou l'ancienne logique)
-    return createJsonResponse({ success: true, message: "API Centrale Junior-Senior Gaps Killer - Active" }, origin);
+    // Comportement par défaut
+    return createJsonResponse({ success: true, message: "API Centrale Junior-Senior Gaps Killer - Active" });
 
   } catch (error) {
-    return createJsonResponse({ success: false, error: error.message }, origin);
+    Logger.log(`Erreur dans doGet: ${error.message}`);
+    return createJsonResponse({ success: false, error: error.message });
   } 
 }
 
@@ -108,23 +114,30 @@ function getCategories() {
 }
 
 /**
- * NOUVEAU: Récupère le catalogue public complet (catégories et tous les produits).
- * C'est cette fonction qui est appelée par main.js.
+ * Récupère le catalogue public complet (catégories et tous les produits) en utilisant le cache.
  */
 function getPublicCatalog() {
+  const cache = CacheService.getScriptCache();
+  const cachedData = cache.get('publicCatalogData');
+
+  if (cachedData) {
+    Logger.log('Catalogue récupéré à partir du cache.');
+    return JSON.parse(cachedData);
+  }
+
   const categories = getCategories();
-  const activeCategories = categories.filter(c => c.ScriptURL && !c.ScriptURL.startsWith('REMPLIR_'));
+  // Filtrer les catégories actives qui ont une URL de script valide
+  const activeCategories = categories.filter(c => c.ScriptURL && !c.ScriptURL.startsWith('REMPLIR_') && c.ScriptURL.trim() !== '');
 
   if (activeCategories.length === 0) {
-    // Retourne les catégories vides et un tableau de produits vide
     return { categories: categories, products: [] };
   }
 
   // Utilise UrlFetchApp.fetchAll pour appeler tous les scripts de catégorie en parallèle
   const requests = activeCategories.map(category => ({
-    url: `${category.ScriptURL}?action=getProducts`, // L'action 'getProducts' est conservée pour la compatibilité
+    url: `${category.ScriptURL}?action=getProducts`, 
     method: 'get',
-    muteHttpExceptions: true // Important: pour ne pas bloquer si une catégorie échoue
+    muteHttpExceptions: true // Pour ne pas bloquer si une catégorie échoue
   }));
 
   const responses = UrlFetchApp.fetchAll(requests);
@@ -132,38 +145,59 @@ function getPublicCatalog() {
 
   responses.forEach((response, index) => {
     if (response.getResponseCode() === 200) {
-      const result = JSON.parse(response.getContentText());
-      if (result.success && Array.isArray(result.data)) {
-        // Ajoute la catégorie à chaque cours pour une utilisation facile sur le front-end
-        const categoryName = activeCategories[index].NomCategorie;
-        const coursesWithCategory = result.data.map(course => ({ ...course, Catégorie: categoryName }));
-        allCourses = allCourses.concat(coursesWithCategory);
+      try {
+        const result = JSON.parse(response.getContentText());
+        if (result.success && Array.isArray(result.data)) {
+          // Ajoute la catégorie à chaque cours pour une utilisation facile sur le front-end
+          const categoryName = activeCategories[index].NomCategorie;
+          const coursesWithCategory = result.data.map(course => ({ 
+            ...course, 
+            Catégorie: categoryName,
+            // S'assurer que chaque cours a un ID de catégorie pour le filtrage
+            IDCategorie: activeCategories[index].IDCategorie
+          }));
+          allCourses = allCourses.concat(coursesWithCategory);
+        }
+      } catch (e) {
+        // En cas d'erreur JSON parsing
+        Logger.log(`Erreur de parsing JSON pour la catégorie ${activeCategories[index].NomCategorie}: ${e.message}`);
       }
+    } else {
+      Logger.log(`Erreur HTTP (${response.getResponseCode()}) pour la catégorie ${activeCategories[index].NomCategorie}.`);
     }
   });
 
-  // Le front-end s'attend à une clé "products", donc nous la conservons.
-  return { categories: categories, products: allCourses };
+  const catalog = { categories: categories, products: allCourses };
+  
+  // Stocke le catalogue en cache pour 15 minutes (900 secondes)
+  cache.put('publicCatalogData', JSON.stringify(catalog), 900);
+  Logger.log('Catalogue agrégé et mis en cache.');
+  
+  return catalog;
 }
 
 // --- UTILITAIRES ---
 
 /**
- * Crée une réponse JSON standard pour l'API, gérant CORS.
+ * Crée une réponse JSON standard pour l'API.
+ * NOTE: Les en-têtes CORS sont gérés par la fonction doOptions et la configuration du déploiement.
+ * ContentService.createTextOutput() ne supporte pas setHeader() ni setXFrameOptionsMode().
  * @param {object} data Les données à retourner en JSON.
- * @param {string} [origin] L'origine de la requête, si disponible.
- * @returns {GoogleAppsScript.Content.TextOutput} Un objet TextOutput avec le contenu JSON et les en-têtes CORS.
+ * @returns {GoogleAppsScript.Content.TextOutput} Un objet TextOutput avec le contenu JSON.
  */
-function createJsonResponse(data, origin) {
-  // CORRECTION DÉFINITIVE : On crée l'objet, on définit son type, et on retourne.
-  // L'en-tête CORS est géré par la fonction doOptions et la réponse globale.
+function createJsonResponse(data) {
   const output = ContentService.createTextOutput(JSON.stringify(data));
   output.setMimeType(ContentService.MimeType.JSON);
+  
+  // CORRECTION: Suppression de la méthode setXFrameOptionsMode() qui cause l'erreur.
+  // La gestion CORS dépend maintenant entièrement de la configuration de déploiement
+  // et de la fonction doOptions pour le pré-vol.
+
   return output;
 }
 
 /**
- * Utilitaire pour convertir une feuille en JSON.
+ * Utilitaire pour convertir une feuille en JSON. (Conservé pour référence)
  */
 function sheetToJSON(sheet) {
   if (!sheet || sheet.getLastRow() < 2) return [];

@@ -47,10 +47,10 @@ function doPost(e) {
 
 function doOptions(e) {
   // Autorise toutes les origines pour les requêtes de pré-vol.
-  return ContentService.createTextOutput()
-    .setHeader('Access-Control-Allow-Origin', '*')
-    .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  return ContentService.createTextOutput(null)
+    .addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app')
+    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
 // --- LOGIQUE MÉTIER ---
@@ -208,6 +208,7 @@ function setupProject() {
  * @returns {GoogleAppsScript.Content.TextOutput} La réponse avec l'en-tête.
  */
 function addCorsHeaders(output) {
-    output.setHeader('Access-Control-Allow-Origin', '*');
+    output.addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app');
+    output.addHeader('Access-Control-Allow-Credentials', 'true');
     return output;
 }

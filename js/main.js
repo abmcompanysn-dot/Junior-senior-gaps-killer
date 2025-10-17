@@ -11,7 +11,7 @@ const CONFIG = {
     NOTIFICATION_API_URL: "URL_DU_SCRIPT_GESTION_NOTIFICATIONS",
 
     // URL du script central pour le catalogue de produits.
-    CENTRAL_API_URL: "https://script.google.com/macros/s/AKfycbyV__ejuztXjqzNjopK6MCPItPVfPj-2_tmLHxMULghms9UmuE2wG0XWLKD5XtvlqLPjw/exec",
+    CENTRAL_API_URL: "https://script.google.com/macros/s/AKfycbxh1olxmG44KS1Gq_RA6zviC6M1xQkIUYr_0KeAS4qNILwypNLXYNQHcqFwiP9Rg5tWFw/exec",
     
     // Autres configurations
     DEFAULT_PRODUCT_IMAGE: "https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png",

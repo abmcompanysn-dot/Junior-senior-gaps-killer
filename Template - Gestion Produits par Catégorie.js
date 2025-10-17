@@ -43,10 +43,11 @@ function onEdit(e) {
  * Gère les requêtes OPTIONS pour le pré-vol CORS. Essentiel pour les requêtes POST.
  */
 function doOptions(e) {
+  // Répond aux requêtes de pré-vérification CORS
   return ContentService.createTextOutput()
-    .addHeader('Access-Control-Allow-Origin', '*')
-    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+    .setHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app')
+    .setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+    .setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
 // --- CONFIGURATION ---
@@ -59,7 +60,7 @@ const DEFAULT_IMAGE_URL = "https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platf
  * L'action principale est `getProducts` (conservé pour la compatibilité) qui renvoie les fiches de cours complètes.
  */
 function doGet(e) {
-  const origin = e.headers ? e.headers.Origin : null;
+  const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
   try {
     const action = e.parameter.action;
 
@@ -209,11 +210,11 @@ function invalidateGlobalCache() {
  * Crée une réponse JSON standard.
  */
 function createJsonResponse(data, origin) { // Ajout de 'origin' pour la cohérence
-  // CORRECTION : La réponse DOIT inclure l'en-tête CORS pour être acceptée par le navigateur.
   const output = ContentService.createTextOutput(JSON.stringify(data));
   output.setMimeType(ContentService.MimeType.JSON);
-  // Autorise toutes les origines. La fonction doOptions gère la requête de pré-vol.
-  output.addHeader('Access-Control-Allow-Origin', '*');
+  // CORRECTION CRUCIALE : Il faut ajouter l'en-tête CORS ici aussi pour les requêtes GET.
+  output.setHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app');
+  output.setHeader('Access-Control-Allow-Credentials', 'true');
   return output;
 }
 
