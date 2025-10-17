@@ -39,7 +39,7 @@
                     explanation: `Le navigateur a bloqué la requête vers <strong>${logDetails.url}</strong>. Cela se produit généralement pour deux raisons :<br>
                                  1. <strong>Problème de réseau :</strong> L'appareil n'a pas de connexion Internet ou le serveur est inaccessible.<br>
                                  2. <strong>Erreur CORS (Cross-Origin Resource Sharing) :</strong> Le serveur (votre script Google) n'a pas donné la permission à votre site (Vercel) de lui parler. C'est le cas le plus fréquent.`,
-                    solution: `Vérifiez les points suivants dans votre script Google Apps :<br>
+                    solution: `Vérifiez les points suivants dans vos scripts Google Apps :<br>
                                <ul class="list-disc list-inside mt-2"><li>La fonction <code>doGet</code> ou <code>doPost</code> doit retourner un objet <code>ContentService</code> avec les bons en-têtes CORS.</li>
                                  <li>La fonction <code>doOptions(e)</code> est-elle présente et correcte ? Elle doit renvoyer les en-têtes <code>Access-Control-Allow-Origin</code>, <code>Access-Control-Allow-Methods</code>, et <code>Access-Control-Allow-Headers</code>.</li>
                                  <li>Avez-vous <strong>redéployé</strong> votre script Google Apps après avoir fait des modifications ? (Déployer > Gérer les déploiements > Modifier > Nouvelle version).</li>

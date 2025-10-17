@@ -10,7 +10,7 @@
 // --- CONFIGURATION ---
 
 // URL du script central qui gère le catalogue. Ce script l'appellera pour invalider le cache.
-const CENTRAL_ADMIN_API_URL = "https://script.google.com/macros/s/AKfycbwXJ7nGrftKjKHaG6r_I1i9HCmcFJHmDk8BEvmW1jbNpBnI7-DjnDw7eLEet9HeHRwF/exec";
+const CENTRAL_ADMIN_API_URL = "https://script.google.com/macros/s/AKfycbyV__ejuztXjqzNjopK6MCPItPVfPj-2_tmLHxMULghms9UmuE2wG0XWLKD5XtvlqLPjw/exec";
 
 // --- GESTIONNAIRES D'ÉVÉNEMENTS (TRIGGERS) ---
 
@@ -48,6 +48,11 @@ function doOptions(e) {
     .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     .addHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
+
+// --- CONFIGURATION ---
+const CENTRAL_SHEET_ID = "1xcW_lPim1AvD-RWDD0FtpAMYSrWq-FSv9XGa1ys2Xv4"; // IMPORTANT: ID de la feuille centrale
+const DEFAULT_IMAGE_URL = "https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png";
+
 
 /**
  * Point d'entrée pour les requêtes GET.
@@ -184,6 +189,11 @@ function getCategoryName() {
   return SpreadsheetApp.getActiveSpreadsheet().getSheets()[0].getName();
 }
 
+function initialiserAvecDonnéesDémos() {
+  const categoryName = getCategoryName();
+  seedDefaultProducts(categoryName);
+  SpreadsheetApp.getUi().alert(`Les feuilles ont été remplies avec des données d'exemple pour la catégorie "${categoryName}".`);
+}
 /**
  * Utilitaire pour invalider le cache global en appelant le script central.
  */
@@ -286,7 +296,9 @@ function setupCourseSheets() {
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
   }
 
-  ui.alert(`Structure de cours pour la catégorie "${categoryName}" initialisée avec succès !`);
+  // CORRECTION: Appeler la fonction pour ajouter les données de démo juste après la création.
+  seedDefaultCourseData(categoryName);
+  ui.alert(`Structure de cours pour la catégorie "${categoryName}" initialisée et remplie avec des données de démo !`);
 }
 
 /**

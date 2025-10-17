@@ -128,7 +128,7 @@ function getConfig() {
   }
 
   const defaultConfig = {
-    allowed_origins: ["https://abmcymarket.vercel.app"],
+    allowed_origins: ["https://junior-senior-gaps-killer.vercel.app"],
     allowed_methods: "POST,GET,OPTIONS,DELETE",
     allowed_headers: "Content-Type",
     allow_credentials: "true"
@@ -187,7 +187,7 @@ function setupProject() {
   const configMap = new Map(configData.map(row => [row[0], row[1]]));
 
   const defaultConfigValues = {
-    'allowed_origins': 'https://abmcymarket.vercel.app,http://127.0.0.1:5500',
+    'allowed_origins': 'https://junior-senior-gaps-killer.vercel.app,http://127.0.0.1:5500',
     'allowed_methods': 'POST,GET,OPTIONS,DELETE',
     'allowed_headers': 'Content-Type',
     'allow_credentials': 'true'
