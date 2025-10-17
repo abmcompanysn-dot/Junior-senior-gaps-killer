@@ -95,11 +95,12 @@
                         <a href="#" class="flex items-center space-x-3 p-3 bg-yellow-100 text-yellow-800 rounded-lg font-semibold">
                             <span>Tableau de bord</span>
                         </a>
-                        <a href="#recent-orders-section" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg">
-                            <span>Mes Commandes</span>
+                        <a href="#" onclick="switchAccountTab('orders')" class="account-tab flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg">
+                            <span>Mes Cours</span>
                         </a>
-                        <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg">
-                            <span>Mes Adresses</span>
+                        <!-- NOUVEAU: Onglet Notifications -->
+                        <a href="#" onclick="switchAccountTab('notifications')" class="account-tab flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg">
+                            <span>Notifications</span>
                         </a>
                         <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg">
                             <span>Détails du compte</span>
@@ -113,11 +114,21 @@
 
             <!-- Contenu principal du compte -->
             <div class="md:col-span-2">
-                <div class="bg-white p-8 rounded-lg shadow">
+                <!-- NOUVEAU: Contenu pour le tableau de bord -->
+                <div id="content-dashboard" class="account-content bg-white p-8 rounded-lg shadow">
                     <h3 class="text-xl font-bold mb-6">Tableau de bord</h3>
                     <p class="mb-6">Bonjour <span class="font-semibold" id="dashboard-user-name"></span>, (si vous n'êtes pas <span class="font-semibold" id="dashboard-user-name-link"></span>, <a href="#" class="text-red-600" id="logout-link">déconnectez-vous</a>).</p> 
-                    <p>Depuis votre tableau de bord, vous pouvez consulter vos <a href="#" class="text-gold hover:underline">commandes récentes</a>, gérer vos <a href="#" class="text-gold hover:underline">adresses de livraison et de facturation</a>, et <a href="#" class="text-gold hover:underline">modifier votre mot de passe et les détails de votre compte</a>.</p>
-                    <div id="recent-orders-section" class="mt-8 border-t pt-6"></div>
+                    <p>Depuis votre tableau de bord, vous pouvez consulter vos <a href="#" onclick="switchAccountTab('orders')" class="text-gold hover:underline">cours achetés</a> et gérer les <a href="#" class="text-gold hover:underline">détails de votre compte</a>.</p>
+                </div>
+
+                <!-- NOUVEAU: Contenu pour les commandes/cours -->
+                <div id="content-orders" class="account-content bg-white p-8 rounded-lg shadow hidden">
+                    <div id="recent-orders-section"></div>
+                </div>
+
+                <!-- NOUVEAU: Contenu pour les notifications -->
+                <div id="content-notifications" class="account-content bg-white p-8 rounded-lg shadow hidden">
+                    <div id="notifications-section"></div>
                 </div>
             </div>
         </div>

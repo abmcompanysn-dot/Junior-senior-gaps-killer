@@ -15,11 +15,15 @@ const SHEET_NAMES = {
 // --- POINTS D'ENTRÉE DE L'API WEB ---
 
 function doGet(e) {
-    // Réponse par défaut pour un simple test de connectivité
-    return addCorsHeaders(createJsonResponse({
-      success: true,
-      message: 'API Gestion Notifications - Active'
-    }));
+    try {
+        const { action, userId } = e.parameter;
+        if (action === 'getNotifications' && userId) {
+            return addCorsHeaders(getNotificationsForUser(userId));
+        }
+        return addCorsHeaders(createJsonResponse({ success: true, message: 'API Gestion Notifications - Active' }));
+    } catch (error) {
+        return addCorsHeaders(createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }));
+    }
 }
 
 function doPost(e) {
@@ -27,15 +31,14 @@ function doPost(e) {
         const request = JSON.parse(e.postData.contents);
         const { action, data } = request;
 
-        if (action === 'sendOrderConfirmation') {
-            // Logique pour envoyer un email de confirmation de commande
-            const subject = `Nouvelle commande #${data.orderId}`;
-            const body = `Une nouvelle commande a été passée.\n\nID Commande: ${data.orderId}\nClient: ${data.clientId}\nTotal: ${data.total}\n\nDétails: ${JSON.stringify(data.products, null, 2)}`;
-            MailApp.sendEmail(ADMIN_EMAIL, subject, body);
-            return addCorsHeaders(createJsonResponse({ success: true, message: "Notification envoyée." }));
+        switch (action) {
+            case 'createNotification':
+                return addCorsHeaders(createNotification(data));
+            case 'markAsRead':
+                return addCorsHeaders(markNotificationsAsRead(data));
+            default:
+                return addCorsHeaders(createJsonResponse({ success: false, error: "Action de notification non reconnue." }));
         }
-
-        return addCorsHeaders(createJsonResponse({ success: false, error: "Action de notification non reconnue." }));
 
     } catch (error) {
         return addCorsHeaders(createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }));
@@ -43,14 +46,65 @@ function doPost(e) {
 }
 
 function doOptions(e) {
-  // Autorise toutes les origines pour les requêtes de pré-vol.
-  return ContentService.createTextOutput(n
+  return ContentService.createTextOutput(null)
+    .addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app')
+    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
 
 // --- FONCTIONS UTILITAIRES ---
 
 function createJsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
       .setMimeType(ContentService.MimeType.JSON);
+}
+
+// --- LOGIQUE MÉTIER ---
+
+/**
+ * Crée une nouvelle notification pour un utilisateur.
+ */
+function createNotification(data) {
+    const { userId, type, message } = data;
+    if (!userId || !type || !message) {
+        return createJsonResponse({ success: false, error: "Données de notification manquantes." });
+    }
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.NOTIFICATIONS);
+    const notifId = `NOTIF-${new Date().getTime()}`;
+    sheet.appendRow([notifId, userId, type, message, "Non lue", new Date()]);
+    return createJsonResponse({ success: true, id: notifId });
+}
+
+/**
+ * Récupère les notifications pour un utilisateur donné.
+ */
+function getNotificationsForUser(userId) {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.NOTIFICATIONS);
+    const allNotifs = sheet.getDataRange().getValues();
+    const headers = allNotifs.shift();
+    const userIdIndex = headers.indexOf("ID Client"); // Assumons que l'ID utilisateur est dans cette colonne
+
+    const userNotifsData = allNotifs.filter(row => row[userIdIndex] === userId);
+
+    const userNotifs = userNotifsData.map(row => {
+        return headers.reduce((obj, header, index) => {
+            obj[header] = row[index];
+            return obj;
+        }, {});
+    }).reverse(); // Les plus récentes en premier
+
+    return createJsonResponse({ success: true, data: userNotifs });
+}
+
+/**
+ * Marque les notifications d'un utilisateur comme lues.
+ */
+function markNotificationsAsRead(data) {
+    // Pour la simplicité, cette fonction est un placeholder.
+    // Une implémentation complète marquerait des IDs spécifiques comme "Lue".
+    const { userId } = data;
+    console.log(`Marquer les notifications comme lues pour l'utilisateur ${userId}`);
+    return createJsonResponse({ success: true, message: "Notifications marquées comme lues." });
 }
 
 /**

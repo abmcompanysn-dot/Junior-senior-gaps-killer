@@ -331,7 +331,7 @@ function renderCartPage() {
     // NOUVEAU: Affichage des variantes dans le panier
     const variantHTML = (variants) => {
         if (!variants || Object.keys(variants).length === 0) return '';
-        return `<p class="text-xs text-gray-500">${Object.entries(variants).map(([key, value]) => `${key}: ${value}`).join(', ')}</p>`;
+        return `<p class="text-xs text-gray-500">${Object.entries(variants).map(([key, value]) => `<strong>${key}:</strong> ${value}`).join(', ')}</p>`;
     };
     const cartHTML = cart.map((item, index) => `
         <div class="flex items-center p-4 border-b">
@@ -339,7 +339,9 @@ function renderCartPage() {
                 <img src="${item.imageUrl || CONFIG.DEFAULT_PRODUCT_IMAGE}" alt="${item.name}" class="w-full h-full object-cover" loading="lazy">
             </div>
             <div class="flex-grow">
-                <h4 class="font-semibold">${item.name}</h4>
+                <a href="produit.html?id=${item.productId}" class="font-semibold hover:underline">${item.name}</a>
+                <!-- NOUVEAU: Ajout du nom du formateur si disponible -->
+                ${item.instructor ? `<p class="text-xs text-gray-500">Par ${item.instructor}</p>` : ''}
                 <p class="text-sm text-gold">${item.price.toLocaleString('fr-FR')} F CFA</p>
                 ${variantHTML(item.variants)}
             </div>
@@ -423,6 +425,30 @@ function removeFromCart(index) {
 
     saveCart(cart);
     renderCartPage(); // Ré-affiche la page du panier
+}
+
+/**
+ * NOUVEAU: Vérifie si l'utilisateur est connecté avant de passer au checkout.
+ */
+function proceedToCheckout() {
+    const user = JSON.parse(localStorage.getItem('abmcyUser'));
+    const cart = getCart();
+
+    if (cart.length === 0) {
+        showToast("Votre panier est vide.", true);
+        return;
+    }
+
+    if (!user) {
+        showToast("Veuillez vous connecter pour valider votre panier.", true);
+        // Sauvegarder la page actuelle pour y revenir après connexion
+        localStorage.setItem('redirectAfterLogin', 'checkout.html');
+        setTimeout(() => {
+            window.location.href = 'authentification.html';
+        }, 1500);
+    } else {
+        window.location.href = 'checkout.html';
+    }
 }
 
 /**
