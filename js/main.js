@@ -2103,8 +2103,8 @@ async function handleAuthForm(event, type, role = 'Client') {
                 nom: form.querySelector('#register-nom').value,
                 email: form.querySelector('#register-email').value,
                 motDePasse: password,
+                telephone: form.querySelector('#register-telephone').value, // NOUVEAU
                 adresse: '',
-                telephone: '',
                 role: role // NOUVEAU: Envoyer le rôle
             }
         };
