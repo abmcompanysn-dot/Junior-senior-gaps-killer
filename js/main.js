@@ -783,18 +783,21 @@ function loadCoursePage(catalog) {
 
         // Structure du cours (Modules et Chapitres)
         const structureContainer = document.getElementById('course-structure-container');
-        if (course.modules && course.modules.length > 0) { // NOUVELLE LOGIQUE D'AFFICHAGE
+        if (course.modules && course.modules.length > 0) {
             structureContainer.innerHTML = course.modules.map((module, moduleIndex) => {
-                // NOUVEAU: Chaque chapitre est maintenant un bloc interactif
+                const isLocked = moduleIndex > 0; // Le premier module est déverrouillé, les autres sont verrouillés
+
                 const chaptersHTML = (module.chapitres || []).map((chap, chapIndex) => {
                     const chapterId = `m${moduleIndex}-ch${chapIndex}`;
                     const quizHTML = (chap.quiz || []).map((q, quizIndex) => {
                         const questionId = `${chapterId}-q${quizIndex}`;
                         const options = [q.Réponse_1, q.Réponse_2, q.Réponse_3, q.Réponse_4].filter(Boolean);
                         const correctIndex = options.indexOf(q.Bonne_Réponse);
+                        // NOUVEAU: Passer l'ID du module suivant à déverrouiller
+                        const nextModuleId = `module-${moduleIndex + 1}`;
                         const optionsHTML = options.map((opt, optIndex) => `
                             <div>
-                                <div class="quiz-option border rounded-lg p-3 cursor-pointer transition" onclick="checkQuizAnswer(this, ${optIndex === correctIndex}, '${questionId}', '${q.Bonne_Réponse}')">
+                                <div class="quiz-option border rounded-lg p-3 cursor-pointer transition" onclick="checkQuizAnswer(this, ${optIndex === correctIndex}, '${questionId}', '${q.Bonne_Réponse}', '${nextModuleId}')">
                                     ${opt}
                                 </div>
                                 <div class="quiz-feedback border-l-4 p-3 mt-2 text-sm">
@@ -802,7 +805,7 @@ function loadCoursePage(catalog) {
                                 </div>
                             </div>
                         `).join('');
-                        return `<div class="mt-4 p-4 border-t"><p class="font-semibold mb-3">${q.Question}</p><div id="${questionId}" class="space-y-2">${optionsHTML}</div></div>`;
+                        return `<div class="mt-4 p-4 border-t"><p class="font-semibold mb-3">${q.Question}</p><div id="${questionId}" class="space-y-2" data-quiz-count="${chap.quiz.length}">${optionsHTML}</div></div>`;
                     }).join('');
 
                     return `
@@ -814,17 +817,22 @@ function loadCoursePage(catalog) {
                                 </span>
                                 <span class="text-gray-500 text-sm">${chap.Durée}</span>
                             </div>
-                            ${chap.URL_Vidéo_Chapitre ? `<button onclick="document.getElementById('course-video-player').src='${chap.URL_Vidéo_Chapitre}'" class="text-sm text-blue-600 font-semibold mt-2">Lancer la vidéo</button>` : ''}
+                            ${chap.URL_Vidéo_Chapitre ? `<button onclick="document.getElementById('course-video-player').src='${chap.URL_Vidéo_Chapitre}'; document.getElementById('course-video-player').scrollIntoView({behavior: 'smooth'});" class="text-sm text-blue-600 font-semibold mt-2">Lancer la vidéo</button>` : ''}
                             ${quizHTML ? `<div class="bg-blue-50/50 mt-2 rounded-md">${quizHTML}</div>` : ''}
                         </li>
                     `;
                 }).join('');
 
-                return `<div class="border rounded-lg overflow-hidden">
-                    <h3 class="font-bold text-lg p-4 bg-gray-50 border-b">${module.Ordre_Module}. ${module.Nom_Module}</h3>
-                    <ul class="divide-y">
-                        ${chaptersHTML}
-                    </ul>
+                return `<div id="module-${moduleIndex}" class="module-container border rounded-lg overflow-hidden">
+                    <div class="module-header p-4 bg-gray-50 border-b flex justify-between items-center cursor-pointer ${isLocked ? 'locked' : ''}" onclick="toggleModule(this, ${isLocked})">
+                        <h3 class="font-bold text-lg">${module.Ordre_Module}. ${module.Nom_Module}</h3>
+                        ${isLocked ? '<svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>' : '<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'}
+                    </div>
+                    <div class="module-content p-4" style="${isLocked ? 'display: none;' : 'display: block;'}">
+                        <ul class="divide-y -mx-4">
+                            ${chaptersHTML}
+                        </ul>
+                    </div>
                 </div>`;
             }).join('');
         }
@@ -866,11 +874,12 @@ function loadCoursePage(catalog) {
  * @param {boolean} isCorrect - Si la réponse est correcte.
  * @param {string} questionId - L'ID du conteneur de la question.
  * @param {string} correctAnswerText - Le texte de la bonne réponse.
+ * @param {string} nextModuleId - L'ID du prochain module à déverrouiller.
  */
-function checkQuizAnswer(selectedOptionEl, isCorrect, questionId, correctAnswerText) {
+function checkQuizAnswer(selectedOptionEl, isCorrect, questionId, correctAnswerText, nextModuleId) {
     const questionContainer = document.getElementById(questionId);
     const allOptions = questionContainer.querySelectorAll('.quiz-option');
-
+    
     // Désactiver toutes les options pour cette question pour éviter de recliquer
     allOptions.forEach(opt => {
         opt.classList.add('disabled');
@@ -884,10 +893,44 @@ function checkQuizAnswer(selectedOptionEl, isCorrect, questionId, correctAnswerT
         selectedOptionEl.classList.add('selected', 'correct');
         feedbackEl.innerHTML = `<p><strong class="font-bold">Bonne réponse !</strong> Voici pourquoi : [Explication de la bonne réponse ici]</p>`;
         feedbackEl.classList.add('correct');
+
+        // NOUVEAU: Logique de déverrouillage
+        // On vérifie si c'était la dernière question du quiz pour ce chapitre/module
+        const allAnsweredCorrectly = Array.from(questionContainer.parentElement.parentElement.querySelectorAll('.quiz-option.correct')).length === parseInt(questionContainer.dataset.quizCount);
+        if (allAnsweredCorrectly) {
+            unlockNextModule(nextModuleId);
+        }
+
     } else {
         selectedOptionEl.classList.add('selected', 'incorrect');
         feedbackEl.innerHTML = `<p><strong class="font-bold">Incorrect.</strong> La bonne réponse est "${correctAnswerText}". Voici pourquoi : [Explication de la mauvaise réponse ici]</p>`;
         feedbackEl.classList.add('incorrect');
+    }
+}
+
+/**
+ * NOUVEAU: Gère l'affichage/masquage du contenu d'un module.
+ */
+function toggleModule(headerEl, isLocked) {
+    if (isLocked) {
+        showToast("Vous devez réussir le quiz du module précédent pour déverrouiller celui-ci.", true);
+        return;
+    }
+    const content = headerEl.nextElementSibling;
+    content.style.display = content.style.display === 'block' ? 'none' : 'block';
+}
+
+/**
+ * NOUVEAU: Déverrouille le module suivant.
+ */
+function unlockNextModule(moduleId) {
+    const moduleToUnlock = document.getElementById(moduleId);
+    if (moduleToUnlock) {
+        const header = moduleToUnlock.querySelector('.module-header');
+        header.classList.remove('locked');
+        header.onclick = () => toggleModule(header, false); // Mettre à jour l'événement onclick
+        header.querySelector('svg').outerHTML = '<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+        showToast("Félicitations ! Vous avez déverrouillé le module suivant.", false);
     }
 }
 
