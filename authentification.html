@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion / Inscription - ABMCY MARKET</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-color: #D4AF37;
+            --dark-color: #1a1a1a;
+        }
+        .text-gold { color: var(--gold-color); }
+        .bg-gold { background-color: var(--gold-color); }
+        .border-gold { border-color: var(--gold-color); }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .dropdown:hover .dropdown-menu { display: block; }
+        .dropdown-menu { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 font-montserrat">
+
+    <!-- NOUVEAU: Conteneur sticky pour l'en-tête et la navigation -->
+    <div class="sticky top-0 z-40 bg-white shadow-md">
+        <!-- Header -->
+        <header>
+            <div class="container mx-auto px-4 py-2">
+                <div class="flex items-center justify-between">
+                    <!-- Logo -->
+                    <a href="index.html" class="flex items-center">
+                        <img src="https://i.postimg.cc/6QZBH1JJ/Sleek-Wordmark-Logo-for-ABMCY-MARKET.png" alt="ABMCY MARKET Logo" class="h-10">
+                    </a>
+
+                    <!-- Barre de recherche -->
+                    <form id="search-form-header" class="flex-1 mx-4" onsubmit="initializeSearch()">
+                        <div class="relative">
+                            <input type="search" placeholder="Rechercher des produits, des marques et plus..." class="w-full p-2 pl-10 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold">
+                            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </form>
+
+                    <!-- Icônes utilisateur -->
+                    <div class="flex items-center space-x-4">
+                        <a href="#" aria-label="Notifications" class="text-gray-600 hover:text-gold"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V5a1 1 0 00-2 0v.083A6 6 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg></a>
+                        <a href="panier.html" aria-label="Panier" class="text-gray-600 hover:text-gold relative group">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L4.5 8m-2.5 5l1.5-5M7 13h10l4-8H5.4M7 13L4.5 8"></path></svg>
+                            <span class="cart-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                        </a>
+                        <a href="authentification.html" class="text-gray-600 hover:text-gold"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation principale -->
+        <nav class="border-b border-t">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center text-sm font-semibold">
+                    <div class="relative dropdown">
+                        <button class="flex items-center py-3">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                            Toutes les catégories
+                        </button>
+                        <div id="mobileMenu" class="dropdown-menu absolute bg-white shadow-lg rounded-md mt-1 w-64 z-30 border">
+                            <!-- Le contenu du menu sera injecté ici par JS -->
+                        </div>
+                    </div>
+                    <!-- Les liens de navigation principaux seront injectés ici -->
+                    <div id="main-nav-links" class="flex items-center space-x-8 overflow-x-auto whitespace-nowrap ml-4"></div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <main class="flex items-center justify-center py-12 px-4">
+        <div id="auth-forms" class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-800">Bienvenue sur ABMCY MARKET</h1>
+            </div>
+
+            <!-- Onglets -->
+            <div class="flex border-b mb-6">
+                <button id="login-tab" onclick="switchTab('login')" class="flex-1 py-2 text-center font-semibold border-b-2 border-gold">Connexion</button>
+                <button id="register-tab" onclick="switchTab('register')" class="flex-1 py-2 text-center font-semibold text-gray-500 border-b-2 border-transparent">Inscription</button>
+            </div>
+
+            <!-- Formulaire de Connexion -->
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="login-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+                    <input type="password" id="login-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">Se connecter</button>
+            </form>
+
+            <!-- Formulaire d'Inscription -->
+            <form id="register-form" class="space-y-4 hidden">
+                <div>
+                    <label for="register-nom" class="block text-sm font-medium text-gray-700">Nom complet</label>
+                    <input type="text" id="register-nom" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <div>
+                    <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="register-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <div>
+                    <label for="register-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+                    <input type="password" id="register-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <div>
+                    <label for="register-password-confirm" class="block text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
+                    <input type="password" id="register-password-confirm" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                </div>
+                <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">S'inscrire</button>
+            </form>
+
+            <div id="auth-status" class="mt-4 text-center font-semibold"></div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark-color text-white pt-12 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="font-bold text-lg mb-4">ABMCY MARKET</h4>
+                    <p class="text-gray-400 text-sm">Votre destination unique pour des milliers de produits. Qualité et service exceptionnels.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Navigation</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white">Accueil</a></li>
+                        <li><a href="promotions.html" class="text-gray-400 hover:text-white">Promotions</a></li>
+                        <li><a href="compte.html" class="text-gray-400 hover:text-white">Mon Compte</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Aide & Contact</h4>
+                    <ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-400 hover:text-white">Service Client</a></li><li><a href="livraison.html" class="text-gray-400 hover:text-white">Options de livraison</a></li>
+                        <li><a href="politique-retour.html" class="text-gray-400 hover:text-white">Politique de retour</a></li>
+                        <li><a href="politique-confidentialite.html" class="text-gray-400 hover:text-white">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Suivez-nous</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">FB</a>
+                        <a href="#" class="text-gray-400 hover:text-white">IG</a>
+                        <a href="#" class="text-gray-400 hover:text-white">TW</a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
+                <p>&copy; 2024 ABMCY MARKET. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Barre de navigation inférieure -->
+    <nav class="mobile-nav bg-white border-t-2 border-gray-200 fixed bottom-0 left-0 right-0 z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-around items-center h-16">
+                <a href="index.html" class="flex flex-col items-center text-gray-600 hover:text-gold transition"><svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg><span class="text-xs font-semibold">Accueil</span></a>
+                <a href="suivi-commande.html" class="flex flex-col items-center text-gray-600 hover:text-gold transition"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg><span class="text-xs">Suivi</span></a>
+                <a href="compte.html" class="flex flex-col items-center text-gray-600 hover:text-gold transition"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg><span class="text-xs">Compte</span></a>
+                <a href="panier.html" class="flex flex-col items-center text-gray-600 hover:text-gold transition relative"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L4.5 8m-2.5 5l1.5-5M7 13h10l4-8H5.4M7 13L4.5 8"></path></svg><span class="cart-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span><span class="text-xs">Panier</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

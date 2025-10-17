@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  </head>
+  <body class="p-4 bg-gray-50">
+
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Commandes Récentes</h2>
+      <button onclick="loadOrders()" class="text-blue-600 text-sm">Rafraîchir</button>
+    </div>
+
+    <div id="orders-container" class="space-y-3">
+      <p>Chargement des commandes...</p>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", loadOrders);
+
+      function loadOrders() {
+        const container = document.getElementById('orders-container');
+        container.innerHTML = '<p>Chargement...</p>';
+
+        google.script.run
+          .withSuccessHandler(displayOrders)
+          .withFailureHandler(displayError)
+          .getRecentOrders();
+      }
+
+      function displayOrders(response) {
+        const container = document.getElementById('orders-container');
+        if (!response.success) {
+          displayError(response);
+          return;
+        }
+
+        if (response.data.length === 0) {
+          container.innerHTML = '<p class="text-gray-500">Aucune commande récente.</p>';
+          return;
+        }
+
+        let html = '';
+        response.data.forEach(order => {
+          const orderDate = new Date(order.Date).toLocaleDateString('fr-FR');
+          html += `
+            <div class="bg-white p-3 rounded-lg shadow-sm border">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-bold">${order.IDCommande}</p>
+                  <p class="text-sm text-gray-600">${order.IDClient}</p>
+                </div>
+                <span class="text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full">${order.Statut}</span>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">${orderDate} - ${order.Total.toLocaleString('fr-FR')} F CFA</p>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      }
+
+      function displayError(error) {
+        document.getElementById('orders-container').innerHTML = `<p class="text-red-600">Erreur: ${error.error || error.message}</p>`;
+      }
+    </script>
+  </body>
+</html>

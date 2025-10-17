@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement - ABMCY MARKET</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold-color: #D4AF37; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 font-montserrat">
+
+    <!-- Header Simplifié -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center">
+                <img src="https://i.postimg.cc/6QZBH1JJ/Sleek-Wordmark-Logo-for-ABMCY-MARKET.png" alt="ABMCY MARKET Logo" class="h-8">
+            </a>
+            <div class="flex items-center space-x-2 text-sm text-gray-500">
+                <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
+                <span>Paiement sécurisé</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Formulaire de paiement -->
+            <div>
+                <h1 class="text-2xl font-bold mb-6">Informations de livraison et paiement</h1>
+                <form id="checkout-form" class="bg-white p-8 rounded-lg shadow-md space-y-6">
+                    <!-- Informations Personnelles -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-3">Vos coordonnées</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="firstname" class="block text-sm font-medium text-gray-700">Prénom</label>
+                                <input type="text" id="firstname" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div>
+                                <label for="lastname" class="block text-sm font-medium text-gray-700">Nom</label>
+                                <input type="text" id="lastname" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label for="address" class="block text-sm font-medium text-gray-700">Adresse de livraison</label>
+                            <input type="text" id="address" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+
+                    <!-- Méthodes de paiement -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-3">Méthode de paiement</h2>
+                        <div class="space-y-3 p-4 border rounded-md">
+                            <p class="text-sm text-gray-600">
+                                L'intégration des paiements par Mobile Money (Bénin/Sénégal) et Carte Bancaire sera bientôt disponible.
+                            </p>
+                            <div class="p-4 bg-yellow-100 text-yellow-800 rounded-md text-center">
+                                <strong>Fonctionnalité en développement</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">
+                        Confirmer la commande
+                    </button>
+                </form>
+            </div>
+
+            <!-- Résumé de la commande -->
+            <div class="bg-white p-8 rounded-lg shadow-md">
+                <h2 class="text-xl font-bold mb-4">Résumé de votre commande</h2>
+                <div id="checkout-summary-items" class="space-y-4 max-h-64 overflow-y-auto pr-2">
+                    <!-- Les articles du panier seront injectés ici -->
+                </div>
+                <div class="mt-6 pt-6 border-t space-y-2">
+                    <div class="flex justify-between">
+                        <span>Sous-total</span>
+                        <span id="checkout-subtotal">0 F CFA</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Livraison</span>
+                        <span id="checkout-shipping">0 F CFA</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-xl mt-2">
+                        <span>Total</span>
+                        <span id="checkout-total">0 F CFA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-sm text-gray-500">
+        <p>&copy; 2024 ABMCY MARKET. <a href="politique-confidentialite.html" class="underline">Politique de confidentialité</a></p>
+    </footer>
+
+    <script src="js/main.js"></script>
+
+</body>
+</html>

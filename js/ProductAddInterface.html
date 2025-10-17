@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 2s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body class="p-4 bg-gray-50">
+
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Ajouter un Produit</h2>
+    <p class="text-sm text-gray-600 mb-4">Vous ajoutez un produit à la catégorie : <span id="category-name" class="font-bold">Chargement...</span></p>
+
+    <form id="addProductForm" class="space-y-3">
+      <input type="text" id="nom" placeholder="Nom du produit" class="w-full p-2 border rounded" required>
+      <input type="text" id="marque" placeholder="Marque" class="w-full p-2 border rounded">
+      <input type="number" id="prixActuel" placeholder="Prix Actuel" class="w-full p-2 border rounded" required>
+      <input type="number" id="reduction" placeholder="Réduction en %" class="w-full p-2 border rounded" value="0">
+      <input type="number" id="stock" placeholder="Stock" class="w-full p-2 border rounded" required>
+      <input type="text" id="imageURL" placeholder="URL de l'image principale" class="w-full p-2 border rounded">
+      <textarea id="galerie" placeholder="URLs de la galerie (séparées par des virgules)" class="w-full p-2 border rounded"></textarea>
+      <textarea id="description" placeholder="Description" class="w-full p-2 border rounded"></textarea>
+      <input type="text" id="tags" placeholder="Tags (séparés par des virgules)" class="w-full p-2 border rounded">
+      
+      <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+        Ajouter le Produit
+      </button>
+    </form>
+
+    <div id="status" class="mt-4 text-center"></div>
+
+    <script>
+      window.addEventListener('load', () => {
+        // Récupère le nom de la feuille pour l'afficher
+        google.script.run.withSuccessHandler(catName => {
+          document.getElementById('category-name').textContent = catName;
+        }).getCategoryName();
+      });
+
+      document.getElementById('addProductForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+          const statusDiv = document.getElementById('status');
+          statusDiv.innerHTML = '<div class="loader mx-auto"></div>';
+
+          const productData = {
+              nom: document.getElementById('nom').value,
+              marque: document.getElementById('marque').value,
+              prixActuel: parseFloat(document.getElementById('prixActuel').value),
+              reduction: parseFloat(document.getElementById('reduction').value),
+              stock: parseInt(document.getElementById('stock').value),
+              imageURL: document.getElementById('imageURL').value,
+              galerie: document.getElementById('galerie').value,
+              description: document.getElementById('description').value,
+              tags: document.getElementById('tags').value,
+          };
+
+          google.script.run
+            .withSuccessHandler(onProductAdded)
+            .withFailureHandler(onFailure)
+            .addProductFromUI(productData);
+      });
+
+      function onProductAdded(response) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.innerHTML = `<p class="text-green-600">Produit ajouté avec succès (ID: ${response.id}).</p>`;
+        document.getElementById('addProductForm').reset();
+      }
+
+      function onFailure(error) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.innerHTML = `<p class="text-red-600">Erreur: ${error.message}</p>`;
+      }
+    </script>
+  </body>
+</html>
