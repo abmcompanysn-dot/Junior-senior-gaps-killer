@@ -1,9 +1,8 @@
-
 /**
  * @file Template - Gestion de Cours par Catégorie
  * @description Script Google Apps pour lire et assembler des données de cours structurées
- *              à partir de plusieurs feuilles dans un Google Sheet.
- * @version 1.0.0
+ *              à partir de plusieurs feuilles dans un Google Sheet.
+ * @version 1.0.2 (Correction TypeError setHeader et getCategoryName)
  * @author Gemini Code Assist
  */
 
@@ -11,6 +10,7 @@
 
 // URL du script central qui gère le catalogue. Ce script l'appellera pour invalider le cache.
 const CENTRAL_ADMIN_API_URL = "https://script.google.com/macros/s/AKfycbyV__ejuztXjqzNjopK6MCPItPVfPj-2_tmLHxMULghms9UmuE2wG0XWLKD5XtvlqLPjw/exec";
+const ALLOWED_ORIGIN = 'https://junior-senior-gaps-killer.vercel.app'; // Domaine autorisé pour CORS
 
 // --- GESTIONNAIRES D'ÉVÉNEMENTS (TRIGGERS) ---
 
@@ -45,7 +45,7 @@ function onEdit(e) {
 function doOptions(e) {
   // Répond aux requêtes de pré-vérification CORS
   return ContentService.createTextOutput()
-    .setHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app')
+    .setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN)
     .setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
     .setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
@@ -117,7 +117,7 @@ function getAllCoursData(categoryName) {
   const fichesCompletes = allData.cours.map(cours => generateFicheCours(cours.ID_Cours, allData));
 
   Logger.log("Toutes les fiches de cours ont été générées.");
-  return fichesCompletes;
+  return fichesCompletes.filter(f => f !== null);
 }
 
 /**
@@ -184,15 +184,17 @@ function getQuizByModule(idModule, allQuiz) {
 // --- FONCTIONS UTILITAIRES ---
 
 /**
- * Renvoie le nom de la feuille active pour l'afficher dans l'UI.
+ * Renvoie uniquement le nom de la catégorie (ex: "Backend") à partir du nom de la feuille (ex: "Cours_Backend").
  */
 function getCategoryName() {
-  return SpreadsheetApp.getActiveSpreadsheet().getSheets()[0].getName();
+  const sheetName = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0].getName();
+  // On retire le préfixe "Cours_" pour obtenir uniquement le nom de la catégorie
+  return sheetName.replace('Cours_', '');
 }
 
 function initialiserAvecDonnéesDémos() {
   const categoryName = getCategoryName();
-  seedDefaultProducts(categoryName);
+  seedDefaultCourseData(categoryName);
   SpreadsheetApp.getUi().alert(`Les feuilles ont été remplies avec des données d'exemple pour la catégorie "${categoryName}".`);
 }
 /**
@@ -208,13 +210,13 @@ function invalidateGlobalCache() {
 
 /**
  * Crée une réponse JSON standard.
+ * CORRECTION: Suppression des appels à setHeader qui causaient l'erreur TypeError.
  */
-function createJsonResponse(data, origin) { // Ajout de 'origin' pour la cohérence
+function createJsonResponse(data, origin) {
   const output = ContentService.createTextOutput(JSON.stringify(data));
   output.setMimeType(ContentService.MimeType.JSON);
-  // CORRECTION CRUCIALE : Il faut ajouter l'en-tête CORS ici aussi pour les requêtes GET.
-  output.setHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app');
-  output.setHeader('Access-Control-Allow-Credentials', 'true');
+  // La gestion CORS pour GET est assurée par la configuration du déploiement
+  // et la fonction doOptions pour le pre-flight.
   return output;
 }
 
@@ -244,9 +246,9 @@ function sheetToJSON(sheet) {
  */
 function logFiche(fiche) {
   Logger.log(`--- FICHE COURS : ${fiche.Nom_Cours} (ID: ${fiche.ID_Cours}) ---`);
-  Logger.log(`  Modules: ${fiche.modules.length}`);
+  Logger.log(`  Modules: ${fiche.modules.length}`);
   fiche.modules.forEach(m => {
-    Logger.log(`    - Module: ${m.Nom_Module} (Chapitres: ${m.chapitres.length}, Quiz: ${m.quiz.length})`);
+    Logger.log(`    - Module: ${m.Nom_Module} (Chapitres: ${m.chapitres.length}, Quiz: ${m.quiz.length})`);
   });
   Logger.log('----------------------------------------------------');
 }
