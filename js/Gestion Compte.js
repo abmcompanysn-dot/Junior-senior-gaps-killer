@@ -47,7 +47,7 @@ function doGet(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} La réponse JSON.
  */
 function doPost(e) {
-    const origin = (e && e.headers & c  & (e.headers.Origin || e.headers.origin)) || null;
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
     try {
         if (!e || !e.postData ||  !e.postData.contents) {
             throw new Error("Requête POST invalide ou vide.");
