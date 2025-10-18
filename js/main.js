@@ -2600,4 +2600,4 @@ async function loadUserActivityLog(userId) {
         console.error("Erreur lors du chargement du journal d'activité:", error);
         activitySection.innerHTML = '<h4 class="text-lg font-semibold mb-4">Mon Activité</h4><p class="text-red-500">Une erreur est survenue lors du chargement de votre activité.</p>';
     }
-}ion
+}
