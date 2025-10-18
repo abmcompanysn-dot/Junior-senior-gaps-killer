@@ -26,8 +26,7 @@
     </div>
 
     <script>
-        // NOUVEAU: L'URL de l'API client pour récupérer les logs
-        const CLIENT_API_URL = "https://script.google.com/macros/s/AKfycbwRpCI4watBHo8R6jkvcVpPb8pTVTbtR5Kg2vOvHby1Kdweo7nx4G-LEMfE9HQ5vRnc/exec";
+        const ACCOUNT_API_URL = "https://script.google.com/macros/s/AKfycbxkeha-_Mzm8ExgAfHsEF9H3iYARjj7PPj_SISjwI5vfhUx4tGhEuuqkn3tv_tu9ge9/exec";
 
         function getErrorExplanation(log) {
             const logType = log[2]; // La colonne "Action"
@@ -53,6 +52,16 @@
                     solution: `Regardez le code de l'action <code>${logDetails.payload.action}</code> dans votre script Google Apps pour comprendre pourquoi cette erreur se produit. Vérifiez les journaux d'exécution dans l'éditeur de script Google pour plus de détails.`
                 };
             }
+            // NOUVEAU: Interpréter les logs de pré-vérification (preflight)
+            if (logType === 'PREFLIGHT_CHECK') {
+                const isSuccess = logDetails.isAllowed;
+                return {
+                    title: isSuccess ? "Pré-vérification CORS Réussie" : "Échec Critique de la Pré-vérification CORS",
+                    explanation: logDetails.diagnostic,
+                    solution: logDetails.fix || "Si le diagnostic indique un succès mais que l'erreur persiste côté client, assurez-vous que l'option <code>credentials: 'include'</code> est bien présente dans votre appel <code>fetch</code> dans <code>main.js</code>."
+                };
+            }
+
             return null;
         }
 
@@ -61,7 +70,7 @@
             container.innerHTML = '<p class="text-center text-gray-500 py-8">Chargement des journaux depuis le serveur...</p>';
 
             try {
-                const response = await fetch(`${CLIENT_API_URL}?action=getAppLogs`);
+                const response = await fetch(`${ACCOUNT_API_URL}?action=getAppLogs`);
                 const result = await response.json();
 
                 if (!result.success || !result.logs) {
@@ -89,7 +98,7 @@
                     }
 
                     const explanation = getErrorExplanation(log);
-                    const isError = type.includes('ERROR') || type.includes('REJECTED');
+                    const isError = type.includes('ERROR') || type.includes('REJECTED') || (type === 'PREFLIGHT_CHECK' && !details.isAllowed);
                     const bgColor = isError ? 'bg-red-50' : 'bg-green-50';
                     const borderColor = isError ? 'border-red-500' : 'border-green-500';
 
@@ -105,6 +114,7 @@
                                 ${details.message ? `<p><strong>Message:</strong> ${details.message}</p>` : ''}
                                 ${details.url ? `<p><strong>URL:</strong> ${details.url}</p>` : ''}
                                 ${details.origin ? `<p><strong>Origine:</strong> ${details.origin}</p>` : ''}
+                                ${details.isAllowed !== undefined ? `<p><strong>Autorisé:</strong> <span class="font-bold ${details.isAllowed ? 'text-green-700' : 'text-red-700'}">${details.isAllowed ? 'Oui' : 'Non'}</span></p>` : ''}
                                 ${details.error ? `<p><strong>Détail Erreur:</strong> <code class="text-xs bg-gray-200 p-1 rounded">${details.error}</code></p>` : ''}
                                 ${details.raw ? `<p><strong>Détails bruts:</strong> <code class="text-xs bg-gray-200 p-1 rounded">${details.raw}</code></p>` : ''}
                             </div>
