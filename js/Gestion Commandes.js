@@ -17,13 +17,15 @@ const SHEET_NAMES = {
 // --- POINTS D'ENTRÉE DE L'API WEB ---
 
 function doGet(e) {
-    return addCorsHeaders(createJsonResponse({
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
+    return createJsonResponse({
       success: true,
       message: 'API Gestion Commandes - Active'
-    }));
+    }, origin);
 }
 
 function doPost(e) {
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
     try {
         if (!e || !e.postData || !e.postData.contents) {
             throw new Error("Requête POST invalide ou vide.");
@@ -33,19 +35,25 @@ function doPost(e) {
         const { action, data } = request;
 
         if (action === 'enregistrerCommande') {
-            return addCorsHeaders(enregistrerCommande(data));
+            return enregistrerCommande(data, origin);
         } else {
             logAction('doPost', { error: 'Action non reconnue', action: action });
-            return addCorsHeaders(createJsonResponse({ success: false, error: `Action non reconnue: ${action}` }));
+            return createJsonResponse({ success: false, error: `Action non reconnue: ${action}` }, origin);
         }
 
     } catch (error) {
         logError(e.postData ? e.postData.contents : 'No postData', error);
-        return addCorsHeaders(createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }));
+        return createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }, origin);
     }
 }
 
 function doOptions(e) {
+  const ALLOWED_ORIGINS = [
+      "https://junior-senior-gaps-killer.vercel.app",
+      "http://127.0.0.1:5500",
+      "http://127.0.0.1:5501"
+  ];
+  const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
   // Autorise toutes les origines pour les requêtes de pré-vol.
   return ContentService.createTextOutput(null)
     .addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app')
@@ -55,7 +63,7 @@ function doOptions(e) {
 
 // --- LOGIQUE MÉTIER ---
 
-function enregistrerCommande(data) {
+function enregistrerCommande(data, origin) {
     const lock = LockService.getScriptLock();
     lock.waitLock(30000);
 
@@ -73,7 +81,7 @@ function enregistrerCommande(data) {
             data.notes || '']);
 
         logAction('enregistrerCommande', { id: idCommande, client: data.idClient });
-        return createJsonResponse({ success: true, id: idCommande });
+        return createJsonResponse({ success: true, id: idCommande }, origin);
     } finally {
         lock.releaseLock();
     }
@@ -81,9 +89,18 @@ function enregistrerCommande(data) {
 
 // --- FONCTIONS UTILITAIRES ---
 
-function createJsonResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
+function createJsonResponse(data, origin) {
+  const ALLOWED_ORIGINS = [
+      "https://junior-senior-gaps-killer.vercel.app",
+      "http://127.0.0.1:5500",
+      "http://127.0.0.1:5501"
+  ];
+  const output = ContentService.createTextOutput(JSON.stringify(data))
       .setMimeType(ContentService.MimeType.JSON);
+
+  const allowedOrigin = (origin && ALLOWED_ORIGINS.includes(origin)) ? origin : ALLOWED_ORIGINS[0];
+  output.addHeader('Access-Control-Allow-Origin', allowedOrigin);
+  return output;
 }
 
 function logAction(action, details) {
@@ -200,15 +217,4 @@ function setupProject() {
   });
 
   ui.alert("Projet 'Gestion Commandes' initialisé avec succès ! Les onglets 'Commandes', 'Logs' et 'Config' sont prêts.");
-}
-
-/**
- * NOUVEAU: Ajoute l'en-tête CORS à une réponse.
- * @param {GoogleAppsScript.Content.TextOutput} output - L'objet réponse.
- * @returns {GoogleAppsScript.Content.TextOutput} La réponse avec l'en-tête.
- */
-function addCorsHeaders(output) {
-    output.addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app');
-    output.addHeader('Access-Control-Allow-Credentials', 'true');
-    return output;
 }
