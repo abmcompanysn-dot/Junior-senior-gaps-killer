@@ -114,14 +114,14 @@
                 <!-- Section Profil (F-FOR-07) -->
                 <div id="content-profile" class="dashboard-content bg-white p-8 rounded-lg shadow hidden">
                     <h3 class="text-xl font-bold mb-6">Modifier mon Profil Public</h3>
-                    <form class="space-y-4">
+                    <form id="profile-update-form" class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Titre (ex: CTO, Développeur Senior)</label>
-                            <input type="text" class="mt-1 block w-full p-2 border rounded-md">
+                            <input type="text" id="profile-title-input" class="mt-1 block w-full p-2 border rounded-md">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Biographie</label>
-                            <textarea rows="4" class="mt-1 block w-full p-2 border rounded-md"></textarea>
+                            <textarea id="profile-bio-input" rows="4" class="mt-1 block w-full p-2 border rounded-md"></textarea>
                         </div>
                         <button type="submit" class="px-4 py-2 bg-black text-white rounded-lg font-bold">Enregistrer les modifications</button>
                     </form>
@@ -147,6 +147,11 @@
             // Logique des onglets du tableau de bord
             switchDashboardTab('stats'); // Afficher le premier onglet par défaut
             loadSeniorDashboard(); // NOUVEAU: Charger les statistiques
+
+            // NOUVEAU: Charger les données spécifiques au profil et aux cours
+            initializeProfileForm(user);
+            loadSeniorCourses();
+            document.getElementById('profile-update-form').addEventListener('submit', handleProfileUpdate);
         });
 
         function switchDashboardTab(tabId) {

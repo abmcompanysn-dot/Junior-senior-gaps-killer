@@ -88,11 +88,15 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
-    // Autorise le domaine Vercel pour le pre-flight CORS.
-    return ContentService.createTextOutput(null)
-        .addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app')
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
+    const config = getConfig();
+    const headers = ContentService.createTextOutput(null)
         .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+    if (origin && config.allowed_origins.includes(origin)) {
+        headers.addHeader('Access-Control-Allow-Origin', origin);
+    }
+    return headers;
 }
 
 
@@ -391,6 +395,7 @@ function setupProject() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();
 
+  // NOUVEAU: Assurer que les colonnes Titre et Bio sont incluses
   const sheetsToCreate = {
     [SHEET_NAMES.USERS]: ["IDClient", "Nom", "Email", "PasswordHash", "Salt", "Telephone", "Adresse", "Date d'inscription", "Statut", "Role", "ImageURL", "Titre", "Bio"],
     [SHEET_NAMES.LOGS]: ["Timestamp", "Source", "Action", "Détails"],
@@ -401,10 +406,12 @@ function setupProject() {
     let sheet = ss.getSheetByName(sheetName);
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
-      sheet.appendRow(headers);
-      sheet.setFrozenRows(1);
-      sheet.getRange("A1:Z1").setFontWeight("bold");
     }
+    // Vider la feuille et réécrire les en-têtes pour garantir la conformité
+    sheet.clear();
+    sheet.appendRow(headers);
+    sheet.setFrozenRows(1);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
   });
 
   // Remplir la configuration par défaut

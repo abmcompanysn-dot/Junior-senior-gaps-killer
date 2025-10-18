@@ -39,6 +39,9 @@ function doGet(e) {
             case 'getSeniorDashboardData': // NOUVEAU
                 // Retourne directement la réponse TextOutput
                 return createJsonResponse(getSeniorDashboardData(e.parameter.formateurNom), origin);
+            case 'getCoursesBySenior': // NOUVEAU
+                // Retourne directement la réponse TextOutput
+                return createJsonResponse(getCoursesBySenior(e.parameter.formateurNom), origin);
             default:
                 // Retourne directement la réponse TextOutput
                 return createJsonResponse({ success: true, message: 'API Gestion Cours - Active' }, origin);
@@ -174,6 +177,22 @@ function getSeniorDashboardData(formateurNom) {
         }};
     } catch (error) {
         return { success: false, error: `Erreur lors du calcul des statistiques: ${error.message}` };
+    }
+}
+
+/**
+ * NOUVEAU: Récupère la liste des cours créés par un formateur.
+ */
+function getCoursesBySenior(formateurNom) {
+    if (!formateurNom) return { success: false, error: "Nom du formateur manquant." };
+
+    try {
+        const allCourses = getPublicCatalog().products; // Réutiliser la logique existante
+        const coursesBySenior = allCourses.filter(course => course.Formateur_Nom === formateurNom);
+
+        return { success: true, data: coursesBySenior };
+    } catch (error) {
+        return { success: false, error: `Erreur lors de la récupération des cours: ${error.message}` };
     }
 }
 

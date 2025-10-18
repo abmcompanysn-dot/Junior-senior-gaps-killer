@@ -1,6 +1,6 @@
 const CONFIG = {
     // URL de l'API pour la gestion des comptes (authentification, etc.)
-    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbzuyPGHhOtgBab8i06npkbs-KkHDqNyjwe_PMHX_4pKR7h6KOM1cKRCiKNs1YnjgRMgcA/exec",
+    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbyR5ZgW6EmpYDtiumFIywbsrlsckQ7dbthH3wE6IeyvYiZg-Z_sdfdBwTcFiNLHIaJ0Vw/exec",
     // NOUVEAU: URL de l'API centrale pour la gestion des cours, achats, et progression
     COURSE_API_URL: "https://script.google.com/macros/s/AKfycbzQk4CwkPid9WBuRFbI-QUW2MZvLxV-ke0g--3uvIBj5s82_1zhBBZoUFEtz7sqDHxi0g/exec",
     // NOUVEAU: URL de l'API dédiée aux notifications
@@ -735,12 +735,12 @@ async function handleProfileUpdate(event) {
     submitButton.textContent = 'Enregistrement...';
 
     const user = JSON.parse(localStorage.getItem('abmcyUser'));
-    const fileInput = document.getElementById('profile-pic-input');
+    const fileInput = document.getElementById('profile-pic-input'); // Peut être null sur le dashboard senior
     let imageUrl = user.ImageURL; // Garder l'ancienne image par défaut
 
     try {
         // 1. Uploader la nouvelle image si elle existe
-        if (fileInput.files.length > 0) {
+        if (fileInput && fileInput.files.length > 0) {
             showToast("Téléversement de l'image...");
             imageUrl = await uploadImageToImgBB(fileInput.files[0]);
         }
@@ -785,18 +785,18 @@ async function handleProfileUpdate(event) {
  */
 function initializeProfileForm(user) {
     if (!user) return;
-    document.getElementById('profile-title-input').value = user.Titre || '';
-    document.getElementById('profile-bio-input').value = user.Bio || '';
-    if (user.ImageURL) {
-        document.getElementById('profile-pic-preview').src = user.ImageURL;
-    } else {
-        document.getElementById('profile-pic-preview').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.Nom)}&background=F97316&color=fff`;
-    }
-
-    // Gérer l'aperçu de l'image
-    const fileInput = document.getElementById('profile-pic-input');
+    const titleInput = document.getElementById('profile-title-input');
+    const bioInput = document.getElementById('profile-bio-input');
     const preview = document.getElementById('profile-pic-preview');
-    fileInput.addEventListener('change', () => {
+    const fileInput = document.getElementById('profile-pic-input');
+
+    if (titleInput) titleInput.value = user.Titre || '';
+    if (bioInput) bioInput.value = user.Bio || '';
+    if (preview) {
+        preview.src = user.ImageURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.Nom)}&background=F97316&color=fff`;
+    }
+    if (fileInput && preview) {
+        fileInput.addEventListener('change', () => {
         if (fileInput.files && fileInput.files[0]) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -804,7 +804,8 @@ function initializeProfileForm(user) {
             };
             reader.readAsDataURL(fileInput.files[0]);
         }
-    });
+        });
+    }
 }
 
 /**
@@ -1975,6 +1976,57 @@ async function loadSeniorDashboard() {
         Object.values(stats).forEach(el => { if(el) el.textContent = 'Erreur'; });
     }
 }
+
+/**
+ * NOUVEAU: Charge et affiche les cours créés par le senior.
+ */
+async function loadSeniorCourses() {
+    const user = JSON.parse(localStorage.getItem('abmcyUser'));
+    if (!user || user.Role !== 'Senior') return;
+
+    const container = document.getElementById('courses-list');
+    container.innerHTML = '<p class="text-gray-500">Chargement de vos cours...</p>';
+
+    try {
+        const response = await fetch(`${CONFIG.COURSE_API_URL}?action=getCoursesBySenior&formateurNom=${encodeURIComponent(user.Nom)}`);
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.error || "Impossible de charger la liste des cours.");
+        }
+
+        const courses = result.data;
+
+        if (courses.length === 0) {
+            container.innerHTML = '<p class="text-gray-500">Vous n\'avez pas encore créé de cours.</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="space-y-4">
+                ${courses.map(course => `
+                    <div class="border rounded-lg p-4 flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <img src="${course.Image_Couverture || CONFIG.DEFAULT_PRODUCT_IMAGE}" alt="${course.Nom_Cours}" class="w-24 h-16 object-cover rounded-md flex-shrink-0">
+                            <div>
+                                <h4 class="font-bold">${course.Nom_Cours}</h4>
+                                <p class="text-sm text-gray-500">${course.Niveau} - ${Number(course.Prix).toLocaleString('fr-FR')} F</p>
+                            </div>
+                        </div>
+                        <button class="text-sm font-semibold text-blue-600 hover:underline">
+                            Modifier
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+    } catch (error) {
+        console.error("Erreur de chargement des cours du senior:", error);
+        container.innerHTML = '<p class="text-red-500">Erreur lors du chargement de vos cours.</p>';
+    }
+}
+
 /**
  * Remplit le sélecteur de catégories dans la modale de création de cours.
  */
@@ -2138,6 +2190,9 @@ async function handleAuthForm(event, type, role = 'Client') {
 
     if (type === 'register') {
         const password = form.querySelector('#register-password').value;
+        // NOUVEAU: Récupérer l'indicatif et le numéro pour les combiner
+        const indicatif = form.querySelector('#register-indicatif').value;
+        const numero = form.querySelector('#register-telephone').value;
 
         payload = {
             action: 'creerCompteClient',
@@ -2145,7 +2200,7 @@ async function handleAuthForm(event, type, role = 'Client') {
                 nom: form.querySelector('#register-nom').value,
                 email: form.querySelector('#register-email').value,
                 motDePasse: password,
-                telephone: form.querySelector('#register-telephone').value, // NOUVEAU
+                telephone: `${indicatif}${numero}`, // NOUVEAU: Numéro complet
                 adresse: '',
                 role: role // NOUVEAU: Envoyer le rôle
             }

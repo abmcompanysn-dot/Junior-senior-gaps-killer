@@ -111,7 +111,15 @@
                 <!-- NOUVEAU: Champ téléphone ajouté pour correspondre au JS -->
                 <div>
                     <label for="register-telephone" class="block text-sm font-medium text-gray-700">Numéro de téléphone</label>
-                    <input type="tel" id="register-telephone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
+                    <div class="mt-1 flex rounded-md shadow-sm">
+                        <select id="register-indicatif" class="block flex-shrink-0 z-10 inline-flex items-center py-2 px-3 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg focus:ring-gold focus:border-gold">
+                            <option value="+221" selected>SN +221</option>
+                            <option value="+33">FR +33</option>
+                            <option value="+1">US +1</option>
+                            <option value="+225">CI +225</option>
+                        </select>
+                        <input type="tel" id="register-telephone" class="block w-full flex-1 min-w-0 rounded-none rounded-r-lg border-gray-300 px-3 py-2 focus:ring-gold focus:border-gold" placeholder="77 123 45 67" required>
+                    </div>
                 </div>
                 <div>
 ,                   <label for="register-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
