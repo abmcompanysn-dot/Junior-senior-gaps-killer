@@ -144,6 +144,11 @@ function doOptions(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Réponse JSON.
  */
 function creerCompteClient(data, origin) {
+    // AMÉLIORATION: Vérification de la présence et du contenu des données
+    if (!data || !data.email || !data.motDePasse || !data.nom) {
+        logError('creerCompteClient', new Error('Données de création de compte incomplètes ou manquantes.'));
+        return createJsonResponse({ success: false, error: 'Les données fournies (nom, email, motDePasse) sont incomplètes.' }, origin);
+    }
     const { nom, email, motDePasse, role = 'Client' } = data; // Déstructuration et valeur par défaut
     try {
         const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.USERS);

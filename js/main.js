@@ -1,6 +1,6 @@
 const CONFIG = {
     // URL de l'API pour la gestion des comptes (authentification, etc.)
-    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbxkeha-_Mzm8ExgAfHsEF9H3iYARjj7PPj_SISjwI5vfhUx4tGhEuuqkn3tv_tu9ge9/exec",
+    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbwYh_xA2FS8tQR-Dq2MGQl77YfZym1GAk2mbkduYvlj9Bej2zU7CmHDjTETx_B-TTwB/exec",
     // NOUVEAU: URL de l'API centrale pour la gestion des cours, achats, et progression
     COURSE_API_URL: "https://script.google.com/macros/s/AKfycbzQk4CwkPid9WBuRFbI-QUW2MZvLxV-ke0g--3uvIBj5s82_1zhBBZoUFEtz7sqDHxi0g/exec",
     // NOUVEAU: URL de l'API dédiée aux notifications
@@ -2317,7 +2317,7 @@ async function handleAuthForm(event, type, role = 'Client') {
 
     if (type === 'register') {
         const password = form.querySelector('#register-password').value;
-        // NOUVEAU: Récupérer l'indicatif et le numéro pour les combiner
+        // Récupérer l'indicatif et le numéro pour les combiner
         const indicatif = form.querySelector('#register-indicatif').value;
         const numero = form.querySelector('#register-telephone').value;
 
@@ -2328,13 +2328,12 @@ async function handleAuthForm(event, type, role = 'Client') {
                 email: form.querySelector('#register-email').value,
                 motDePasse: password,
                 telephone: `${indicatif}${numero}`, // NOUVEAU: Numéro complet
-                adresse: '',
-                role: role // NOUVEAU: Envoyer le rôle
+                adresse: ''
             }
         };
     } else { // type === 'login'
         payload = {
-            action: 'connecterClient', // Assurez-vous que cette action existe dans votre API Client
+            action: 'connecterClient',
             data: {
                 email: form.querySelector('#login-email').value,
                 motDePasse: form.querySelector('#login-password').value
