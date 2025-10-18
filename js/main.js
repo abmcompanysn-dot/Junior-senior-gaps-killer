@@ -2328,7 +2328,8 @@ async function handleAuthForm(event, type, role = 'Client') {
                 email: form.querySelector('#register-email').value,
                 motDePasse: password,
                 telephone: `${indicatif}${numero}`, // NOUVEAU: Numéro complet
-                adresse: ''
+                adresse: '',
+                role: role // NOUVEAU: Envoyer le rôle
             }
         };
     } else { // type === 'login'
