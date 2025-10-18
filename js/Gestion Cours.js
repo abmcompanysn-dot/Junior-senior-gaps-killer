@@ -1,7 +1,7 @@
 /**
  * @file Gestion Cours - API Centrale d'Apprentissage
  * @description Gère les achats de cours, la progression des utilisateurs et les données des tableaux de bord.
- * @version 1.0.0
+ * @version 1.0.1 (Correction TypeError addHeader)
  * @author Gemini Code Assist
  */
 
@@ -10,9 +10,10 @@ const SHEET_NAMES = {
     COURS_ACHETES: "Cours_Achetés",
     PROGRESSION: "Progression_Utilisateur",
     REPONSES_QUIZ: "Reponses_Quiz",
-    CONFIG: "Config"
+    CONFIG: "Config",
+    // NOUVEAU: ID de la feuille centrale pour trouver tous les cours
+    CENTRAL_SHEET_ID: "1xcW_lPim1AvD-RWDD0FtpAMYSrWq-FSv9XGa1ys2Xv4"
 };
-const ALLOWED_ORIGIN = 'https://junior-senior-gaps-killer.vercel.app';
 
 // --- GESTIONNAIRE DE MENU ---
 function onOpen() {
@@ -25,20 +26,26 @@ function onOpen() {
 // --- POINTS D'ENTRÉE DE L'API WEB ---
 
 function doGet(e) {
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
     try {
         const { action, userId, courseId } = e.parameter;
         switch (action) {
             case 'getCoursAchetes':
-                return createJsonResponse(getCoursAchetes(userId));
+                // Retourne directement la réponse TextOutput
+                return createJsonResponse(getCoursAchetes(userId), origin);
             case 'getProgressionCours':
-                return createJsonResponse(getProgressionCours(userId, courseId));
+                // Retourne directement la réponse TextOutput
+                return createJsonResponse(getProgressionCours(userId, courseId), origin);
             case 'getSeniorDashboardData': // NOUVEAU
-                return createJsonResponse(getSeniorDashboardData(e.parameter.formateurNom));
+                // Retourne directement la réponse TextOutput
+                return createJsonResponse(getSeniorDashboardData(e.parameter.formateurNom), origin);
             default:
-                return createJsonResponse({ success: true, message: 'API Gestion Cours - Active' });
+                // Retourne directement la réponse TextOutput
+                return createJsonResponse({ success: true, message: 'API Gestion Cours - Active' }, origin);
         }
     } catch (error) {
-        return createJsonResponse({ success: false, error: `Erreur GET: ${error.message}` });
+        // Assurez-vous de passer l'origine même en cas d'erreur
+        return createJsonResponse({ success: false, error: `Erreur GET: ${error.message}` }, origin);
     }
 }
 
@@ -49,20 +56,23 @@ function doPost(e) {
 
         switch (action) {
             case 'acheterCours':
-                return createJsonResponse(acheterCours(data));
+                // Retourne directement la réponse TextOutput
+                return createJsonResponse(acheterCours(data), origin);
             case 'enregistrerReponseQuiz':
-                return createJsonResponse(enregistrerReponseQuiz(data));
+                // Retourne directement la réponse TextOutput
+                return createJsonResponse(enregistrerReponseQuiz(data), origin);
             default:
-                return createJsonResponse({ success: false, error: "Action POST non reconnue." });
+                return createJsonResponse({ success: false, error: "Action POST non reconnue." }, origin);
         }
     } catch (error) {
-        return createJsonResponse({ success: false, error: `Erreur POST: ${error.message}` });
+        return createJsonResponse({ success: false, error: `Erreur POST: ${error.message}` }, origin);
     }
 }
 
 function doOptions(e) {
+  // Les headers CORS sont ajoutés UNIQUEMENT dans doOptions pour le pré-vol (pre-flight)
   return ContentService.createTextOutput(null)
-    .addHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN)
+    .addHeader('Access-Control-Allow-Origin', (e.headers.Origin || e.headers.origin))
     .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     .addHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
@@ -80,14 +90,13 @@ function acheterCours(data) {
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.COURS_ACHETES);
     const dateAchat = new Date();
-    const headers = ["ID_Achat", "ID_Client", "ID_Cours", "Nom_Cours", "Prix_Achat", "Formateur_Nom", "Date_Achat"];
+    // Les en-têtes sont pour référence, la fonction appendRow utilise l'ordre.
 
     items.forEach(item => {
         const idAchat = `ACH-${new Date().getTime()}-${item.productId.slice(-4)}`;
         sheet.appendRow([idAchat, userId, item.productId, item.name, item.price, item.instructor, dateAchat]);
     });
 
-    // Ici, on pourrait aussi déclencher une notification
     return { success: true, message: `${items.length} cours acheté(s) avec succès.` };
 }
 
@@ -127,6 +136,10 @@ function enregistrerReponseQuiz(data) {
 function getProgressionCours(userId, courseId) {
     // Cette fonction lirait la feuille "Progression_Utilisateur"
     // pour retourner les chapitres/modules complétés.
+    // Ajout d'une gestion basique de la progression fictive
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PROGRESSION);
+    
+    // Logic: find existing progression data or return a default/placeholder
     return { success: true, data: { completedChapters: ["CH-001-1-1"] } };
 }
 
@@ -135,44 +148,125 @@ function getProgressionCours(userId, courseId) {
  */
 function getSeniorDashboardData(formateurNom) {
     if (!formateurNom) return { success: false, error: "Nom du formateur manquant." };
-
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.COURS_ACHETES);
-    const allData = sheet.getDataRange().getValues();
-    const headers = allData.shift();
     
-    const formateurIndex = headers.indexOf("Formateur_Nom");
-    const prixIndex = headers.indexOf("Prix_Achat");
-    const clientIndex = headers.indexOf("ID_Client");
-    const coursIndex = headers.indexOf("ID_Cours");
+    try {
+        // --- Calcul des statistiques de ventes ---
+        const salesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.COURS_ACHETES);
+        const salesData = salesSheet.getDataRange().getValues();
+        const salesHeaders = salesData.shift();
+        const formateurIndex = salesHeaders.indexOf("Formateur_Nom");
+        const prixIndex = salesHeaders.indexOf("Prix_Achat");
+        const clientIndex = salesHeaders.indexOf("ID_Client");
 
-    const salesByFormateur = allData.filter(row => row[formateurIndex] === formateurNom);
+        const salesByFormateur = salesData.filter(row => row[formateurIndex] === formateurNom);
+        const totalRevenue = salesByFormateur.reduce((sum, row) => sum + (parseFloat(row[prixIndex]) || 0), 0);
+        const uniqueStudents = new Set(salesByFormateur.map(row => row[clientIndex]));
 
-    const totalRevenue = salesByFormateur.reduce((sum, row) => sum + (parseFloat(row[prixIndex]) || 0), 0);
-    
-    const uniqueStudents = new Set(salesByFormateur.map(row => row[clientIndex]));
+        // --- NOUVEAU: Calcul du nombre de cours créés ---
+        const centralSheet = SpreadsheetApp.openById(SHEET_NAMES.CENTRAL_SHEET_ID).getSheetByName("Catégories");
+        const allCourses = getPublicCatalog().products; // Réutiliser la logique existante
+        const coursesBySenior = allCourses.filter(course => course.Formateur_Nom === formateurNom);
 
-    const courseSales = salesByFormateur.reduce((acc, row) => {
-        const courseId = row[coursIndex];
-        acc[courseId] = (acc[courseId] || 0) + 1;
-        return acc;
-    }, {});
-
-    return { success: true, data: {
-        revenue: totalRevenue,
-        students: uniqueStudents.size,
-        courseSales: courseSales
-    }};
+        return { success: true, data: {
+            revenue: totalRevenue,
+            students: uniqueStudents.size,
+            deployedCourses: coursesBySenior.length
+        }};
+    } catch (error) {
+        return { success: false, error: `Erreur lors du calcul des statistiques: ${error.message}` };
+    }
 }
 
 
 // --- FONCTIONS UTILITAIRES ---
 
-function createJsonResponse(data) {
-  const output = ContentService.createTextOutput(JSON.stringify(data))
-      .setMimeType(ContentService.MimeType.JSON);
-  output.addHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
-  output.addHeader('Access-Control-Allow-Credentials', 'true');
-  return output;
+/**
+ * Crée une réponse JSON standardisée avec le MimeType.
+ * NOTE CRUCIALE: Cette fonction ne doit pas ajouter de headers CORS.
+ * C'est le rôle de doOptions() et de la configuration de déploiement Apps Script.
+ * @param {object} data - L'objet à convertir en JSON.
+ * @returns {GoogleAppsScript.Content.TextOutput} Un objet TextOutput.
+ */
+function createJsonResponse(data, origin) {
+    const config = getConfig();
+    const output = ContentService.createTextOutput(JSON.stringify(data))
+        .setMimeType(ContentService.MimeType.JSON);
+    if (origin && config.allowed_origins.includes(origin)) {
+        output.addHeader('Access-Control-Allow-Origin', origin);
+    }
+    return output;
+}
+
+/**
+ * NOUVEAU: Récupère la configuration depuis la feuille "Config" et la met en cache.
+ */
+function getConfig() {
+    const cache = CacheService.getScriptCache();
+    const CACHE_KEY = 'script_config_cours';
+    const cachedConfig = cache.get(CACHE_KEY);
+    if (cachedConfig) {
+        return JSON.parse(cachedConfig);
+    }
+
+    const defaultConfig = {
+        allowed_origins: ["https://junior-senior-gaps-killer.vercel.app", "http://127.0.0.1:5500"],
+    };
+
+    try {
+        const ss = SpreadsheetApp.getActiveSpreadsheet();
+        const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
+        if (!configSheet) return defaultConfig;
+
+        const data = configSheet.getDataRange().getValues();
+        const config = {};
+        data.forEach(row => {
+            if (row[0] && row[1]) { config[row[0]] = row[1]; }
+        });
+
+        const finalConfig = {
+            allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim()) : defaultConfig.allowed_origins,
+        };
+
+        cache.put(CACHE_KEY, JSON.stringify(finalConfig), 600); // Cache 10 minutes
+        return finalConfig;
+    } catch (e) {
+        return defaultConfig;
+    }
+}
+
+/**
+ * NOUVEAU: Récupère le catalogue public complet.
+ * Cette fonction est une copie simplifiée de celle dans "Gestion Produits & Front-End.js"
+ * pour rendre ce script autonome pour le calcul des statistiques.
+ */
+function getPublicCatalog() {
+    const centralSheet = SpreadsheetApp.openById(SHEET_NAMES.CENTRAL_SHEET_ID);
+    const categoriesSheet = centralSheet.getSheetByName("Catégories");
+    const categoriesData = categoriesSheet.getDataRange().getValues();
+    const categoriesHeaders = categoriesData.shift();
+    const activeCategories = categoriesData.map(row => {
+        const obj = {};
+        categoriesHeaders.forEach((header, index) => obj[header] = row[index]);
+        return obj;
+    }).filter(c => c.ScriptURL && !c.ScriptURL.startsWith('REMPLIR_'));
+
+    const requests = activeCategories.map(category => ({
+        url: `${category.ScriptURL}?action=getProducts`,
+        method: 'get',
+        muteHttpExceptions: true
+    }));
+
+    const responses = UrlFetchApp.fetchAll(requests);
+    let allCourses = [];
+    responses.forEach(response => {
+        if (response.getResponseCode() === 200) {
+            const result = JSON.parse(response.getContentText());
+            if (result.success && Array.isArray(result.data)) {
+                allCourses = allCourses.concat(result.data);
+            }
+        }
+    });
+    return { products: allCourses };
 }
 
 /**

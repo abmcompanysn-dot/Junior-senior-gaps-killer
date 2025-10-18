@@ -59,15 +59,15 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                         <div class="bg-blue-50 p-4 rounded-lg">
-                            <p class="text-3xl font-bold text-blue-800">5</p>
+                            <p id="stats-courses" class="text-3xl font-bold text-blue-800">...</p>
                             <p class="text-sm text-blue-600">Cours déployés</p>
                         </div>
                         <div class="bg-green-50 p-4 rounded-lg">
-                            <p class="text-3xl font-bold text-green-800">1,250</p>
+                            <p id="stats-students" class="text-3xl font-bold text-green-800">...</p>
                             <p class="text-sm text-green-600">Apprenants inscrits</p>
                         </div>
                         <div class="bg-yellow-50 p-4 rounded-lg">
-                            <p class="text-3xl font-bold text-yellow-800">3,500,000 F</p>
+                            <p id="stats-revenue" class="text-3xl font-bold text-yellow-800">...</p>
                             <p class="text-sm text-yellow-600">Revenu total</p>
                         </div>
                     </div>
@@ -146,6 +146,7 @@
 
             // Logique des onglets du tableau de bord
             switchDashboardTab('stats'); // Afficher le premier onglet par défaut
+            loadSeniorDashboard(); // NOUVEAU: Charger les statistiques
         });
 
         function switchDashboardTab(tabId) {

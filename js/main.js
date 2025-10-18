@@ -1,8 +1,8 @@
 const CONFIG = {
     // URL de l'API pour la gestion des comptes (authentification, etc.)
-    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbwa2GNjYJ_gH2GpDkv7jYV61f_5J-acAB9cNL7p-_cxthJg-btrsHWcfw9EDPLhYgeYEA/exec",
+    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbwXYYpI77t8HiIhh7wVguq4dU_cnZlskuPJJd89rYws9jGGVJBYzPy2hVZKzhpc9n7XeQ/exec",
     // NOUVEAU: URL de l'API centrale pour la gestion des cours, achats, et progression
-    COURSE_API_URL: "https://script.google.com/macros/s/AKfycbzk0tAsVhQNBpSKnNCPz2hJYT9F9sQtqDsXqVeNQNeJUdQNXze9qh32mhGG7Y_8V3BjBg/exec",
+    COURSE_API_URL: "https://script.google.com/macros/s/AKfycbzQk4CwkPid9WBuRFbI-QUW2MZvLxV-ke0g--3uvIBj5s82_1zhBBZoUFEtz7sqDHxi0g/exec",
     // NOUVEAU: URL de l'API dédiée aux notifications
     NOTIFICATION_API_URL: "https://script.google.com/macros/s/AKfycbwH5Nr0uJsDg72jo_8iZq0YsiK4fS3GMcph-LdD8vtNitmezi7GWlj91czmhZPddgfGUw/exec",
 
@@ -1933,6 +1933,48 @@ function renderAllCategoriesSection(catalog) {
 
 // --- NOUVEAU: LOGIQUE DU TABLEAU DE BORD SENIOR ---
 
+/**
+ * NOUVEAU: Charge les statistiques du tableau de bord senior.
+ */
+async function loadSeniorDashboard() {
+    const user = JSON.parse(localStorage.getItem('abmcyUser'));
+    if (!user || user.Role !== 'Senior') return;
+
+    const stats = {
+        revenue: document.getElementById('stats-revenue'),
+        students: document.getElementById('stats-students'),
+        courses: document.getElementById('stats-courses')
+    };
+
+    // Afficher un état de chargement
+    Object.values(stats).forEach(el => { if(el) el.textContent = '...'; });
+
+    try {
+        const response = await fetch(`${CONFIG.COURSE_API_URL}?action=getSeniorDashboardData&formateurNom=${encodeURIComponent(user.Nom)}`);
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.error || "Impossible de charger les données.");
+        }
+
+        const data = result.data;
+
+        // Mettre à jour les éléments HTML avec les données reçues
+        if (stats.revenue) {
+            stats.revenue.textContent = `${data.revenue.toLocaleString('fr-FR')} F`;
+        }
+        if (stats.students) {
+            stats.students.textContent = data.students.toLocaleString('fr-FR');
+        }
+        if (stats.courses) {
+            stats.courses.textContent = data.deployedCourses.toLocaleString('fr-FR');
+        }
+
+    } catch (error) {
+        console.error("Erreur de chargement du dashboard senior:", error);
+        Object.values(stats).forEach(el => { if(el) el.textContent = 'Erreur'; });
+    }
+}
 /**
  * Remplit le sélecteur de catégories dans la modale de création de cours.
  */

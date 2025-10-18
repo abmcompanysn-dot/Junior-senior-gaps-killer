@@ -25,19 +25,19 @@ const SHEET_NAMES = {
  * @returns {GoogleAppsScript.Content.TextOutput} La réponse JSON.
  */
 function doGet(e) {
-    // L'origine n'est pas nécessaire ici car nous utilisons createJsonResponse.
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
     const action = e && e.parameter ? e.parameter.action : null;
 
     if (action === 'getAppLogs') {
         // Retourne la réponse JSON directement
-        return getAppLogs(e.parameter);
+        return getAppLogs(e.parameter, origin);
     }
 
     // Réponse par défaut pour un simple test de l'API
     return createJsonResponse({
       success: true,
       message: 'API Gestion Compte - Active'
-    });
+    }, origin);
 }
 
 /**
@@ -47,6 +47,7 @@ function doGet(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} La réponse JSON.
  */
 function doPost(e) {
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
     try {
         if (!e || !e.postData ||  !e.postData.contents) {
             throw new Error("Requête POST invalide ou vide.");
@@ -56,27 +57,27 @@ function doPost(e) {
         const { action, data } = request;
 
         if (!action) {
-            return createJsonResponse({ success: false, error: 'Action non spécifiée.' });
+            return createJsonResponse({ success: false, error: 'Action non spécifiée.' }, origin);
         }
 
         // Routeur pour les actions POST
         switch (action) {
             case 'creerCompteClient':
-                return creerCompteClient(data);
+                return creerCompteClient(data, origin);
             case 'connecterClient':
-                return connecterClient(data);
+                return connecterClient(data, origin);
             case 'updateProfile': // NOUVEAU
-                return updateProfile(data);
+                return updateProfile(data, origin);
             case 'logClientEvent':
-                return logClientEvent(data);
+                return logClientEvent(data, origin);
             default:
                 logAction('doPost', { error: 'Action non reconnue', action: action });
-                return createJsonResponse({ success: false, error: `Action non reconnue: ${action}` });
+                return createJsonResponse({ success: false, error: `Action non reconnue: ${action}` }, origin);
         }
 
     } catch (error) {
         logError(e.postData ? e.postData.contents : 'No postData', error);
-        return createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` });
+        return createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }, origin);
     }
 }
 
@@ -102,7 +103,7 @@ function doOptions(e) {
  * @param {object} data - Données du client (nom, email, motDePasse).
  * @returns {GoogleAppsScript.Content.TextOutput} Réponse JSON.
  */
-function creerCompteClient(data) {
+function creerCompteClient(data, origin) {
     const { nom, email, motDePasse, role = 'Client' } = data; // Déstructuration et valeur par défaut
     try {
         const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.USERS);
@@ -114,7 +115,7 @@ function creerCompteClient(data) {
         const emailExists = emailColumnValues.some(existingEmail => existingEmail.toLowerCase() === email.toLowerCase());
 
         if (emailExists) {
-            return createJsonResponse({ success: false, error: 'Un compte avec cet email existe déjà.' });
+            return createJsonResponse({ success: false, error: 'Un compte avec cet email existe déjà.' }, origin);
         }
 
         const idClient = "CLT-" + new Date().getTime();
@@ -126,11 +127,11 @@ function creerCompteClient(data) {
         ]);
 
         logAction('creerCompteClient', { email: email, id: idClient, role: role });
-        return createJsonResponse({ success: true, id: idClient });
+        return createJsonResponse({ success: true, id: idClient }, origin);
 
     } catch (error) {
         logError(JSON.stringify({ action: 'creerCompteClient', data }), error);
-        return createJsonResponse({ success: false, error: error.message });
+        return createJsonResponse({ success: false, error: error.message }, origin);
     }
 }
 
@@ -139,7 +140,7 @@ function creerCompteClient(data) {
  * @param {object} data - Données de connexion (email, motDePasse).
  * @returns {GoogleAppsScript.Content.TextOutput} Réponse JSON avec les infos utilisateur si succès.
  */
-function connecterClient(data) {
+function connecterClient(data, origin) {
     try {
         const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.USERS);
         const usersData = sheet.getDataRange().getValues();
@@ -151,7 +152,7 @@ function connecterClient(data) {
         const userRow = usersData.find(row => row[emailIndex] === data.email);
 
         if (!userRow) {
-            return createJsonResponse({ success: false, error: "Email ou mot de passe incorrect." });
+            return createJsonResponse({ success: false, error: "Email ou mot de passe incorrect." }, origin);
         }
 
         const storedHash = userRow[hashIndex];
@@ -160,7 +161,7 @@ function connecterClient(data) {
 
         if (providedPasswordHash !== storedHash) {
             logAction('connecterClient', { email: data.email, success: false });
-            return createJsonResponse({ success: false, error: "Email ou mot de passe incorrect." });
+            return createJsonResponse({ success: false, error: "Email ou mot de passe incorrect." }, origin);
         }
 
         // Connexion réussie, on retourne les informations de l'utilisateur
@@ -173,18 +174,18 @@ function connecterClient(data) {
         }, {});
 
         logAction('connecterClient', { email: data.email, success: true, id: userObject.IDClient });
-        return createJsonResponse({ success: true, user: userObject });
+        return createJsonResponse({ success: true, user: userObject }, origin);
 
     } catch (error) {
         logError(JSON.stringify({ action: 'connecterClient', data }), error);
-        return createJsonResponse({ success: false, error: error.message });
+        return createJsonResponse({ success: false, error: error.message }, origin);
     }
 }
 
 /**
  * NOUVEAU: Met à jour le profil d'un utilisateur.
  */
-function updateProfile(data) {
+function updateProfile(data, origin) {
     try {
         if (!data || !data.userId) {
             throw new Error("ID utilisateur manquant pour la mise à jour.");
@@ -215,10 +216,10 @@ function updateProfile(data) {
             if (imageUrlIndex !== -1) sheet.getRange(rowToUpdate, imageUrlIndex + 1).setValue(data.imageUrl);
         }
 
-        return createJsonResponse({ success: true, message: "Profil mis à jour." });
+        return createJsonResponse({ success: true, message: "Profil mis à jour." }, origin);
     } catch (error) {
         logError(JSON.stringify({ action: 'updateProfile', data }), error);
-        return createJsonResponse({ success: false, error: error.message });
+        return createJsonResponse({ success: false, error: error.message }, origin);
     }
 }
 
@@ -227,7 +228,7 @@ function updateProfile(data) {
  * @param {object} data - L'objet log envoyé par le client.
  * @returns {GoogleAppsScript.Content.TextOutput} Réponse JSON.
  */
-function logClientEvent(data) {
+function logClientEvent(data, origin) {
     try {
         const logSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.LOGS);
         const details = {
@@ -237,28 +238,29 @@ function logClientEvent(data) {
             payload: data.payload,
         };
         logSheet.appendRow([new Date(data.timestamp), 'FRONT-END', data.type, JSON.stringify(details)]);
-        return createJsonResponse({ success: true });
+        return createJsonResponse({ success: true }, origin);
     } catch (e) {
-        return createJsonResponse({ success: false, error: e.message });
+        return createJsonResponse({ success: false, error: e.message }, origin);
     }
 }
 
 /**
  * Récupère les 100 derniers journaux pour la page log.html.
  * @param {object} params - Paramètres de la requête GET.
+ * @param {string} origin - L'origine de la requête.
  * @returns {GoogleAppsScript.Content.TextOutput} Réponse JSON.
  */
-function getAppLogs(params) {
+function getAppLogs(params, origin) {
     try {
         const logSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.LOGS);
         const lastRow = logSheet.getLastRow();
         const startRow = Math.max(2, lastRow - 99);
         const numRows = lastRow > 1 ? lastRow - startRow + 1 : 0;
         const logs = (numRows > 0) ? logSheet.getRange(startRow, 1, numRows, 4).getValues() : [];
-        return createJsonResponse({ success: true, logs: logs.reverse() });
+        return createJsonResponse({ success: true, logs: logs.reverse() }, origin);
     } catch (error) {
         logError('getAppLogs', error);
-        return createJsonResponse({ success: false, error: error.message });
+        return createJsonResponse({ success: false, error: error.message }, origin);
     }
 }
 
@@ -267,12 +269,17 @@ function getAppLogs(params) {
 /**
  * Crée une réponse JSON standardisée avec le MimeType.
  * @param {object} data - L'objet à convertir en JSON.
+ * @param {string} origin - L'origine de la requête pour les en-têtes CORS.
  * @returns {GoogleAppsScript.Content.TextOutput} Un objet TextOutput.
  */
-function createJsonResponse(data) {
-  // CRUCIAL: Suppression de setHeader/addHeader. On retourne l'objet TextOutput nu.
-  return ContentService.createTextOutput(JSON.stringify(data))
+function createJsonResponse(data, origin) {
+  const config = getConfig();
+  const output = ContentService.createTextOutput(JSON.stringify(data))
       .setMimeType(ContentService.MimeType.JSON);
+  if (origin && config.allowed_origins.includes(origin)) {
+    output.addHeader('Access-Control-Allow-Origin', origin);
+  }
+  return output;
 }
 
 /**

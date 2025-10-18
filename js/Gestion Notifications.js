@@ -15,29 +15,31 @@ const SHEET_NAMES = {
 // --- POINTS D'ENTRÉE DE L'API WEB ---
 
 function doGet(e) {
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
     try {
         const { action, userId } = e.parameter;
         if (action === 'getNotifications' && userId) {
-            return addCorsHeaders(getNotificationsForUser(userId));
+            return getNotificationsForUser(userId, origin);
         }
-        return addCorsHeaders(createJsonResponse({ success: true, message: 'API Gestion Notifications - Active' }));
+        return createJsonResponse({ success: true, message: 'API Gestion Notifications - Active' }, origin);
     } catch (error) {
-        return addCorsHeaders(createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }));
+        return createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }, origin);
     }
 }
 
 function doPost(e) {
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
     try {
         const request = JSON.parse(e.postData.contents);
         const { action, data } = request;
 
         switch (action) {
             case 'createNotification':
-                return addCorsHeaders(createNotification(data));
+                return createNotification(data, origin);
             case 'markAsRead':
-                return addCorsHeaders(markNotificationsAsRead(data));
+                return markNotificationsAsRead(data, origin);
             default:
-                return addCorsHeaders(createJsonResponse({ success: false, error: "Action de notification non reconnue." }));
+                return createJsonResponse({ success: false, error: "Action de notification non reconnue." }, origin);
         }
 
     } catch (error) {
@@ -54,33 +56,40 @@ function doOptions(e) {
 
 // --- FONCTIONS UTILITAIRES ---
 
-function createJsonResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
+function createJsonResponse(data, origin) {
+  const config = getConfig();
+  const output = ContentService.createTextOutput(JSON.stringify(data))
       .setMimeType(ContentService.MimeType.JSON);
+  if (origin && config.allowed_origins.includes(origin)) {
+    output.addHeader('Access-Control-Allow-Origin', origin);
+  }
+  return output;
 }
 
 // --- LOGIQUE MÉTIER ---
 
 /**
  * Crée une nouvelle notification pour un utilisateur.
+ * @param {object} data - Les données de la notification.
+ * @param {string} origin - L'origine de la requête.
  */
-function createNotification(data) {
+function createNotification(data, origin) {
     const { userId, type, message } = data;
     if (!userId || !type || !message) {
-        return createJsonResponse({ success: false, error: "Données de notification manquantes." });
+        return createJsonResponse({ success: false, error: "Données de notification manquantes." }, origin);
     }
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.NOTIFICATIONS);
     const notifId = `NOTIF-${new Date().getTime()}`;
     sheet.appendRow([notifId, userId, type, message, "Non lue", new Date()]);
-    return createJsonResponse({ success: true, id: notifId });
+    return createJsonResponse({ success: true, id: notifId }, origin);
 }
 
 /**
  * Récupère les notifications pour un utilisateur donné.
  */
-function getNotificationsForUser(userId) {
+function getNotificationsForUser(userId, origin) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.NOTIFICATIONS);
-    if (!sheet) return createJsonResponse({ success: false, error: "La feuille de notifications est introuvable." });
+    if (!sheet) return createJsonResponse({ success: false, error: "La feuille de notifications est introuvable." }, origin);
     const allNotifs = sheet.getDataRange().getValues();
     const headers = allNotifs.shift();
     const userIdIndex = headers.indexOf("ID_Client"); // CORRECTION: Utiliser le bon nom de colonne
@@ -94,16 +103,16 @@ function getNotificationsForUser(userId) {
         }, {});
     }).reverse(); // Les plus récentes en premier
 
-    return createJsonResponse({ success: true, data: userNotifs });
+    return createJsonResponse({ success: true, data: userNotifs }, origin);
 }
 
 /**
  * Marque les notifications d'un utilisateur comme lues.
  */
-function markNotificationsAsRead(data) {
+function markNotificationsAsRead(data, origin) {
     const { userId, notificationIds } = data;
     if (!userId || !notificationIds || !Array.isArray(notificationIds)) {
-        return createJsonResponse({ success: false, error: "Données manquantes pour marquer les notifications comme lues." });
+        return createJsonResponse({ success: false, error: "Données manquantes pour marquer les notifications comme lues." }, origin);
     }
 
     try {
@@ -122,9 +131,9 @@ function markNotificationsAsRead(data) {
             }
         }
 
-        return createJsonResponse({ success: true, message: "Notifications mises à jour." });
+        return createJsonResponse({ success: true, message: "Notifications mises à jour." }, origin);
     } catch (error) {
-        return createJsonResponse({ success: false, error: `Erreur lors de la mise à jour des notifications: ${error.message}` });
+        return createJsonResponse({ success: false, error: `Erreur lors de la mise à jour des notifications: ${error.message}` }, origin);
     }
 }
 
@@ -211,15 +220,4 @@ function setupProject() {
   configSheet.appendRow(['allow_credentials', 'true']);
 
   ui.alert("Projet 'Gestion Notifications' initialisé avec succès !");
-}
-
-/**
- * NOUVEAU: Ajoute l'en-tête CORS à une réponse.
- * @param {GoogleAppsScript.Content.TextOutput} output - L'objet réponse.
- * @returns {GoogleAppsScript.Content.TextOutput} La réponse avec l'en-tête.
- */
-function addCorsHeaders(output) {
-    output.addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app');
-    output.addHeader('Access-Control-Allow-Credentials', 'true');
-    return output;
 }
