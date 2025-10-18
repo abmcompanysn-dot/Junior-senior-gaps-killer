@@ -47,7 +47,7 @@ function doGet(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} La réponse JSON.
  */
 function doPost(e) {
-    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
+    const origin = (e && e.headers & c  & (e.headers.Origin || e.headers.origin)) || null;
     try {
         if (!e || !e.postData ||  !e.postData.contents) {
             throw new Error("Requête POST invalide ou vide.");
@@ -88,49 +88,31 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
-    // Création de la réponse de base. C'est la réponse qui sera envoyée si l'origine n'est pas autorisée.
     const output = ContentService.createTextOutput(null);
-    const logDetails = {
-        receivedHeaders: e.headers,
-        origin: (e.headers.Origin || e.headers.origin),
-        isAllowed: false,
-        sentHeaders: {},
-        diagnostic: ""
-    };
+    let isAllowed = false;
+    let diagnostic = "";
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
 
     try {
         const config = getConfig();
-        const origin = logDetails.origin;
-
-        // Si l'origine de la requête est dans notre liste, on ajoute les en-têtes CORS.
         if (origin && config.allowed_origins.includes(origin)) {
-            logDetails.isAllowed = true;
-            logDetails.sentHeaders['Access-Control-Allow-Origin'] = origin;
-            logDetails.sentHeaders['Access-Control-Allow-Methods'] = config.allowed_methods || 'GET, POST, OPTIONS';
-            logDetails.sentHeaders['Access-Control-Allow-Headers'] = config.allowed_headers || 'Content-Type';
-
-            output.addHeader('Access-Control-Allow-Origin', logDetails.sentHeaders['Access-Control-Allow-Origin']);
-            output.addHeader('Access-Control-Allow-Methods', logDetails.sentHeaders['Access-Control-Allow-Methods']);
-            output.addHeader('Access-Control-Allow-Headers', logDetails.sentHeaders['Access-Control-Allow-Headers']);
-
+            isAllowed = true;
+            output.addHeader('Access-Control-Allow-Origin', origin);
+            output.addHeader('Access-Control-Allow-Methods', config.allowed_methods || 'GET, POST, OPTIONS');
+            output.addHeader('Access-Control-Allow-Headers', config.allowed_headers || 'Content-Type');
             if (config.allow_credentials) {
-                logDetails.sentHeaders['Access-control-allow-credentials'] = 'true';
                 output.addHeader('Access-Control-Allow-Credentials', 'true');
             }
-            logDetails.diagnostic = "SUCCÈS : L'origine a été trouvée dans la liste autorisée. Les en-têtes CORS ont été envoyés. Si l'erreur persiste, vérifiez que le client envoie bien 'credentials: \"include\"' pour les requêtes authentifiées.";
+            diagnostic = "SUCCÈS : Origine autorisée. En-têtes CORS envoyés.";
         } else {
-            logDetails.diagnostic = `ÉCHEC : L'origine '${origin}' n'a pas été trouvée dans la liste des origines autorisées par la configuration. Aucun en-tête CORS n'a été envoyé.`;
-            logDetails.fix = `SOLUTION : Allez dans votre Google Sheet, dans l'onglet 'Config', et assurez-vous que la clé 'allowed_origins' contient bien la valeur '${origin}'. Si la clé existe, vérifiez qu'il n'y a pas de fautes de frappe. Après modification, attendez 10 minutes (durée du cache) ou redéployez le script pour un effet immédiat.`;
+            diagnostic = `ÉCHEC : Origine '${origin}' non trouvée dans la configuration.`;
         }
     } catch (err) {
-        // En cas d'erreur (ex: getConfig échoue), on ne fait rien, la réponse sans en-têtes sera envoyée,
-        // ce qui provoquera un échec CORS propre côté client, comme attendu.
-        logDetails.diagnostic = `ERREUR CRITIQUE dans doOptions : ${err.message}. Impossible de lire la configuration. Aucun en-tête CORS n'a été envoyé.`;
-        logDetails.fix = "SOLUTION : Vérifiez que la feuille 'Config' existe et est correctement formatée. Vérifiez les journaux d'exécution du script Google pour plus de détails sur l'erreur.";
+        diagnostic = `ERREUR CRITIQUE dans doOptions : ${err.message}.`;
     }
 
     // On enregistre le rapport détaillé de ce qui s'est passé.
-    logAction('PREFLIGHT_CHECK', logDetails);
+    logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: isAllowed, diagnostic: diagnostic });
 
     return output;
 }
