@@ -88,22 +88,19 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
-    // Liste des origines autorisées.
-    const ALLOWED_ORIGINS = [
-        "https://junior-senior-gaps-killer.vercel.app",
-        "http://127.0.0.1:5500",
-        "http://127.0.0.1:5501"
-    ];
+    const config = getConfig();
     const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
-
     const output = ContentService.createTextOutput(null);
 
     // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
-    if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    if (origin && config.allowed_origins.includes(origin)) {
         output.addHeader('Access-Control-Allow-Origin', origin); // Important: Renvoyer l'origine de la requête
-        output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
-        output.addHeader('Access-Control-Allow-Credentials', 'true');
+        output.addHeader('Access-Control-Allow-Methods', config.allowed_methods || 'GET, POST, OPTIONS');
+        output.addHeader('Access-Control-Allow-Headers', config.allowed_headers || 'Content-Type');
+        // La valeur doit être une chaîne 'true'
+        if (config.allow_credentials) {
+            output.addHeader('Access-Control-Allow-Credentials', 'true');
+        }
     }
     // Si l'origine n'est pas autorisée, on renvoie une réponse sans les en-têtes CORS,
     // ce qui provoquera un échec propre de la requête preflight côté navigateur.
@@ -340,6 +337,49 @@ function logError(context, error) {
     } catch (e) {
         console.error("Échec de la journalisation d'erreur: " + e.message);
     }
+}
+
+/**
+ * NOUVEAU: Récupère la configuration depuis la feuille "Config" et la met en cache.
+ * @returns {object} Un objet contenant la configuration.
+ */
+function getConfig() {
+  const cache = CacheService.getScriptCache();
+  const CACHE_KEY = 'script_config_account';
+  const cachedConfig = cache.get(CACHE_KEY);
+  if (cachedConfig) {
+    return JSON.parse(cachedConfig);
+  }
+
+  const defaultConfig = {
+    allowed_origins: ["https://junior-senior-gaps-killer.vercel.app", "http://127.0.0.1:5500", "http://127.0.0.1:5501"],
+    allowed_methods: "POST,GET,OPTIONS",
+    allowed_headers: "Content-Type",
+    allow_credentials: true
+  };
+
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
+    if (!configSheet) return defaultConfig;
+
+    const data = configSheet.getDataRange().getValues();
+    const config = {};
+    data.forEach(row => {
+      if (row[0] && row[1]) { config[row[0]] = row[1]; }
+    });
+
+    const finalConfig = {
+      allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim()) : defaultConfig.allowed_origins,
+      allowed_methods: config.allowed_methods || defaultConfig.allowed_methods,
+      allowed_headers: config.allowed_headers || defaultConfig.allowed_headers,
+      allow_credentials: config.allow_credentials === 'true' || defaultConfig.allow_credentials
+    };
+    cache.put(CACHE_KEY, JSON.stringify(finalConfig), 600); // Cache 10 minutes
+    return finalConfig;
+  } catch (e) {
+    return defaultConfig;
+  }
 }
 
 /**

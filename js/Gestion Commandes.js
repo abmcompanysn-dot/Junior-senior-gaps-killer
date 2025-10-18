@@ -48,20 +48,19 @@ function doPost(e) {
 }
 
 function doOptions(e) {
-  const ALLOWED_ORIGINS = [
-      "https://junior-senior-gaps-killer.vercel.app",
-      "http://127.0.0.1:5500",
-      "http://127.0.0.1:5501"
-  ];
+  const config = getConfig();
   const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
   const output = ContentService.createTextOutput(null);
 
   // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  if (origin && config.allowed_origins.includes(origin)) {
       output.addHeader('Access-Control-Allow-Origin', origin); // Important: Renvoyer l'origine de la requête
-      output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-      output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
-      output.addHeader('Access-Control-Allow-Credentials', 'true');
+      output.addHeader('Access-Control-Allow-Methods', config.allowed_methods || 'GET, POST, OPTIONS');
+      output.addHeader('Access-Control-Allow-Headers', config.allowed_headers || 'Content-Type');
+      // La valeur doit être une chaîne 'true'
+      if (config.allow_credentials) {
+          output.addHeader('Access-Control-Allow-Credentials', 'true');
+      }
   }
   return output;
 }

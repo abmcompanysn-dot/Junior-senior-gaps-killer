@@ -44,7 +44,31 @@ function onEdit(e) {
  * Gère les requêtes OPTIONS pour le pré-vol CORS.
  */
 function doOptions(e) {
-  // / Point d'entrée léger pour juste vérifier la version du cache
+  // Liste des origines autorisées. Pour ce script, une seule suffit.
+  const ALLOWED_ORIGINS = [ALLOWED_ORIGIN, "http://127.0.0.1:5500", "http://127.0.0.1:5501"];
+  const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
+  const output = ContentService.createTextOutput(null);
+
+  // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+      output.setHeader('Access-Control-Allow-Origin', origin);
+      output.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      output.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
+      output.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  return output;
+}
+
+/**
+ * Point d'entrée principal pour les requêtes GET.
+ * @param {object} e L'objet événement de la requête.
+ * @returns {GoogleAppsScript.Content.TextOutput} La réponse JSON.
+ */
+function doGet(e) {
+  try {
+    const action = e.parameter.action;
+
+    // Point d'entrée léger pour juste vérifier la version du cache
     if (action === 'getCacheVersion') {
       const cacheVersion = PropertiesService.getScriptProperties().getProperty('cacheVersion') || '0';
       return createJsonResponse({ success: true, cacheVersion: cacheVersion });
@@ -63,7 +87,7 @@ function doOptions(e) {
   } catch (error) {
     Logger.log(`Erreur dans doGet: ${error.message}`);
     return createJsonResponse({ success: false, error: error.message });
-  } 
+  }
 }
 
 /**

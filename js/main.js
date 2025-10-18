@@ -1,6 +1,6 @@
 const CONFIG = {
     // URL de l'API pour la gestion des comptes (authentification, etc.)
-    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbxIGADImB70IT6Ssc0kM0EYq8Lv8NBgwaryqK1_DLa-l0T5u6uZ0__kYSGLaqfq6wsHSw/exec",
+    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbywPWDSTJXfHa44l54R7DYoiLLacZHpDs7-_i6NPNITG2SImT9964b1zc34N49CSM_gAw/exec",
     // NOUVEAU: URL de l'API centrale pour la gestion des cours, achats, et progression
     COURSE_API_URL: "https://script.google.com/macros/s/AKfycbzQk4CwkPid9WBuRFbI-QUW2MZvLxV-ke0g--3uvIBj5s82_1zhBBZoUFEtz7sqDHxi0g/exec",
     // NOUVEAU: URL de l'API dédiée aux notifications
@@ -757,7 +757,8 @@ async function handleProfileUpdate(event) {
         const response = await fetch(CONFIG.ACCOUNT_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'updateProfile', data: profileData })
+            body: JSON.stringify({ action: 'updateProfile', data: profileData }),
+            credentials: 'include'
         });
         const result = await response.json();
 
@@ -1389,7 +1390,8 @@ async function processCheckout(event) {
         const response = await fetch(CONFIG.COURSE_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(purchasePayload)
+            body: JSON.stringify(purchasePayload),
+            credentials: 'include'
         });
         const result = await response.json();
 
@@ -1406,6 +1408,7 @@ async function processCheckout(event) {
                     action: 'sendOrderConfirmation',
                     data: { purchaseId: result.id, ...purchasePayload.data }
                 }),
+                credentials: 'include',
                 keepalive: true
             });
             throw new Error(result.error || "Une erreur inconnue est survenue.");
@@ -2284,6 +2287,7 @@ function logAppEvent(type, data) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(logPayload),
+                credentials: 'include',
                 keepalive: true
             });
         } catch (e) { console.error("Échec de l'envoi du log au serveur:", e); }
@@ -2350,6 +2354,7 @@ async function handleAuthForm(event, type, role = 'Client') {
             method: 'POST', // Le mode 'no-cors' n'est pas nécessaire et cause des problèmes.
             headers: { 'Content-Type': 'application/json' }, // Ajout de cet en-tête essentiel
             body: JSON.stringify(payload),
+            credentials: 'include' // ESSENTIEL pour les requêtes authentifiées
         });
 
         if (!response.ok) {
@@ -2556,7 +2561,8 @@ async function loadUserActivityLog(userId) {
             body: JSON.stringify({
                 action: 'getLogsByUserId',
                 data: { userId: userId }
-            })
+            }),
+            credentials: 'include'
         });
         const result = await response.json();
 
