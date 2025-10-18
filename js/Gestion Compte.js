@@ -1,5 +1,5 @@
 /**
- * @file Gestion Compte - API pour abmcymarket.vercel.app
+ * @file Gestion Compte - 
  * @description Gère l'authentification des clients,
  * la journalisation des événements et la récupération des données spécifiques au client.
  *
@@ -403,37 +403,5 @@ function setupProject() {
   }
 }
 
-/**
- * DÉPRÉCIÉ ET SUPPRIMÉ: La fonction addCorsHeaders n'est pas nécessaire et causait le TypeError.
- * La suppression du corps de la fonction est la correction.
- */
-// function addCorsHeaders(output) {
-//     output.addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app');
-//     output.addHeader('Access-Control-Allow-Credentials', 'true');
-//     return output;
-// }
 
 
-/**
- * Construit un objet d'en-têtes CORS basé sur la configuration.
- * (Conservée, bien que non utilisée directement pour setHeader.)
- * @param {string} origin - L'origine de la requête.
- * @returns {object} Un objet contenant les en-têtes CORS.
- */
-function getCorsHeaders(origin) {
-    const config = getConfig();
-    const headers = {};
-
-    if (origin && config.allowed_origins.includes(origin)) {
-        headers['Access-Control-Allow-Origin'] = origin;
-        headers['Access-Control-Allow-Methods'] = config.allowed_methods;
-        headers['Access-Control-Allow-Headers'] = config.allowed_headers;
-        if (config.allow_credentials) {
-            headers['Access-Control-Allow-Credentials'] = 'true';
-        }
-    } else {
-        // Pour les requêtes GET simples sans origine (ex: test direct), on reste permissif.
-        headers['Access-Control-Allow-Origin'] = '*';
-    }
-    return headers;
-}
