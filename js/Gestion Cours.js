@@ -73,11 +73,19 @@ function doPost(e) {
 }
 
 function doOptions(e) {
-  // Les headers CORS sont ajoutés UNIQUEMENT dans doOptions pour le pré-vol (pre-flight)
-  return ContentService.createTextOutput(null)
-    .addHeader('Access-Control-Allow-Origin', (e.headers.Origin || e.headers.origin))
-    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+    const config = getConfig();
+    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
+    const output = ContentService.createTextOutput(null);
+
+    // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
+    if (origin && config.allowed_origins.includes(origin)) {
+        output.addHeader('Access-Control-Allow-Origin', origin); // Important: Renvoyer l'origine de la requête
+        output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
+        output.addHeader('Access-Control-Allow-Credentials', 'true');
+    }
+
+    return output;
 }
 
 // --- LOGIQUE MÉTIER ---

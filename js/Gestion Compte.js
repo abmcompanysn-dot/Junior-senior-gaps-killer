@@ -103,6 +103,7 @@ function doOptions(e) {
         output.addHeader('Access-Control-Allow-Origin', origin); // Important: Renvoyer l'origine de la requête
         output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
+        output.addHeader('Access-Control-Allow-Credentials', 'true');
     }
     // Si l'origine n'est pas autorisée, on renvoie une réponse sans les en-têtes CORS,
     // ce qui provoquera un échec propre de la requête preflight côté navigateur.
@@ -287,11 +288,10 @@ function getAppLogs(params, origin) {
  * @returns {GoogleAppsScript.Content.TextOutput} Un objet TextOutput.
  */
 function createJsonResponse(data, origin) {
-  const output = ContentService.createTextOutput(JSON.stringify(data))
-      .setMimeType(ContentService.MimeType.JSON);
   // Les en-têtes CORS sont gérés exclusivement par doOptions pour éviter les erreurs TypeError.
   // Si doOptions réussit, le navigateur autorisera cette réponse.
-  return output;
+  return ContentService.createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
 }
 
 /**

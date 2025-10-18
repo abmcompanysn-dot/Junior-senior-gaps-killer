@@ -43,15 +43,23 @@ function doPost(e) {
         }
 
     } catch (error) {
-        return addCorsHeaders(createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }));
+        return createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` }, origin);
     }
 }
 
 function doOptions(e) {
-  return ContentService.createTextOutput(null)
-    .addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app')
-    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const config = getConfig();
+  const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
+  const output = ContentService.createTextOutput(null);
+
+  // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
+  if (origin && config.allowed_origins.includes(origin)) {
+      output.addHeader('Access-Control-Allow-Origin', origin); // Important: Renvoyer l'origine de la requête
+      output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
+      output.addHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  return output;
 }
 
 // --- FONCTIONS UTILITAIRES ---

@@ -54,11 +54,16 @@ function doOptions(e) {
       "http://127.0.0.1:5501"
   ];
   const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
-  // Autorise toutes les origines pour les requêtes de pré-vol.
-  return ContentService.createTextOutput(null)
-    .addHeader('Access-Control-Allow-Origin', 'https://junior-senior-gaps-killer.vercel.app')
-    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const output = ContentService.createTextOutput(null);
+
+  // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+      output.addHeader('Access-Control-Allow-Origin', origin); // Important: Renvoyer l'origine de la requête
+      output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
+      output.addHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  return output;
 }
 
 // --- LOGIQUE MÉTIER ---
@@ -90,10 +95,9 @@ function enregistrerCommande(data, origin) {
 // --- FONCTIONS UTILITAIRES ---
 
 function createJsonResponse(data, origin) {
-  const output = ContentService.createTextOutput(JSON.stringify(data))
-      .setMimeType(ContentService.MimeType.JSON);
   // Les en-têtes CORS sont gérés exclusivement par doOptions pour éviter les erreurs TypeError.
-  return output;
+  return ContentService.createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
 }
 
 function logAction(action, details) {

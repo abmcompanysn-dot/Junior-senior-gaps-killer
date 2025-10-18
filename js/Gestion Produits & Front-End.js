@@ -44,34 +44,7 @@ function onEdit(e) {
  * Gère les requêtes OPTIONS pour le pré-vol CORS.
  */
 function doOptions(e) {
-  // Répond aux requêtes de pré-vérification CORS
-  return ContentService.createTextOutput()
-    .setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN)
-    .setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
-    .setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With'); // Ajout d'en-têtes communs
-}
-
-/**
- * Fournit la liste des catégories au front-end (main.js).
- */
-function doGet(e) {
-  // L'origine n'est plus utilisée directement par createJsonResponse
-  const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null; 
-
-  try {
-    const action = e.parameter.action;
-
-    // Gérer l'invalidation du cache
-    if (action === 'invalidateCache') {
-      const properties = PropertiesService.getScriptProperties();
-      const newVersion = new Date().getTime().toString();
-      properties.setProperty('cacheVersion', newVersion);
-      // Invalider le cache de données
-      CacheService.getScriptCache().remove('publicCatalogData');
-      return createJsonResponse({ success: true, message: `Cache invalidé. Nouvelle version: ${newVersion}` });
-    }
-
-    // Point d'entrée léger pour juste vérifier la version du cache
+  // / Point d'entrée léger pour juste vérifier la version du cache
     if (action === 'getCacheVersion') {
       const cacheVersion = PropertiesService.getScriptProperties().getProperty('cacheVersion') || '0';
       return createJsonResponse({ success: true, cacheVersion: cacheVersion });
