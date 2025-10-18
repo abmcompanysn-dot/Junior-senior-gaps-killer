@@ -96,14 +96,17 @@ function doOptions(e) {
     ];
     const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
 
+    const output = ContentService.createTextOutput(null);
+
     // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
     if (origin && ALLOWED_ORIGINS.includes(origin)) {
-        return ContentService.createTextOutput(null)
-            .addHeader('Access-Control-Allow-Origin', origin) // Important: Renvoyer l'origine de la requête
-            .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-            .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+        output.addHeader('Access-Control-Allow-Origin', origin); // Important: Renvoyer l'origine de la requête
+        output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
     }
-    // Si l'origine n'est pas autorisée, ne rien renvoyer, ce qui provoquera l'échec du preflight.
+    // Si l'origine n'est pas autorisée, on renvoie une réponse sans les en-têtes CORS,
+    // ce qui provoquera un échec propre de la requête preflight côté navigateur.
+    return output;
 }
 
 
@@ -284,12 +287,10 @@ function getAppLogs(params, origin) {
  * @returns {GoogleAppsScript.Content.TextOutput} Un objet TextOutput.
  */
 function createJsonResponse(data, origin) {
-  const ALLOWED_ORIGINS = ["https://junior-senior-gaps-killer.vercel.app", "http://127.0.0.1:5500", "http://127.0.0.1:5501"];
   const output = ContentService.createTextOutput(JSON.stringify(data))
       .setMimeType(ContentService.MimeType.JSON);
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
-    output.addHeader('Access-Control-Allow-Origin', origin);
-  }
+  // Les en-têtes CORS sont gérés exclusivement par doOptions pour éviter les erreurs TypeError.
+  // Si doOptions réussit, le navigateur autorisera cette réponse.
   return output;
 }
 
@@ -402,6 +403,3 @@ function setupProject() {
     ui.alert("Projet 'Gestion Compte' initialisé avec succès ! Les onglets 'Utilisateurs', 'Logs' et 'Config' sont prêts.");
   }
 }
-
-
-

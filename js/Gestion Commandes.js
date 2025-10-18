@@ -90,16 +90,9 @@ function enregistrerCommande(data, origin) {
 // --- FONCTIONS UTILITAIRES ---
 
 function createJsonResponse(data, origin) {
-  const ALLOWED_ORIGINS = [
-      "https://junior-senior-gaps-killer.vercel.app",
-      "http://127.0.0.1:5500",
-      "http://127.0.0.1:5501"
-  ];
   const output = ContentService.createTextOutput(JSON.stringify(data))
       .setMimeType(ContentService.MimeType.JSON);
-
-  const allowedOrigin = (origin && ALLOWED_ORIGINS.includes(origin)) ? origin : ALLOWED_ORIGINS[0];
-  output.addHeader('Access-Control-Allow-Origin', allowedOrigin);
+  // Les en-têtes CORS sont gérés exclusivement par doOptions pour éviter les erreurs TypeError.
   return output;
 }
 

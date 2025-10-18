@@ -57,12 +57,9 @@ function doOptions(e) {
 // --- FONCTIONS UTILITAIRES ---
 
 function createJsonResponse(data, origin) {
-  const config = getConfig();
   const output = ContentService.createTextOutput(JSON.stringify(data))
       .setMimeType(ContentService.MimeType.JSON);
-  if (origin && config.allowed_origins.includes(origin)) {
-    output.addHeader('Access-Control-Allow-Origin', origin);
-  }
+  // Les en-têtes CORS sont gérés exclusivement par doOptions pour éviter les erreurs TypeError.
   return output;
 }
 
