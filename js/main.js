@@ -1,6 +1,6 @@
 const CONFIG = {
     // URL de l'API pour la gestion des comptes (authentification, etc.)
-    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbyR5ZgW6EmpYDtiumFIywbsrlsckQ7dbthH3wE6IeyvYiZg-Z_sdfdBwTcFiNLHIaJ0Vw/exec",
+    ACCOUNT_API_URL: "https://script.google.com/macros/s/AKfycbzuyPGHhOtgBab8i06npkbs-KkHDqNyjwe_PMHX_4pKR7h6KOM1cKRCiKNs1YnjgRMgcA/exec",
     // NOUVEAU: URL de l'API centrale pour la gestion des cours, achats, et progression
     COURSE_API_URL: "https://script.google.com/macros/s/AKfycbzQk4CwkPid9WBuRFbI-QUW2MZvLxV-ke0g--3uvIBj5s82_1zhBBZoUFEtz7sqDHxi0g/exec",
     // NOUVEAU: URL de l'API dédiée aux notifications
@@ -2013,7 +2013,7 @@ async function loadSeniorCourses() {
                                 <p class="text-sm text-gray-500">${course.Niveau} - ${Number(course.Prix).toLocaleString('fr-FR')} F</p>
                             </div>
                         </div>
-                        <button class="text-sm font-semibold text-blue-600 hover:underline">
+                        <button onclick='openEditCourseModal(${JSON.stringify(course)})' class="text-sm font-semibold text-blue-600 hover:underline">
                             Modifier
                         </button>
                     </div>
@@ -2025,6 +2025,129 @@ async function loadSeniorCourses() {
         console.error("Erreur de chargement des cours du senior:", error);
         container.innerHTML = '<p class="text-red-500">Erreur lors du chargement de vos cours.</p>';
     }
+}
+
+/**
+ * NOUVEAU: Charge les questions pour le formateur et les affiche.
+ */
+async function loadSeniorQA() {
+    const user = JSON.parse(localStorage.getItem('abmcyUser'));
+    if (!user || user.Role !== 'Senior') return;
+
+    const container = document.getElementById('qa-list');
+    container.innerHTML = '<p class="text-gray-500">Chargement des questions...</p>';
+
+    try {
+        const response = await fetch(`${CONFIG.COURSE_API_URL}?action=getQuestionsForSenior&formateurNom=${encodeURIComponent(user.Nom)}`);
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.error || "Impossible de charger les questions.");
+        }
+
+        const questions = result.data;
+
+        if (questions.length === 0) {
+            container.innerHTML = '<p class="text-gray-500">Vous n\'avez aucune question pour le moment. Excellent travail !</p>';
+            return;
+        }
+
+        container.innerHTML = questions.map(q => {
+            const isAnswered = q.Statut === 'Répondue';
+            return `
+                <div class="p-4 rounded-md ${isAnswered ? 'bg-green-50' : 'bg-blue-50'}">
+                    <p class="text-sm">"${q.Question_Texte}"</p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        Par <strong>${q.Nom_Apprenant}</strong> sur le cours <em>${q.Nom_Cours}</em>
+                        le ${new Date(q.Date_Question).toLocaleDateString('fr-FR')}
+                    </p>
+                    ${isAnswered ? `
+                        <div class="mt-3 pt-3 border-t border-green-200">
+                            <p class="text-sm font-semibold text-green-800">Votre réponse :</p>
+                            <p class="text-sm text-gray-700 italic">"${q.Reponse_Texte}"</p>
+                        </div>
+                    ` : `
+                        <button onclick="openReplyModal('${q.ID_Question}', \`${q.Question_Texte}\`, '${q.Nom_Apprenant} sur ${q.Nom_Cours}')" class="text-sm text-blue-600 font-semibold mt-2 hover:underline">
+                            Répondre
+                        </button>
+                    `}
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error("Erreur de chargement des Q&A:", error);
+        container.innerHTML = '<p class="text-red-500">Erreur lors du chargement des questions.</p>';
+    }
+}
+
+/**
+ * NOUVEAU: Ouvre la modale de réponse avec les bonnes informations.
+ */
+function openReplyModal(questionId, questionText, questionDetails) {
+    document.getElementById('modal-question-id').value = questionId;
+    document.getElementById('modal-question-text').textContent = questionText;
+    document.getElementById('modal-question-details').textContent = `De : ${questionDetails}`;
+    document.getElementById('reply-modal').classList.remove('hidden');
+}
+
+/**
+ * NOUVEAU: Ferme la modale de réponse.
+ */
+function closeReplyModal() {
+    document.getElementById('reply-modal').classList.add('hidden');
+    document.getElementById('reply-form').reset();
+}
+
+/**
+ * NOUVEAU: Gère la soumission du formulaire de réponse.
+ */
+async function handleReplySubmit(event) {
+    event.preventDefault();
+    const user = JSON.parse(localStorage.getItem('abmcyUser'));
+    const payload = {
+        action: 'replyToQuestion',
+        data: {
+            questionId: document.getElementById('modal-question-id').value,
+            reponseTexte: document.getElementById('modal-reply-textarea').value,
+            formateurNom: user.Nom
+        }
+    };
+
+    try {
+        const response = await fetch(CONFIG.COURSE_API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        showToast("Réponse envoyée avec succès !");
+        closeReplyModal();
+        loadSeniorQA(); // Recharger la liste pour voir la mise à jour
+    } catch (error) {
+        showToast(`Erreur: ${error.message}`, true);
+    }
+}
+
+/**
+ * NOUVEAU: Ouvre la modale de modification de cours et la pré-remplit.
+ */
+function openEditCourseModal(course) {
+    const modal = document.getElementById('edit-course-modal');
+    if (!modal) return;
+
+    // Remplir le formulaire
+    document.getElementById('edit-course-id').value = course.ID_Cours;
+    document.getElementById('edit-course-name').value = course.Nom_Cours;
+    document.getElementById('edit-course-summary').value = course.Résumé;
+    document.getElementById('edit-course-price').value = course.Prix;
+
+    modal.classList.remove('hidden');
+}
+
+/**
+ * NOUVEAU: Ferme la modale de modification de cours.
+ */
+function closeEditCourseModal() {
+    const modal = document.getElementById('edit-course-modal');
+    if (modal) modal.classList.add('hidden');
 }
 
 /**
@@ -2477,4 +2600,4 @@ async function loadUserActivityLog(userId) {
         console.error("Erreur lors du chargement du journal d'activité:", error);
         activitySection.innerHTML = '<h4 class="text-lg font-semibold mb-4">Mon Activité</h4><p class="text-red-500">Une erreur est survenue lors du chargement de votre activité.</p>';
     }
-}
+}ion

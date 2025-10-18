@@ -88,12 +88,13 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
+    const ALLOWED_ORIGINS = ["https://junior-senior-gaps-killer.vercel.app", "http://127.0.0.1:5500", "http://127.0.0.1:5501"];
     const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
-    const config = getConfig();
     const headers = ContentService.createTextOutput(null)
         .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         .addHeader('Access-Control-Allow-Headers', 'Content-Type');
-    if (origin && config.allowed_origins.includes(origin)) {
+
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
         headers.addHeader('Access-Control-Allow-Origin', origin);
     }
     return headers;
@@ -277,10 +278,10 @@ function getAppLogs(params, origin) {
  * @returns {GoogleAppsScript.Content.TextOutput} Un objet TextOutput.
  */
 function createJsonResponse(data, origin) {
-  const config = getConfig();
+  const ALLOWED_ORIGINS = ["https://junior-senior-gaps-killer.vercel.app", "http://127.0.0.1:5500", "http://127.0.0.1:5501"];
   const output = ContentService.createTextOutput(JSON.stringify(data))
       .setMimeType(ContentService.MimeType.JSON);
-  if (origin && config.allowed_origins.includes(origin)) {
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
     output.addHeader('Access-Control-Allow-Origin', origin);
   }
   return output;
@@ -345,50 +346,6 @@ function onOpen() {
 }
 
 /**
- * Récupère la configuration depuis la feuille "Config" et la met en cache.
- * @returns {object} Un objet contenant la configuration.
- */
-function getConfig() {
-  const cache = CacheService.getScriptCache();
-  const CACHE_KEY = 'script_config';
-  const cachedConfig = cache.get(CACHE_KEY);
-  if (cachedConfig) {
-    return JSON.parse(cachedConfig);
-  }
-
-  const defaultConfig = {
-    allowed_origins: ["https://junior-senior-gaps-killer.vercel.app"],
-    allowed_methods: "POST,GET,OPTIONS",
-    allowed_headers: "Content-Type",
-    allow_credentials: "true"
-  };
-
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
-    if (!configSheet) return defaultConfig;
-
-    const data = configSheet.getDataRange().getValues();
-    const config = {};
-    data.forEach(row => {
-      if (row[0] && row[1]) { config[row[0]] = row[1]; }
-    });
-
-    const finalConfig = {
-      allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim()) : defaultConfig.allowed_origins,
-      allowed_methods: config.allowed_methods || defaultConfig.allowed_methods,
-      allowed_headers: config.allowed_headers || defaultConfig.allowed_headers,
-      allow_credentials: config.allow_credentials === 'true'
-    };
-
-    cache.put(CACHE_KEY, JSON.stringify(finalConfig), 600); // Cache pendant 10 minutes
-    return finalConfig;
-  } catch (e) {
-    return defaultConfig;
-  }
-}
-
-/**
  * Initialise les feuilles de calcul nécessaires pour ce module.
  */
 function setupProject() {
@@ -398,8 +355,7 @@ function setupProject() {
   // NOUVEAU: Assurer que les colonnes Titre et Bio sont incluses
   const sheetsToCreate = {
     [SHEET_NAMES.USERS]: ["IDClient", "Nom", "Email", "PasswordHash", "Salt", "Telephone", "Adresse", "Date d'inscription", "Statut", "Role", "ImageURL", "Titre", "Bio"],
-    [SHEET_NAMES.LOGS]: ["Timestamp", "Source", "Action", "Détails"],
-    [SHEET_NAMES.CONFIG]: ["Clé", "Valeur"]
+    [SHEET_NAMES.LOGS]: ["Timestamp", "Source", "Action", "Détails"]
   };
 
   Object.entries(sheetsToCreate).forEach(([sheetName, headers]) => {
@@ -412,24 +368,6 @@ function setupProject() {
     sheet.appendRow(headers);
     sheet.setFrozenRows(1);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
-  });
-
-  // Remplir la configuration par défaut
-  const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
-  const configData = configSheet.getDataRange().getValues();
-  const configMap = new Map(configData.map(row => [row[0], row[1]]));
-
-  const defaultConfigValues = {
-    'allowed_origins': 'https://junior-senior-gaps-killer.vercel.app,http://127.0.0.1:5500',
-    'allowed_methods': 'POST,GET,OPTIONS',
-    'allowed_headers': 'Content-Type',
-    'allow_credentials': 'true'
-  };
-
-  Object.entries(defaultConfigValues).forEach(([key, value]) => {
-    if (!configMap.has(key)) {
-      configSheet.appendRow([key, value]);
-    }
   });
 
   ui.alert("Projet 'Gestion Compte' initialisé avec succès ! Les onglets 'Utilisateurs', 'Logs' et 'Config' sont prêts.");
