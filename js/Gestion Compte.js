@@ -88,22 +88,28 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
-    const config = getConfig();
-    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
-    const output = ContentService.createTextOutput(null);
+    // Création de la réponse de base. C'est la réponse qui sera envoyée si l'origine n'est pas autorisée.
+    const output = ContentService.createTextOutput(null); 
 
-    // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
-    if (origin && config.allowed_origins.includes(origin)) {
-        output.addHeader('Access-Control-Allow-Origin', origin); // Important: Renvoyer l'origine de la requête
-        output.addHeader('Access-Control-Allow-Methods', config.allowed_methods || 'GET, POST, OPTIONS');
-        output.addHeader('Access-Control-Allow-Headers', config.allowed_headers || 'Content-Type');
-        // La valeur doit être une chaîne 'true'
-        if (config.allow_credentials) {
-            output.addHeader('Access-Control-Allow-Credentials', 'true');
+    try {
+        const config = getConfig();
+        const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
+
+        // Si l'origine de la requête est dans notre liste, on ajoute les en-têtes CORS.
+        if (origin && config.allowed_origins.includes(origin)) {
+            output.addHeader('Access-Control-Allow-Origin', origin);
+            output.addHeader('Access-Control-Allow-Methods', config.allowed_methods || 'GET, POST, OPTIONS');
+            output.addHeader('Access-Control-Allow-Headers', config.allowed_headers || 'Content-Type');
+            if (config.allow_credentials) {
+                output.addHeader('Access-Control-Allow-Credentials', 'true');
+            }
         }
+    } catch (err) {
+        // En cas d'erreur (ex: getConfig échoue), on ne fait rien, la réponse sans en-têtes sera envoyée,
+        // ce qui provoquera un échec CORS propre côté client, comme attendu.
+        // On peut ajouter un log pour le débogage.
+        console.error("Erreur dans doOptions: " + err.message);
     }
-    // Si l'origine n'est pas autorisée, on renvoie une réponse sans les en-têtes CORS,
-    // ce qui provoquera un échec propre de la requête preflight côté navigateur.
     return output;
 }
 
