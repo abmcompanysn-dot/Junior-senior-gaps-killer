@@ -375,7 +375,31 @@ function setupProject() {
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
   });
 
-  ui.alert("Projet 'Gestion Compte' initialisé avec succès ! Les onglets 'Utilisateurs', 'Logs' et 'Config' sont prêts.");
+  // NOUVEAU: Ajout de données de test
+  const usersSheet = ss.getSheetByName(SHEET_NAMES.USERS);
+  const lastRow = usersSheet.getLastRow();
+
+  // On ajoute les données seulement si la feuille est vide (à part l'en-tête)
+  if (lastRow < 2) {
+    const testPassword = "password123";
+
+    // Utilisateur Client
+    const clientHash = hashPassword(testPassword);
+    usersSheet.appendRow([
+      "CLT-TEST-001", "Client Test", "client@test.com", clientHash.passwordHash, clientHash.salt,
+      "221771112233", "Dakar, Sénégal", new Date(), "Actif", "Client", "", "Apprenant passionné", "Je suis ici pour apprendre !"
+    ]);
+
+    // Utilisateur Senior
+    const seniorHash = hashPassword(testPassword);
+    usersSheet.appendRow([
+      "SNR-TEST-002", "Senior Test", "senior@test.com", seniorHash.passwordHash, seniorHash.salt,
+      "221774445566", "Dakar, Sénégal", new Date(), "Actif", "Senior", "", "Formateur Expert", "15 ans d'expérience en développement."
+    ]);
+    ui.alert("Projet initialisé et 2 utilisateurs de test (client@test.com, senior@test.com) ont été ajoutés avec le mot de passe 'password123'.");
+  } else {
+    ui.alert("Projet 'Gestion Compte' initialisé avec succès ! Les onglets 'Utilisateurs', 'Logs' et 'Config' sont prêts.");
+  }
 }
 
 /**
