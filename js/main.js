@@ -35,8 +35,8 @@ async function initializeApp() {
     updateCartBadges();
     initializeSearch(); // Les formulaires de recherche peuvent être initialisés immédiatement.
     if (document.getElementById('auth-forms')) {
-        document.getElementById('login-form').addEventListener('submit', (e) => handleAuthForm(e, 'login'));
-        document.getElementById('register-form').addEventListener('submit', (e) => handleAuthForm(e, 'register'));
+        document.getElementById('login-form')?.addEventListener('submit', (e) => handleAuthForm(e, 'login'));
+        document.getElementById('register-form')?.addEventListener('submit', (e) => handleAuthForm(e, 'register'));
     }
     if (document.querySelector('main h1.text-3xl')?.textContent.includes("Mon Compte")) {
         initializeAccountPage(); // La page compte gère sa propre logique d'authentification.
