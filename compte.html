@@ -126,14 +126,16 @@
                     <p>Depuis votre tableau de bord, vous pouvez consulter vos <a href="#" onclick="switchAccountTab('orders')" class="text-gold hover:underline">cours achetés</a> et gérer les <a href="#" class="text-gold hover:underline">détails de votre compte</a>.</p>
                 </div>
 
-                <!-- NOUVEAU: Contenu pour les commandes/cours -->
-                <div id="content-orders" class="account-content bg-white p-8 rounded-lg shadow hidden">
-                    <div id="recent-orders-section"></div>
+                <!-- Contenu pour les cours achetés -->
+                <div id="content-courses" class="account-content bg-white p-8 rounded-lg shadow hidden">
+                    <h3 class="text-xl font-bold mb-6">Mes Cours</h3>
+                    <div id="my-courses-list" class="space-y-4"></div>
                 </div>
 
                 <!-- NOUVEAU: Contenu pour les notifications -->
                 <div id="content-notifications" class="account-content bg-white p-8 rounded-lg shadow hidden">
-                    <div id="notifications-section"></div>
+                    <h3 class="text-xl font-bold mb-6">Mes Notifications</h3>
+                    <div id="notifications-list"></div>
                 </div>
 
                 <!-- NOUVEAU: Contenu pour l'activité du compte -->

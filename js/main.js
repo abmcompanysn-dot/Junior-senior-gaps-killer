@@ -2482,8 +2482,11 @@ function initializeAccountPage() {
     logoutNav.addEventListener('click', logoutAction);
 
     // NOUVEAU: Gérer les onglets et charger les cours
-    switchAccountTab('courses'); // Afficher l'onglet "Mes Cours" par défaut
+    switchAccountTab('dashboard'); // Afficher l'onglet "Tableau de bord" par défaut
     loadMyCourses(user.IDClient);
+    loadUserActivityLog(user.IDClient);
+    // La fonction pour charger les notifications sera appelée par initializeNotificationPage si besoin
+    initializeNotificationPage();
 }
 
 /**

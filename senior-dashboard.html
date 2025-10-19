@@ -131,6 +131,54 @@
         </div>
     </main>
 
+    <!-- NOUVEAU: Modale pour ajouter/modifier un cours -->
+    <div id="edit-course-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
+            <h3 id="modal-title" class="text-xl font-bold mb-4">Créer un nouveau cours</h3>
+            <form id="edit-course-form" class="space-y-4">
+                <input type="hidden" id="edit-course-id">
+                <div>
+                    <label for="edit-course-name" class="block text-sm font-medium text-gray-700">Nom du cours</label>
+                    <input type="text" id="edit-course-name" class="mt-1 block w-full p-2 border rounded-md" required>
+                </div>
+                <div>
+                    <label for="edit-course-summary" class="block text-sm font-medium text-gray-700">Résumé</label>
+                    <textarea id="edit-course-summary" rows="3" class="mt-1 block w-full p-2 border rounded-md" required></textarea>
+                </div>
+                <div>
+                    <label for="edit-course-price" class="block text-sm font-medium text-gray-700">Prix (F CFA)</label>
+                    <input type="number" id="edit-course-price" class="mt-1 block w-full p-2 border rounded-md" required>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditCourseModal()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg">Annuler</button>
+                    <button type="submit" class="bg-gold text-white px-4 py-2 rounded-lg font-bold">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOUVEAU: Modale pour répondre à une question -->
+    <div id="reply-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
+            <h3 class="text-xl font-bold mb-4">Répondre à la question</h3>
+            <div class="mb-4 p-3 bg-blue-50 rounded-md border border-blue-200">
+                <p id="modal-question-details" class="text-xs text-gray-500 mb-1"></p>
+                <p id="modal-question-text" class="italic">"</p>
+            </div>
+            <form id="reply-form">
+                <input type="hidden" id="modal-question-id">
+                <div>
+                    <label for="modal-reply-textarea" class="block text-sm font-medium text-gray-700">Votre réponse</label>
+                    <textarea id="modal-reply-textarea" rows="5" class="mt-1 block w-full p-2 border rounded-md" required></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" onclick="closeReplyModal()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg">Annuler</button>
+                    <button type="submit" class="bg-gold text-white px-4 py-2 rounded-lg font-bold">Envoyer la réponse</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="text-white pt-12 pb-8 mt-16" style="background-color: #1A233A;">
         <div class="container mx-auto px-4">
@@ -165,7 +213,18 @@
             // NOUVEAU: Charger les données spécifiques au profil et aux cours
             initializeProfileForm(user);
             loadSeniorCourses();
+            loadSeniorQA();
             document.getElementById('profile-update-form').addEventListener('submit', handleProfileUpdate);
+
+            // NOUVEAU: Gérer l'ouverture des modales
+            document.getElementById('add-course-btn').addEventListener('click', () => {
+                document.getElementById('modal-title').textContent = 'Créer un nouveau cours';
+                document.getElementById('edit-course-form').reset();
+                openEditCourseModal(); // Utilise la même modale pour la création
+            });
+
+            // NOUVEAU: Gérer la soumission du formulaire de réponse
+            document.getElementById('reply-form').addEventListener('submit', handleReplySubmit);
         });
 
         function switchDashboardTab(tabId) {
