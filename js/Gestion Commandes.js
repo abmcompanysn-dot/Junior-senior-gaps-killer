@@ -49,19 +49,28 @@ function doPost(e) {
 
 function doOptions(e) {
   const config = getConfig();
-  const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
+  const origin = ((e && e.headers && (e.headers.Origin || e.headers.origin)) || null)?.replace(/\/$/, '');
   const output = ContentService.createTextOutput(null);
+  let diagnostic = "";
 
   // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
   if (origin && config.allowed_origins.includes(origin)) {
       output.addHeader('Access-Control-Allow-Origin', origin); // Important: Renvoyer l'origine de la requête
       output.addHeader('Access-Control-Allow-Methods', config.allowed_methods || 'GET, POST, OPTIONS');
       output.addHeader('Access-Control-Allow-Headers', config.allowed_headers || 'Content-Type');
-      // La valeur doit être une chaîne 'true'
       if (config.allow_credentials) {
           output.addHeader('Access-Control-Allow-Credentials', 'true');
       }
+      diagnostic = "SUCCÈS : L'origine est autorisée.";
+  } else {
+      if (!origin) {
+          diagnostic = "ÉCHEC : Aucune origine (Origin) n'a été fournie dans l'en-tête de la requête.";
+      } else {
+          diagnostic = `ÉCHEC : L'origine '${origin}' n'est pas dans la liste des origines autorisées.`;
+      }
   }
+
+  logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: !!diagnostic.includes('SUCCÈS'), diagnostic: diagnostic, allowedList: config.allowed_origins });
   return output;
 }
 

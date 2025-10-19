@@ -120,6 +120,7 @@ function doOptions(e) {
     // --- Logique normale pour une vraie requête web ---
     const headersToSend = {};
     const origin = ((e && e.headers && (e.headers.Origin || e.headers.origin)) || null)?.replace(/\/$/, '');
+    let diagnostic = "";
 
     if (origin && ALLOWED_ORIGINS.includes(origin)) {
         headersToSend['Access-Control-Allow-Origin'] = origin;
@@ -127,6 +128,13 @@ function doOptions(e) {
         headersToSend['Access-Control-Allow-Headers'] = ALLOWED_HEADERS;
         if (ALLOW_CREDENTIALS === 'true') {
             headersToSend['Access-Control-Allow-Credentials'] = 'true';
+        }
+        diagnostic = "SUCCÈS : L'origine est autorisée.";
+    } else {
+        if (!origin) {
+            diagnostic = "ÉCHEC : Aucune origine (Origin) n'a été fournie dans l'en-tête de la requête.";
+        } else {
+            diagnostic = `ÉCHEC : L'origine '${origin}' n'est pas dans la liste des origines autorisées.`;
         }
     }
 
@@ -137,7 +145,7 @@ function doOptions(e) {
 
     // Journalisation pour le débogage en production
     const isAllowed = 'Access-Control-Allow-Origin' in headersToSend;
-    logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: isAllowed, sentHeaders: headersToSend });
+    logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: isAllowed, diagnostic: diagnostic, allowedList: ALLOWED_ORIGINS });
     return output;
 }
 
@@ -192,6 +200,11 @@ function creerCompteClient(data, origin) {
  * @returns {GoogleAppsScript.Content.TextOutput} Réponse JSON avec les infos utilisateur si succès.
  */
 function connecterClient(data, origin) {
+    // AMÉLIORATION: Vérification de la présence des données de connexion.
+    if (!data || !data.email || !data.motDePasse) {
+        logError('connecterClient', new Error('Données de connexion incomplètes ou manquantes.'));
+        return createJsonResponse({ success: false, error: 'Les données fournies (email, motDePasse) sont incomplètes.' }, origin);
+    }
     try {
         const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.USERS);
         const usersData = sheet.getDataRange().getValues();

@@ -2306,10 +2306,10 @@ function logAppEvent(type, data) {
  * @param {string} type 'login' ou 'register'.
  * @param {string} role 'Client' ou 'Senior'.
  */
-async function handleAuthForm(event, type) {
+async function handleAuthForm(event, type, roleOverride = null) {
     event.preventDefault();
     const form = event.target;
-    const statusDiv = document.getElementById('auth-status');
+    const statusDiv = form.parentElement.querySelector('#auth-status');
     if (statusDiv) statusDiv.className = 'mt-4 text-center font-semibold'; // Reset classes
     statusDiv.textContent = 'Veuillez patienter...';
 
@@ -2320,7 +2320,14 @@ async function handleAuthForm(event, type) {
         // Récupérer l'indicatif et le numéro pour les combiner
         const indicatif = form.querySelector('#register-indicatif').value;
         const numero = form.querySelector('#register-telephone').value;
-        const role = form.querySelector('#register-role').value; // Lire le rôle depuis le nouveau sélecteur
+        
+        // Déterminer le rôle : soit depuis le sélecteur, soit si on est sur la page senior
+        let role = 'Client';
+        if (form.querySelector('#register-role')) {
+            role = form.querySelector('#register-role').value;
+        } else if (window.location.pathname.includes('senior-auth.html')) {
+            role = 'Senior';
+        }
 
         payload = {
             action: 'creerCompteClient',
