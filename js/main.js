@@ -1621,45 +1621,50 @@ async function getCatalogAndRefreshInBackground() {
  * @returns {string} Le HTML de la carte.
  */
 function renderProductCard(course) {
-    const price = course.Prix || 0;
-    const courseId = course.ID_Cours || course.IDProduit; // Compatibilité
-    const courseName = course.Nom_Cours || course.Nom; // Compatibilité
-    const instructorName = course.Formateur_Nom || '';
-    const coverImage = course.Image_Couverture || course.ImageURL || CONFIG.DEFAULT_PRODUCT_IMAGE;
+  const price = course.Prix || 0;
+  const courseId = course.ID_Cours || course.IDProduit;
+  const courseName = course.Nom_Cours || course.Nom;
+  const instructorName = course.Formateur_Nom || '';
+  const coverImage = course.Image_Couverture || course.ImageURL || CONFIG.DEFAULT_PRODUCT_IMAGE;
+  const instructorImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(instructorName)}&background=random&color=fff&size=32`;
+  const rating = parseFloat(course.Note_Moyenne) || 0;
+  const reviewsCount = parseInt(String(course.Avis).replace(/\D/g, '')) || 0;
 
-    return `
-    <div class="product-card bg-white rounded-lg shadow overflow-hidden flex flex-col justify-between group">
-        <div>
-            <a href="produit.html?id=${courseId}" class="block" data-instructor="${instructorName}">
-                <div class="relative">
-                    <div class="h-40 bg-gray-200 flex items-center justify-center">
-                        <img src="${coverImage}" alt="${courseName}" class="h-full w-full object-cover" loading="lazy" width="160" height="160" onerror="this.onerror=null;this.src='${CONFIG.DEFAULT_PRODUCT_IMAGE}';">
-                    </div>
-                    
-                    <!-- NOUVEAU: Conteneur pour les icônes d'action qui apparaissent au survol -->
-                    <div class="absolute top-2 right-2 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <button onclick="addToCart(event, '${courseId}', '${courseName}', ${price}, '${coverImage}')" title="Ajouter au panier" class="bg-white p-2 rounded-full shadow-lg hover:bg-gold hover:text-white">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                        </button>
-                        <button onclick="shareProduct(event, '${courseId}')" title="Partager" class="bg-white p-2 rounded-full shadow-lg hover:bg-gold hover:text-white">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="p-3">
-                    <p class="text-sm font-semibold text-gray-800 truncate" title="${courseName}">${courseName}</p>
-                    <p class="text-xs text-gray-500 mt-1">Par ${instructorName}</p>
-                    <p class="font-bold text-lg mt-1">${price.toLocaleString('fr-FR')} F CFA</p>
-                </div>
-            </a>
-        </div>
-        <div class="p-3 pt-0">
-            <a href="produit.html?id=${courseId}" class="w-full block text-center bg-gray-100 text-gray-800 py-1.5 rounded-lg font-semibold text-xs hover:bg-gray-200 transition">
-                Voir le cours
-            </a>
-        </div>
-    </div>
-    `;
+  // Fonction pour générer les étoiles
+  const renderStars = (rating) => {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+      if (i <= rating) {
+        stars += '<svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+      } else {
+        stars += '<svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+      }
+    }
+    return stars;
+  };
+
+  return `
+  <a href="produit.html?id=${courseId}" class="product-card bg-white rounded-lg shadow-md overflow-hidden block group">
+      <div class="relative">
+          <div class="h-40 bg-gray-200">
+              <img src="${coverImage}" alt="${courseName}" class="h-full w-full object-cover" loading="lazy" onerror="this.onerror=null;this.src='${CONFIG.DEFAULT_PRODUCT_IMAGE}';">
+          </div>
+      </div>
+      <div class="p-4">
+          <h3 class="font-bold text-gray-800 text-md h-12 overflow-hidden">${courseName}</h3>
+          <div class="flex items-center mt-3">
+              <img src="${instructorImage}" alt="${instructorName}" class="w-6 h-6 rounded-full mr-2">
+              <p class="text-xs text-gray-600 truncate">${instructorName}</p>
+          </div>
+          <div class="flex items-center mt-2">
+              <span class="text-sm font-bold text-yellow-500 mr-1">${rating.toFixed(1)}</span>
+              <div class="flex items-center mr-2">${renderStars(rating)}</div>
+              <span class="text-xs text-gray-500">(${reviewsCount.toLocaleString('fr-FR')})</span>
+          </div>
+          <p class="font-extrabold text-lg mt-2 text-gray-900">${price.toLocaleString('fr-FR')} F CFA</p>
+      </div>
+  </a>
+  `;
 }
 
 /**
