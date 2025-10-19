@@ -88,9 +88,29 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
-    const isTestMode = e.parameter && e.parameter.test_mode === 'true';
+    // Détection du mode test : si 'e' n'est pas un vrai événement HTTP, on est en mode test.
+    const isTestMode = !(e && e.postData);
+    const testOrigin = 'https://junior-senior-gaps-killer.vercel.app/';
+
+    // Si on est en mode test, on exécute une logique de diagnostic et on s'arrête.
+    if (isTestMode) {
+        Logger.log("--- DÉBUT DU TEST de doOptions (mode diagnostic) ---");
+        Logger.log("Origine de test : " + testOrigin);
+        const config = getConfig();
+        const normalizedTestOrigin = testOrigin.replace(/\/$/, '');
+        if (config.allowed_origins && config.allowed_origins.includes(normalizedTestOrigin)) {
+            Logger.log("✅ SUCCÈS : L'origine de test a été trouvée dans la configuration.");
+        } else {
+            Logger.log("❌ ÉCHEC : L'origine de test N'A PAS été trouvée.");
+            Logger.log("   -> Origines configurées : " + JSON.stringify(config.allowed_origins));
+            Logger.log("   -> SOLUTION : Vérifiez l'orthographe et la présence de '" + normalizedTestOrigin + "' dans la feuille 'Config'.");
+        }
+        Logger.log("--- FIN DU TEST de doOptions ---");
+        return; // On arrête l'exécution ici pour le mode test.
+    }
+
+    // --- Logique normale pour une vraie requête web ---
     const headersToSend = {};
-    // Normalisation de l'origine reçue pour retirer le slash final
     const origin = ((e && e.headers && (e.headers.Origin || e.headers.origin)) || null)?.replace(/\/$/, '');
 
     try {
@@ -103,16 +123,8 @@ function doOptions(e) {
                 headersToSend['Access-Control-Allow-Credentials'] = 'true';
             }
         }
-    } catch (err) {
-        // En cas d'erreur, headersToSend reste vide, ce qui est le comportement attendu (refus CORS).
-    }
+    } catch (err) { /* En cas d'erreur, headersToSend reste vide, ce qui est le comportement attendu. */ }
 
-    // Si c'est un test, on retourne les en-têtes pour inspection.
-    if (isTestMode) {
-        return headersToSend;
-    }
-
-    // Sinon, on construit la vraie réponse HTTP.
     const output = ContentService.createTextOutput(null);
     for (const header in headersToSend) {
         output.addHeader(header, headersToSend[header]);
