@@ -2306,7 +2306,7 @@ function logAppEvent(type, data) {
  * @param {string} type 'login' ou 'register'.
  * @param {string} role 'Client' ou 'Senior'.
  */
-async function handleAuthForm(event, type, role = 'Client') {
+async function handleAuthForm(event, type) {
     event.preventDefault();
     const form = event.target;
     const statusDiv = document.getElementById('auth-status');
@@ -2320,6 +2320,7 @@ async function handleAuthForm(event, type, role = 'Client') {
         // Récupérer l'indicatif et le numéro pour les combiner
         const indicatif = form.querySelector('#register-indicatif').value;
         const numero = form.querySelector('#register-telephone').value;
+        const role = form.querySelector('#register-role').value; // Lire le rôle depuis le nouveau sélecteur
 
         payload = {
             action: 'creerCompteClient',
@@ -2329,7 +2330,7 @@ async function handleAuthForm(event, type, role = 'Client') {
                 motDePasse: password,
                 telephone: `${indicatif}${numero}`, // NOUVEAU: Numéro complet
                 adresse: '',
-                role: role // NOUVEAU: Envoyer le rôle
+                role: role
             }
         };
     } else { // type === 'login'
