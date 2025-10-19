@@ -127,7 +127,10 @@ function doOptions(e) {
                 headersToSend['Access-Control-Allow-Credentials'] = 'true';
             }
         }
-    } catch (err) { /* En cas d'erreur, headersToSend reste vide, ce qui est le comportement attendu. */ }
+    } catch (err) {
+        // En cas d'erreur, on logue le problème mais on continue pour renvoyer une réponse vide (refus CORS)
+        logError('doOptions', err);
+    }
 
     const output = ContentService.createTextOutput(null);
     for (const header in headersToSend) {
