@@ -1450,15 +1450,19 @@ function renderDailyDealsHomepage(catalog) {
             boutiquesContainer.innerHTML = '<p class="col-span-full text-center text-gray-500">Aucun cours à afficher.</p>';
         }
 
-        // --- Étape 5: Remplir la section "SuperDeals" avec les produits ---
-        const superDealsProducts = products
-            .filter(p => p['Réduction%'] && parseFloat(p['Réduction%']) > 0)
+        // --- Étape 5: Remplir la section "Cours les plus populaires" ---
+        // Logique: trier par nombre d'avis (en nettoyant la chaîne "Avis")
+        const popularCourses = products.sort((a, b) => {
+                const avisA = parseInt(String(a.Avis).replace(/\D/g, '')) || 0;
+                const avisB = parseInt(String(b.Avis).replace(/\D/g, '')) || 0;
+                return avisB - avisA;
+            })
             .slice(0, 6);
 
-        if (superDealsProducts.length > 0) {
-            superdealsContainer.innerHTML = superDealsProducts.map(product => renderProductCard(product)).join('');
+        if (popularCourses.length > 0) {
+            superdealsContainer.innerHTML = popularCourses.map(product => renderProductCard(product)).join('');
         } else {
-            superdealsContainer.innerHTML = '<p class="col-span-full text-center text-gray-500">Aucune offre spéciale pour le moment.</p>';
+            superdealsContainer.innerHTML = '<p class="col-span-full text-center text-gray-500">Les cours populaires sont en cours de chargement.</p>';
         }
 
     } catch (error) {

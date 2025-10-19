@@ -131,6 +131,41 @@
         </div>
     </main>
 
+    <!-- NOUVEAU: Modale pour AJOUTER un cours -->
+    <div id="add-course-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-screen overflow-y-auto">
+            <h3 class="text-xl font-bold mb-4">Créer un nouveau cours</h3>
+            <form id="add-course-form" class="space-y-4">
+                <div>
+                    <label for="course-category-select" class="block text-sm font-medium text-gray-700">Catégorie du cours</label>
+                    <select id="course-category-select" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="course-name-input" class="block text-sm font-medium text-gray-700">Nom du cours</label>
+                    <input type="text" id="course-name-input" class="mt-1 block w-full p-2 border rounded-md" required>
+                </div>
+                <div>
+                    <label for="course-summary-input" class="block text-sm font-medium text-gray-700">Résumé</label>
+                    <textarea id="course-summary-input" rows="3" class="mt-1 block w-full p-2 border rounded-md" required></textarea>
+                </div>
+                <div>
+                    <label for="course-price-input" class="block text-sm font-medium text-gray-700">Prix (F CFA)</label>
+                    <input type="number" id="course-price-input" class="mt-1 block w-full p-2 border rounded-md" required>
+                </div>
+                <div>
+                    <label for="course-cover-input" class="block text-sm font-medium text-gray-700">Image de couverture</label>
+                    <input type="file" id="course-cover-input" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="document.getElementById('add-course-modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg">Annuler</button>
+                    <button type="submit" class="bg-gold text-white px-4 py-2 rounded-lg font-bold">Créer le cours</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- NOUVEAU: Modale pour ajouter/modifier un cours -->
     <div id="edit-course-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
@@ -218,13 +253,14 @@
 
             // NOUVEAU: Gérer l'ouverture des modales
             document.getElementById('add-course-btn').addEventListener('click', () => {
-                document.getElementById('modal-title').textContent = 'Créer un nouveau cours';
-                document.getElementById('edit-course-form').reset();
-                openEditCourseModal(); // Utilise la même modale pour la création
+                document.getElementById('add-course-modal').classList.remove('hidden');
+                populateCourseCategorySelect(); // Remplit le sélecteur de catégories
             });
 
             // NOUVEAU: Gérer la soumission du formulaire de réponse
             document.getElementById('reply-form').addEventListener('submit', handleReplySubmit);
+            // NOUVEAU: Gérer la soumission du formulaire de création de cours
+            document.getElementById('add-course-form').addEventListener('submit', handleAddCourseSubmit);
         });
 
         function switchDashboardTab(tabId) {
