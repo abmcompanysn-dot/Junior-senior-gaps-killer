@@ -248,7 +248,8 @@ function getConfig() {
         });
 
         const finalConfig = {
-            allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim()) : defaultConfig.allowed_origins,
+            // AMÉLIORATION: On normalise les origines en retirant les slashs finaux
+            allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim().replace(/\/$/, '')) : defaultConfig.allowed_origins,
         };
 
         cache.put(CACHE_KEY, JSON.stringify(finalConfig), 600); // Cache 10 minutes

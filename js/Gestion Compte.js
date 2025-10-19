@@ -88,32 +88,39 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
-    const output = ContentService.createTextOutput(null);
-    let isAllowed = false;
-    let diagnostic = "";
-    const origin = (e && e.headers && (e.headers.Origin || e.headers.origin)) || null;
+    const isTestMode = e.parameter && e.parameter.test_mode === 'true';
+    const headersToSend = {};
+    // Normalisation de l'origine reçue pour retirer le slash final
+    const origin = ((e && e.headers && (e.headers.Origin || e.headers.origin)) || null)?.replace(/\/$/, '');
 
     try {
         const config = getConfig();
         if (origin && config.allowed_origins.includes(origin)) {
-            isAllowed = true;
-            output.addHeader('Access-Control-Allow-Origin', origin);
-            output.addHeader('Access-Control-Allow-Methods', config.allowed_methods || 'GET, POST, OPTIONS');
-            output.addHeader('Access-Control-Allow-Headers', config.allowed_headers || 'Content-Type');
+            headersToSend['Access-Control-Allow-Origin'] = origin;
+            headersToSend['Access-Control-Allow-Methods'] = config.allowed_methods || 'GET, POST, OPTIONS';
+            headersToSend['Access-Control-Allow-Headers'] = config.allowed_headers || 'Content-Type';
             if (config.allow_credentials) {
-                output.addHeader('Access-Control-Allow-Credentials', 'true');
+                headersToSend['Access-Control-Allow-Credentials'] = 'true';
             }
-            diagnostic = "SUCCÈS : Origine autorisée. En-têtes CORS envoyés.";
-        } else {
-            diagnostic = `ÉCHEC : Origine '${origin}' non trouvée dans la configuration.`;
         }
     } catch (err) {
-        diagnostic = `ERREUR CRITIQUE dans doOptions : ${err.message}.`;
+        // En cas d'erreur, headersToSend reste vide, ce qui est le comportement attendu (refus CORS).
     }
 
-    // On enregistre le rapport détaillé de ce qui s'est passé.
-    logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: isAllowed, diagnostic: diagnostic });
+    // Si c'est un test, on retourne les en-têtes pour inspection.
+    if (isTestMode) {
+        return headersToSend;
+    }
 
+    // Sinon, on construit la vraie réponse HTTP.
+    const output = ContentService.createTextOutput(null);
+    for (const header in headersToSend) {
+        output.addHeader(header, headersToSend[header]);
+    }
+
+    // Journalisation pour le débogage en production
+    const isAllowed = 'Access-Control-Allow-Origin' in headersToSend;
+    logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: isAllowed, sentHeaders: headersToSend });
     return output;
 }
 
@@ -385,7 +392,8 @@ function getConfig() {
     });
 
     const finalConfig = {
-      allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim()) : defaultConfig.allowed_origins,
+      // AMÉLIORATION: On normalise les origines en retirant les slashs finaux
+      allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim().replace(/\/$/, '')) : defaultConfig.allowed_origins,
       allowed_methods: config.allowed_methods || defaultConfig.allowed_methods,
       allowed_headers: config.allowed_headers || defaultConfig.allowed_headers,
       allow_credentials: config.allow_credentials === 'true' || defaultConfig.allow_credentials
@@ -417,7 +425,8 @@ function setupProject() {
   // NOUVEAU: Assurer que les colonnes Titre et Bio sont incluses
   const sheetsToCreate = {
     [SHEET_NAMES.USERS]: ["IDClient", "Nom", "Email", "PasswordHash", "Salt", "Telephone", "Adresse", "Date d'inscription", "Statut", "Role", "ImageURL", "Titre", "Bio"],
-    [SHEET_NAMES.LOGS]: ["Timestamp", "Source", "Action", "Détails"]
+    [SHEET_NAMES.LOGS]: ["Timestamp", "Source", "Action", "Détails"],
+    [SHEET_NAMES.CONFIG]: ["Clé", "Valeur"] // AJOUT: Création de la feuille Config
   };
 
   Object.entries(sheetsToCreate).forEach(([sheetName, headers]) => {
@@ -430,6 +439,25 @@ function setupProject() {
     sheet.appendRow(headers);
     sheet.setFrozenRows(1);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
+  });
+
+  // AJOUT: Remplir la configuration par défaut si elle est vide
+  const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
+  const configData = configSheet.getDataRange().getValues();
+  const configMap = new Map(configData.map(row => [row[0], row[1]]));
+
+  const defaultConfigValues = {
+    'allowed_origins': 'https://junior-senior-gaps-killer.vercel.app,http://127.0.0.1:5500,http://127.0.0.1:5501',
+    'allowed_methods': 'POST,GET,OPTIONS',
+    'allowed_headers': 'Content-Type',
+    'allow_credentials': 'true'
+  };
+
+  Object.entries(defaultConfigValues).forEach(([key, value]) => {
+    // On ajoute la clé seulement si elle n'existe pas déjà
+    if (!configMap.has(key)) {
+      configSheet.appendRow([key, value]);
+    }
   });
 
   // NOUVEAU: Ajout de données de test
@@ -457,4 +485,93 @@ function setupProject() {
   } else {
     ui.alert("Projet 'Gestion Compte' initialisé avec succès ! Les onglets 'Utilisateurs', 'Logs' et 'Config' sont prêts.");
   }
+}
+
+/**
+ * NOUVEAU: Exécute la VRAIE fonction doOptions en mode test pour vérifier sa réponse.
+ * Pour l'utiliser :
+ * 1. Allez dans l'éditeur de script Google pour ce projet.
+ * 2. Dans la barre d'outils, sélectionnez la fonction "executeRealDoOptionsTest" dans le menu déroulant.
+ * 3. Cliquez sur le bouton "Exécuter".
+ * 4. Ouvrez les journaux d'exécution (Affichage > Journaux, ou Ctrl+Entrée) pour voir le résultat.
+ */
+function executeRealDoOptionsTest() {
+  // On teste avec le slash final pour vérifier que la normalisation fonctionne.
+  const testOrigin = 'https://junior-senior-gaps-killer.vercel.app/';
+
+  // 1. Simuler l'objet événement 'e' avec une origine et le mode test.
+  const mockEvent = {
+    parameter: { test_mode: 'true' },
+    headers: {
+      'Origin': testOrigin
+    }
+  };
+
+  Logger.log("--- DÉBUT DU TEST RÉEL de doOptions ---");
+  Logger.log("Exécution de doOptions avec l'origine : " + testOrigin);
+
+  // 2. Appeler la VRAIE fonction doOptions. Grâce au mode test, elle renvoie un objet.
+  const responseHeaders = doOptions(mockEvent);
+
+  // 3. Analyser la réponse.
+  Logger.log("En-têtes qui SERAIENT envoyés par le serveur :");
+  Logger.log(responseHeaders);
+
+  // On vérifie que la réponse correspond à l'origine SANS le slash final, car elle est normalisée.
+  if (responseHeaders['Access-Control-Allow-Origin'] === testOrigin.replace(/\/$/, '')) {
+    Logger.log("✅ SUCCÈS : L'en-tête 'Access-Control-Allow-Origin' est correct.");
+    Logger.log("   -> Votre configuration CORS semble correcte pour cette origine.");
+  } else {
+    Logger.log("❌ ÉCHEC : L'en-tête 'Access-Control-Allow-Origin' est MANQUANT ou INCORRECT.");
+    Logger.log("   -> SOLUTION : Allez dans votre Google Sheet, dans l'onglet 'Config', et assurez-vous que la clé 'allowed_origins' contient bien la valeur '" + testOrigin.replace(/\/$/, '') + "'. Vérifiez les fautes de frappe.");
+  }
+  Logger.log("--- FIN DU TEST RÉEL de doOptions ---");
+}
+
+/**
+ * NOUVEAU: Teste la logique de création de compte de bout en bout.
+ * Pour l'utiliser :
+ * 1. Allez dans l'éditeur de script Google.
+ * 2. Sélectionnez la fonction "testCreerCompteClient" dans le menu déroulant.
+ * 3. Cliquez sur "Exécuter".
+ * 4. Ouvrez les journaux (Ctrl+Entrée) pour voir le résultat.
+ */
+function testCreerCompteClient() {
+  // 1. Simuler les données d'inscription
+  const mockData = {
+    nom: "Utilisateur Test " + new Date().getTime(),
+    email: "test." + new Date().getTime() + "@example.com",
+    motDePasse: "password123",
+    role: "Client"
+  };
+
+  // 2. Simuler l'origine de la requête
+  const mockOrigin = 'https://junior-senior-gaps-killer.vercel.app/';
+
+  Logger.log("--- DÉBUT DU TEST de creerCompteClient ---");
+  Logger.log("Données de test : " + JSON.stringify(mockData));
+
+  try {
+    // 3. Appeler directement la fonction métier
+    const response = creerCompteClient(mockData, mockOrigin);
+    const responseContent = response.getContent();
+    const result = JSON.parse(responseContent);
+
+    Logger.log("Réponse reçue du serveur :");
+    Logger.log(result);
+
+    // 4. Analyser le résultat
+    if (result.success && result.id) {
+      Logger.log("✅ SUCCÈS : Le compte a été créé avec succès. ID: " + result.id);
+      Logger.log("   -> La logique de création de compte fonctionne.");
+    } else {
+      Logger.log("❌ ÉCHEC : La création du compte a échoué.");
+      Logger.log("   -> Erreur retournée : " + result.error);
+      Logger.log("   -> SOLUTION : Vérifiez le message d'erreur. S'il s'agit d'un problème de feuille de calcul, assurez-vous que l'onglet 'Utilisateurs' existe et que les en-têtes de colonnes sont corrects.");
+    }
+  } catch (e) {
+    Logger.log("❌ ERREUR CRITIQUE : Le test a planté. Message : " + e.message);
+    Logger.log("   -> Stacktrace : " + e.stack);
+  }
+  Logger.log("--- FIN DU TEST de creerCompteClient ---");
 }

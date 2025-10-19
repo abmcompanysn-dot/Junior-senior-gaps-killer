@@ -173,7 +173,8 @@ function getConfig() {
     });
 
     const finalConfig = {
-      allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim()) : defaultConfig.allowed_origins,
+      // AMÉLIORATION: On normalise les origines en retirant les slashs finaux
+      allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim().replace(/\/$/, '')) : defaultConfig.allowed_origins,
       allowed_methods: config.allowed_methods || defaultConfig.allowed_methods,
       allowed_headers: config.allowed_headers || defaultConfig.allowed_headers,
       allow_credentials: config.allow_credentials === 'true'
