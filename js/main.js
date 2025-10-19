@@ -27,6 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 });
 
+
+
+
+
 /**
  * Fonction principale ASYNCHRONE qui initialise l'application.
  */
@@ -56,6 +60,9 @@ async function initializeApp() {
     if (document.getElementById('countdown')) {
         startCountdown(); // Le compte à rebours est indépendant.
     }
+
+    // NOUVEAU: Rendre la barre d'icônes déplaçable
+    makeDraggable('draggable-icon-bar');
 
     // --- ÉTAPE 2: Lancer le chargement des données en arrière-plan ---
     // On ne bloque PAS le reste de l'exécution de la page.
@@ -2762,4 +2769,70 @@ function switchNotificationTab(tabId) {
         notifBtn.classList.remove('active');
         favBtn.classList.add('active');
     }
+}
+
+/**
+ * NOUVEAU: Rend un élément déplaçable sur l'écran et sauvegarde sa position.
+ * @param {string} elementId L'ID de l'élément à rendre déplaçable.
+ */
+function makeDraggable(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    // Restaurer la position sauvegardée
+    const savedPosition = localStorage.getItem('draggable-icon-bar-position');
+    if (savedPosition) {
+        const { top, left } = JSON.parse(savedPosition);
+        element.style.top = top;
+        element.style.left = left;
+        // Réinitialiser la transformation pour éviter les conflits
+        element.style.transform = 'none';
+    }
+
+    const startDrag = (e) => {
+        isDragging = true;
+        // Utiliser e.touches pour les événements tactiles
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+        offsetX = clientX - element.offsetLeft;
+        offsetY = clientY - element.offsetTop;
+
+        // Ajouter les écouteurs sur le document pour un déplacement fluide
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchmove', onDrag, { passive: false });
+        document.addEventListener('touchend', stopDrag);
+    };
+
+    const onDrag = (e) => {
+        if (!isDragging) return;
+        e.preventDefault(); // Empêche le défilement de la page sur mobile
+
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+        let newLeft = clientX - offsetX;
+        let newTop = clientY - offsetY;
+
+        element.style.left = `${newLeft}px`;
+        element.style.top = `${newTop}px`;
+        element.style.transform = 'none'; // Annuler la transformation initiale
+    };
+
+    const stopDrag = () => {
+        isDragging = false;
+        // Sauvegarder la nouvelle position
+        localStorage.setItem('draggable-icon-bar-position', JSON.stringify({ top: element.style.top, left: element.style.left }));
+        document.removeEventListener('mousemove', onDrag);
+        document.removeEventListener('mouseup', stopDrag);
+        document.removeEventListener('touchmove', onDrag);
+        document.removeEventListener('touchend', stopDrag);
+    };
+
+    element.addEventListener('mousedown', startDrag);
+    element.addEventListener('touchstart', startDrag);
 }

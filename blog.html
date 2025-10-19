@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Junior Senior Gaps Killer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-color: #FF7F00;
+            --dark-color: #1A233A;
+        }
+        .text-gold { color: var(--gold-color); }
+        .bg-gold { background-color: var(--gold-color); }
+        .border-gold { border-color: var(--gold-color); }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .text-main-on-light { color: #333333; }
+        .lux-search-input { background: linear-gradient(to right, #f3f4f6, #e5e7eb); border: 1px solid transparent; }
+        .floating-icon-bar { left: 1.5rem; top: 50%; transform: translateY(-50%); transition: opacity 0.3s ease-in-out; }
+        .floating-icon-bar:hover { opacity: 1 !important; }
+        body { padding-bottom: 100px; overflow-x: hidden; }
+        @media (min-width: 768px) {
+            body { padding-bottom: 0; }
+            .mobile-nav { display: none; }
+        }
+    </style>
+</head>
+<body class="font-montserrat" style="background-color: #F5F5F5;">
+
+    <!-- En-tête -->
+    <div class="sticky top-0 z-40 bg-white shadow-md">
+        <header>
+            <div class="container mx-auto px-4 py-2">
+                <div class="flex items-center justify-between">
+                    <a href="index.html" class="flex items-center"><img src="https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png" alt="Logo" class="h-10"></a>
+                    <form id="search-form-header" class="mx-4 md:w-1/3" onsubmit="initializeSearch()">
+                        <div class="relative flex items-center">
+                            <input type="search" placeholder="Rechercher sur le blog..." class="w-full p-3 pl-10 pr-4 text-sm text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-gold lux-search-input transition-all duration-300 ease-in-out">
+                            <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gold">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="hidden md:flex items-center space-x-6 text-sm font-semibold text-gray-600">
+                        <a href="index.html#about-us" class="hover:text-gold transition-colors">À Propos</a>
+                        <a href="methodologie.html" class="hover:text-gold transition-colors">Notre Méthode</a>
+                        <a href="blog.html" class="text-gold font-bold">Blog</a>
+                        <a href="senior-auth.html" class="hover:text-gold transition-colors">Devenir Formateur</a>
+                        <a href="promotions.html" class="text-red-500 hover:text-red-700 font-bold">SuperDeals</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <!-- Contenu de la page Blog -->
+    <main class="w-full max-w-7xl mx-auto px-4 py-12 text-main-on-light">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800">Le Blog des Raccourcis</h1>
+            <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Conseils, stratégies et retours d'expérience de nos seniors pour accélérer votre carrière.</p>
+        </div>
+
+        <!-- Article mis en avant -->
+        <section class="mb-16">
+            <a href="#" class="block bg-white rounded-lg shadow-lg overflow-hidden group">
+                <div class="grid grid-cols-1 md:grid-cols-2">
+                    <div class="p-8 md:p-12 flex flex-col justify-center">
+                        <p class="text-sm font-semibold text-gold mb-2">PRODUCTIVITÉ</p>
+                        <h2 class="text-3xl font-bold text-gray-800 group-hover:text-gold transition-colors">Les 5 erreurs que tous les juniors font (et comment les éviter)</h2>
+                        <p class="mt-4 text-gray-600">Jean Dupont, notre CTO, partage les leçons tirées de 15 ans de carrière pour vous faire gagner un temps précieux. Ne tombez pas dans les mêmes pièges.</p>
+                        <p class="mt-6 text-sm font-semibold text-gray-800">Lire la suite &rarr;</p>
+                    </div>
+                    <div class="h-64 md:h-auto bg-gray-200">
+                        <img src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Article principal" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </a>
+        </section>
+
+        <!-- Grille des autres articles -->
+        <section>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Article 1 -->
+                <a href="#" class="block bg-white rounded-lg shadow-lg overflow-hidden group">
+                    <div class="h-48 bg-gray-200"><img src="https://images.pexels.com/photos/5775854/pexels-photo-5775854.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Article" class="w-full h-full object-cover"></div>
+                    <div class="p-6">
+                        <p class="text-xs font-semibold text-gold mb-2">TECHNIQUE</p>
+                        <h3 class="text-xl font-bold text-gray-800 group-hover:text-gold transition-colors">Le "Pourquoi" avant le "Comment" : Penser comme un architecte</h3>
+                        <p class="mt-3 text-sm text-gray-600">Arrêtez d'apprendre des outils. Commencez à comprendre des systèmes.</p>
+                    </div>
+                </a>
+                <!-- Article 2 -->
+                <a href="#" class="block bg-white rounded-lg shadow-lg overflow-hidden group">
+                    <div class="h-48 bg-gray-200"><img src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Article" class="w-full h-full object-cover"></div>
+                    <div class="p-6">
+                        <p class="text-xs font-semibold text-gold mb-2">CARRIÈRE</p>
+                        <h3 class="text-xl font-bold text-gray-800 group-hover:text-gold transition-colors">Comment négocier une augmentation quand on est junior ?</h3>
+                        <p class="mt-3 text-sm text-gray-600">Les secrets d'un manager pour préparer et réussir votre entretien annuel.</p>
+                    </div>
+                </a>
+                <!-- Article 3 -->
+                <a href="#" class="block bg-white rounded-lg shadow-lg overflow-hidden group">
+                    <div class="h-48 bg-gray-200"><img src="https://images.pexels.com/photos/699459/pexels-photo-699459.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Article" class="w-full h-full object-cover"></div>
+                    <div class="p-6">
+                        <p class="text-xs font-semibold text-gold mb-2">OUTILS</p>
+                        <h3 class="text-xl font-bold text-gray-800 group-hover:text-gold transition-colors">L'outil que vous n'utilisez pas assez pour débugger</h3>
+                        <p class="mt-3 text-sm text-gray-600">Une technique simple qui peut vous faire gagner des heures chaque semaine.</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-white pt-12 pb-8 mt-16" style="background-color: #1A233A;">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div><h4 class="font-bold text-lg mb-4 text-gold">Junior Senior Gaps Killer</h4><p class="text-gray-400 text-sm">Accélérateur de compétences. Révélateur de shortcuts.</p></div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Navigation</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white">Accueil</a></li>
+                        <li><a href="promotions.html" class="text-gray-400 hover:text-white">Tous les cours</a></li>
+                        <li><a href="blog.html" class="text-gray-400 hover:text-white">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4 text-gold">Aide & Contact</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="methodologie.html" class="text-gray-400 hover:text-white">Notre Méthodologie</a></li>
+                        <li><a href="politique-confidentialite.html" class="text-gray-400 hover:text-white">Politique de confidentialité</a></li>
+                        <li><a href="mentions-legales.html" class="text-gray-400 hover:text-white">Mentions Légales</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4 text-gold">Suivez-nous</h4>
+                    <div class="flex space-x-4"><a href="#" class="text-gray-400 hover:text-white">FB</a><a href="#" class="text-gray-400 hover:text-white">IG</a></div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500 text-sm"><p>&copy; 2024 Junior-Senior Gap Killer. Tous droits réservés.</p></div>
+        </div>
+    </footer>
+
+    <!-- Barre d'icônes verticale flottante -->
+    <div class="hidden md:block fixed z-50 floating-icon-bar opacity-90">
+        <div class="bg-gray-900/80 backdrop-blur-sm rounded-lg shadow-lg px-3 py-4 flex flex-col items-center space-y-6">
+            <a href="https://wa.me/221769047999" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors" title="Aide & Support"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9Z"></path><path d="M10.29 21.71c.4.2.83.3 1.21.3s.81-.1 1.21-.3"></path><path d="M12 13a1 1 0 0 1 1-1h.01a1 1 0 0 1 0 2H13a1 1 0 0 1-1-1Z" fill="currentColor"></path></svg></a>
+            <a href="suivi-commande.html" class="text-gray-400 hover:text-white transition-colors" title="Historique"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></a>
+            <a href="panier.html" class="text-gray-400 hover:text-white transition-colors relative" title="Panier"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg><span class="cart-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span></a>
+            <a href="authentification.html" class="text-gray-400 hover:text-white transition-colors" title="Mon Compte"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></a>
+        </div>
+    </div>
+
+    <script src="js/main.js" defer></script>
+</body>
+</html>
