@@ -88,22 +88,26 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
-    // Détection du mode test : si 'e' n'est pas un vrai événement HTTP, on est en mode test.
-    const isTestMode = !(e && e.postData);
+    // Détection du mode test : si 'e' est undefined, on est dans l'éditeur.
+    const isTestMode = (typeof e === 'undefined');
     const testOrigin = 'https://junior-senior-gaps-killer.vercel.app/';
 
     // Si on est en mode test, on exécute une logique de diagnostic et on s'arrête.
     if (isTestMode) {
         Logger.log("--- DÉBUT DU TEST de doOptions (mode diagnostic) ---");
         Logger.log("Origine de test : " + testOrigin);
-        const config = getConfig();
-        const normalizedTestOrigin = testOrigin.replace(/\/$/, '');
-        if (config.allowed_origins && config.allowed_origins.includes(normalizedTestOrigin)) {
-            Logger.log("✅ SUCCÈS : L'origine de test a été trouvée dans la configuration.");
-        } else {
-            Logger.log("❌ ÉCHEC : L'origine de test N'A PAS été trouvée.");
-            Logger.log("   -> Origines configurées : " + JSON.stringify(config.allowed_origins));
-            Logger.log("   -> SOLUTION : Vérifiez l'orthographe et la présence de '" + normalizedTestOrigin + "' dans la feuille 'Config'.");
+        try {
+            const config = getConfig();
+            const normalizedTestOrigin = testOrigin.replace(/\/$/, '');
+            if (config.allowed_origins && config.allowed_origins.includes(normalizedTestOrigin)) {
+                Logger.log("✅ SUCCÈS : L'origine de test a été trouvée dans la configuration.");
+            } else {
+                Logger.log("❌ ÉCHEC : L'origine de test N'A PAS été trouvée.");
+                Logger.log("   -> Origines configurées : " + JSON.stringify(config.allowed_origins));
+                Logger.log("   -> SOLUTION : Vérifiez l'orthographe et la présence de '" + normalizedTestOrigin + "' dans la feuille 'Config'.");
+            }
+        } catch (err) {
+            Logger.log("❌ ERREUR CRITIQUE : Impossible de lire la configuration. Message : " + err.message);
         }
         Logger.log("--- FIN DU TEST de doOptions ---");
         return; // On arrête l'exécution ici pour le mode test.
