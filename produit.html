@@ -13,6 +13,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détail du Cours - Junior Senior Gaps Killer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- NOUVEAU: Ajout de la bibliothèque d'icônes pour la nouvelle navigation -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
 
@@ -43,6 +45,11 @@
         #image-zoom-wrapper > img {
             transition: transform 0.2s ease-out;
         }
+        /* NOUVEAU: Style pour la barre de recherche "luxueuse" */
+        .lux-search-input {
+            background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+            border: 1px solid transparent;
+        }
         .dropdown:hover .dropdown-menu { display: block; }
         .dropdown-menu { display: none; }
     </style>
@@ -62,9 +69,11 @@
 
                     <!-- Barre de recherche -->
                     <form id="search-form-header" class="flex-1 mx-4" onsubmit="initializeSearch()">
-                       <div class="relative">
-                            <input type="search" placeholder="Rechercher des produits, des marques et plus..." class="w-full p-2 pl-10 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold">
-                            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <div class="relative flex items-center">
+                            <input type="search" placeholder="Que voulez-vous apprendre aujourd'hui ?" class="w-full p-3 pl-4 pr-28 text-sm text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-gold lux-search-input transition-all duration-300 ease-in-out">
+                            <button type="submit" class="absolute right-1 top-1/2 -translate-y-1/2 bg-gold text-white font-semibold rounded-full px-5 py-2 text-sm hover:bg-orange-600 transition">
+                                Rechercher
+                            </button>
                         </div>
                     </form>
 
@@ -94,8 +103,14 @@
                             <!-- Le contenu du menu sera injecté ici par JS -->
                         </div>
                     </div>
-                    <!-- Les liens de navigation principaux seront injectés ici -->
-                    <div id="main-nav-links" class="flex items-center space-x-8 overflow-x-auto whitespace-nowrap ml-4"></div>
+                    <!-- NOUVEAU: Navigation par icônes -->
+                    <div id="main-nav-links" class="flex items-center space-x-6 overflow-x-auto whitespace-nowrap ml-4">
+                        <a href="promotions.html" class="py-3 text-red-500 hover:text-red-700 font-bold">SuperDeals</a>
+                        <a href="categorie.html?id=CAT-001" class="py-3 hover:text-gold" title="Développement Backend"><i class="fas fa-server fa-lg"></i></a>
+                        <a href="categorie.html?id=CAT-002" class="py-3 hover:text-gold" title="DevOps & Cloud"><i class="fas fa-cloud-upload-alt fa-lg"></i></a>
+                        <a href="categorie.html?id=CAT-003" class="py-3 hover:text-gold" title="Data Science & IA"><i class="fas fa-brain fa-lg"></i></a>
+                        <!-- Les autres icônes de catégories peuvent être ajoutées ici -->
+                    </div>
                 </div>
             </div>
         </nav>

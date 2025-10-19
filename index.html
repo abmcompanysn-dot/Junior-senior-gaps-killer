@@ -1,6 +1,8 @@
 
 <!DOCTYPE html>
 <html lang="fr">
+<!-- NOUVEAU: Ajout de la classe 'scroll-smooth' pour un défilement fluide des ancres -->
+<html lang="fr" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
@@ -13,6 +15,8 @@
     <title>Junior Senior Gaps Killer - Accélérateur de compétences</title>
     <!-- CORRECTION: Charger TailwindCSS comme une feuille de style pour ne pas bloquer le rendu -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- NOUVEAU: Ajout de la bibliothèque d'icônes pour la nouvelle navigation -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style> 
@@ -118,6 +122,19 @@
             from { transform: translateX(0); }
             to { transform: translateX(-100%); }
         }
+        /* NOUVEAU: Animation pour l'apparition en fondu des sections */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-section {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        /* NOUVEAU: Style pour la barre de recherche "luxueuse" */
+        .lux-search-input {
+            background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+            border: 1px solid transparent;
+        }
         /* Style pour l'affichage décalé des produits sur mobile */
     </style>
 </head>
@@ -141,9 +158,12 @@
 
                     <!-- Barre de recherche -->
                     <form id="search-form-header" class="flex-1 mx-4" onsubmit="initializeSearch()">
-                        <div class="relative">
-                            <input type="search" placeholder="Rechercher des produits, des marques et plus..." class="w-full p-2 pl-10 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold">
-                            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <!-- NOUVEAU: Barre de recherche améliorée -->
+                        <div class="relative flex items-center">
+                            <input type="search" placeholder="Que voulez-vous apprendre aujourd'hui ?" class="w-full p-3 pl-4 pr-28 text-sm text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-gold lux-search-input transition-all duration-300 ease-in-out">
+                            <button type="submit" class="absolute right-1 top-1/2 -translate-y-1/2 bg-gold text-white font-semibold rounded-full px-5 py-2 text-sm hover:bg-orange-600 transition">
+                                Rechercher
+                            </button>
                         </div>
                     </form>
 
@@ -175,8 +195,14 @@
                             <!-- Le contenu du menu sera injecté ici par JS -->
                         </div>
                     </div>
-                    <!-- Les liens de navigation principaux seront injectés ici -->
-                    <div id="main-nav-links" class="flex items-center space-x-8 overflow-x-auto whitespace-nowrap ml-4"></div>
+                    <!-- NOUVEAU: Navigation par icônes -->
+                    <div id="main-nav-links" class="flex items-center space-x-6 overflow-x-auto whitespace-nowrap ml-4">
+                        <a href="promotions.html" class="py-3 text-red-500 hover:text-red-700 font-bold">SuperDeals</a>
+                        <a href="categorie.html?id=CAT-001" class="py-3 hover:text-gold" title="Développement Backend"><i class="fas fa-server fa-lg"></i></a>
+                        <a href="categorie.html?id=CAT-002" class="py-3 hover:text-gold" title="DevOps & Cloud"><i class="fas fa-cloud-upload-alt fa-lg"></i></a>
+                        <a href="categorie.html?id=CAT-003" class="py-3 hover:text-gold" title="Data Science & IA"><i class="fas fa-brain fa-lg"></i></a>
+                        <!-- Les autres icônes de catégories peuvent être ajoutées ici -->
+                    </div>
                 </div>
             </div>
         </nav>
@@ -227,6 +253,42 @@
             </div>
         </section>
 
+        <!-- NOUVEAU: Section Notre Équipe -->
+        <section class="my-16 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Une Équipe d'Experts à Vos Côtés</h2>
+            <p class="max-w-3xl mx-auto text-gray-600 mb-12">Nous avons rassemblé des seniors passionnés, reconnus dans leur domaine, pour vous transmettre leur savoir-faire unique.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Membre 1 -->
+                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <img class="w-32 h-32 rounded-full mx-auto -mt-16 border-4 border-white" src="https://i.pravatar.cc/150?img=1" alt="Membre de l'équipe 1">
+                    <h3 class="font-bold text-xl mt-4">Jean Dupont</h3>
+                    <p class="text-gold font-semibold">CTO @ TechInnov</p>
+                    <p class="text-sm text-gray-600 mt-2">Expert en architecture microservices et stratégies de scalabilité.</p>
+                </div>
+                <!-- Membre 2 -->
+                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <img class="w-32 h-32 rounded-full mx-auto -mt-16 border-4 border-white" src="https://i.pravatar.cc/150?img=2" alt="Membre de l'équipe 2">
+                    <h3 class="font-bold text-xl mt-4">Aïcha Diallo</h3>
+                    <p class="text-gold font-semibold">Lead Frontend Dev</p>
+                    <p class="text-sm text-gray-600 mt-2">Spécialiste React et performance web, obsédée par l'expérience utilisateur.</p>
+                </div>
+                <!-- Membre 3 -->
+                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <img class="w-32 h-32 rounded-full mx-auto -mt-16 border-4 border-white" src="https://i.pravatar.cc/150?img=3" alt="Membre de l'équipe 3">
+                    <h3 class="font-bold text-xl mt-4">Moussa Traoré</h3>
+                    <p class="text-gold font-semibold">Ingénieur DevOps Senior</p>
+                    <p class="text-sm text-gray-600 mt-2">Maître de l'automatisation, CI/CD et des infrastructures cloud robustes.</p>
+                </div>
+                <!-- Membre 4 -->
+                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <img class="w-32 h-32 rounded-full mx-auto -mt-16 border-4 border-white" src="https://i.pravatar.cc/150?img=4" alt="Membre de l'équipe 4">
+                    <h3 class="font-bold text-xl mt-4">Fatou N'diaye</h3>
+                    <p class="text-gold font-semibold">Data Scientist</p>
+                    <p class="text-sm text-gray-600 mt-2">Transforme les données brutes en décisions stratégiques grâce au Machine Learning.</p>
+                </div>
+            </div>
+        </section>
+
         <!-- NOUVEAU: Conteneur principal pour les sections de produits par catégorie -->
         <div id="category-products-sections-container" class="space-y-12">
             <!-- Squelette de chargement pour les sections de catégorie -->
@@ -266,12 +328,12 @@
         </section>
 
         <!-- NOUVEAU: Section À Propos -->
-        <section class="my-16 bg-white p-8 md:p-12 rounded-lg shadow-lg">
+        <section id="about-us" class="my-16 bg-white p-8 md:p-12 rounded-lg shadow-lg opacity-0" style="transition: opacity 1s, transform 1s;">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div>
                     <h2 class="text-3xl font-bold text-gray-800 mb-4">Qui sommes-nous ?</h2>
-                    <p class="text-gray-600 mb-4">Junior-Senior Gaps Killer est né d'un constat simple : le plus grand obstacle à la progression d'un professionnel n'est pas le manque d'information, mais le manque de contexte et d'expérience.</p>
-                    <p class="text-gray-600">Notre mission est de combler ce fossé en connectant des personnes ambitieuses avec des experts chevronnés qui partagent non seulement leur savoir-faire, mais aussi leur sagesse. Nous créons des raccourcis de carrière.</p>
+                    <p class="text-gray-700 text-lg mb-4">Junior-Senior Gaps Killer est né d'un constat simple : le plus grand obstacle à la progression d'un professionnel n'est pas le manque d'information, mais le manque de contexte et d'expérience.</p>
+                    <p class="text-gray-700 text-lg">Notre mission est de combler ce fossé en connectant des personnes ambitieuses avec des experts chevronnés qui partagent non seulement leur savoir-faire, mais aussi leur sagesse. Nous créons des raccourcis de carrière.</p>
                 </div>
                 <div class="rounded-lg overflow-hidden">
                     <img src="https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Équipe en réunion" class="w-full h-full object-cover">
@@ -335,6 +397,27 @@
 
     <!-- OPTIMISATION: L'attribut 'defer' charge le script en parallèle et l'exécute après l'analyse du HTML -->
     <script src="js/main.js" defer></script>
+    <!-- NOUVEAU: Script pour l'animation de la section "À Propos" -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const aboutSection = document.getElementById('about-us');
+            if (!aboutSection) return;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                        observer.unobserve(entry.target); // N'observer qu'une seule fois
+                    }
+                });
+            }, {
+                threshold: 0.1 // Déclencher quand 10% de la section est visible
+            });
+
+            observer.observe(aboutSection);
+        });
+    </script>
 
 </body>
 
