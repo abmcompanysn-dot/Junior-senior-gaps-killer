@@ -88,6 +88,16 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput} Une réponse vide.
  */
 function doOptions(e) {
+    // CONFIGURATION CORS DIRECTEMENT DANS LE CODE
+    const ALLOWED_ORIGINS = [
+        "https://junior-senior-gaps-killer.vercel.app",
+        "http://127.0.0.1:5500",
+        "http://127.0.0.1:5501"
+    ];
+    const ALLOWED_METHODS = 'GET, POST, OPTIONS';
+    const ALLOWED_HEADERS = 'Content-Type';
+    const ALLOW_CREDENTIALS = 'true';
+
     // Détection du mode test : si 'e' est undefined, on est dans l'éditeur.
     const isTestMode = (typeof e === 'undefined');
     const testOrigin = 'https://junior-senior-gaps-killer.vercel.app/';
@@ -96,18 +106,12 @@ function doOptions(e) {
     if (isTestMode) {
         Logger.log("--- DÉBUT DU TEST de doOptions (mode diagnostic) ---");
         Logger.log("Origine de test : " + testOrigin);
-        try {
-            const config = getConfig();
-            const normalizedTestOrigin = testOrigin.replace(/\/$/, '');
-            if (config.allowed_origins && config.allowed_origins.includes(normalizedTestOrigin)) {
-                Logger.log("✅ SUCCÈS : L'origine de test a été trouvée dans la configuration.");
-            } else {
-                Logger.log("❌ ÉCHEC : L'origine de test N'A PAS été trouvée.");
-                Logger.log("   -> Origines configurées : " + JSON.stringify(config.allowed_origins));
-                Logger.log("   -> SOLUTION : Vérifiez l'orthographe et la présence de '" + normalizedTestOrigin + "' dans la feuille 'Config'.");
-            }
-        } catch (err) {
-            Logger.log("❌ ERREUR CRITIQUE : Impossible de lire la configuration. Message : " + err.message);
+        const normalizedTestOrigin = testOrigin.replace(/\/$/, '');
+        if (ALLOWED_ORIGINS.includes(normalizedTestOrigin)) {
+            Logger.log("✅ SUCCÈS : L'origine de test a été trouvée dans la configuration codée en dur.");
+        } else {
+            Logger.log("❌ ÉCHEC : L'origine de test N'A PAS été trouvée.");
+            Logger.log("   -> Origines configurées : " + JSON.stringify(ALLOWED_ORIGINS));
         }
         Logger.log("--- FIN DU TEST de doOptions ---");
         return; // On arrête l'exécution ici pour le mode test.
@@ -117,19 +121,13 @@ function doOptions(e) {
     const headersToSend = {};
     const origin = ((e && e.headers && (e.headers.Origin || e.headers.origin)) || null)?.replace(/\/$/, '');
 
-    try {
-        const config = getConfig();
-        if (origin && config.allowed_origins.includes(origin)) {
-            headersToSend['Access-Control-Allow-Origin'] = origin;
-            headersToSend['Access-Control-Allow-Methods'] = config.allowed_methods || 'GET, POST, OPTIONS';
-            headersToSend['Access-Control-Allow-Headers'] = config.allowed_headers || 'Content-Type';
-            if (config.allow_credentials) {
-                headersToSend['Access-Control-Allow-Credentials'] = 'true';
-            }
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
+        headersToSend['Access-Control-Allow-Origin'] = origin;
+        headersToSend['Access-Control-Allow-Methods'] = ALLOWED_METHODS;
+        headersToSend['Access-Control-Allow-Headers'] = ALLOWED_HEADERS;
+        if (ALLOW_CREDENTIALS === 'true') {
+            headersToSend['Access-Control-Allow-Credentials'] = 'true';
         }
-    } catch (err) {
-        // En cas d'erreur, on logue le problème mais on continue pour renvoyer une réponse vide (refus CORS)
-        logError('doOptions', err);
     }
 
     const output = ContentService.createTextOutput(null);
@@ -381,50 +379,6 @@ function logError(context, error) {
 }
 
 /**
- * NOUVEAU: Récupère la configuration depuis la feuille "Config" et la met en cache.
- * @returns {object} Un objet contenant la configuration.
- */
-function getConfig() {
-  const cache = CacheService.getScriptCache();
-  const CACHE_KEY = 'script_config_account';
-  const cachedConfig = cache.get(CACHE_KEY);
-  if (cachedConfig) {
-    return JSON.parse(cachedConfig);
-  }
-
-  const defaultConfig = {
-    allowed_origins: ["https://junior-senior-gaps-killer.vercel.app", "http://127.0.0.1:5500", "http://127.0.0.1:5501"],
-    allowed_methods: "POST,GET,OPTIONS",
-    allowed_headers: "Content-Type",
-    allow_credentials: true
-  };
-
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
-    if (!configSheet) return defaultConfig;
-
-    const data = configSheet.getDataRange().getValues();
-    const config = {};
-    data.forEach(row => {
-      if (row[0] && row[1]) { config[row[0]] = row[1]; }
-    });
-
-    const finalConfig = {
-      // AMÉLIORATION: On normalise les origines en retirant les slashs finaux
-      allowed_origins: config.allowed_origins ? config.allowed_origins.split(',').map(s => s.trim().replace(/\/$/, '')) : defaultConfig.allowed_origins,
-      allowed_methods: config.allowed_methods || defaultConfig.allowed_methods,
-      allowed_headers: config.allowed_headers || defaultConfig.allowed_headers,
-      allow_credentials: config.allow_credentials === 'true' || defaultConfig.allow_credentials
-    };
-    cache.put(CACHE_KEY, JSON.stringify(finalConfig), 600); // Cache 10 minutes
-    return finalConfig;
-  } catch (e) {
-    return defaultConfig;
-  }
-}
-
-/**
  * Crée un menu personnalisé à l'ouverture de la feuille de calcul.
  */
 function onOpen() {
@@ -444,8 +398,7 @@ function setupProject() {
   // NOUVEAU: Assurer que les colonnes Titre et Bio sont incluses
   const sheetsToCreate = {
     [SHEET_NAMES.USERS]: ["IDClient", "Nom", "Email", "PasswordHash", "Salt", "Telephone", "Adresse", "Date d'inscription", "Statut", "Role", "ImageURL", "Titre", "Bio"],
-    [SHEET_NAMES.LOGS]: ["Timestamp", "Source", "Action", "Détails"],
-    [SHEET_NAMES.CONFIG]: ["Clé", "Valeur"] // AJOUT: Création de la feuille Config
+    [SHEET_NAMES.LOGS]: ["Timestamp", "Source", "Action", "Détails"]
   };
 
   Object.entries(sheetsToCreate).forEach(([sheetName, headers]) => {
@@ -458,25 +411,6 @@ function setupProject() {
     sheet.appendRow(headers);
     sheet.setFrozenRows(1);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
-  });
-
-  // AJOUT: Remplir la configuration par défaut si elle est vide
-  const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
-  const configData = configSheet.getDataRange().getValues();
-  const configMap = new Map(configData.map(row => [row[0], row[1]]));
-
-  const defaultConfigValues = {
-    'allowed_origins': 'https://junior-senior-gaps-killer.vercel.app,http://127.0.0.1:5500,http://127.0.0.1:5501',
-    'allowed_methods': 'POST,GET,OPTIONS',
-    'allowed_headers': 'Content-Type',
-    'allow_credentials': 'true'
-  };
-
-  Object.entries(defaultConfigValues).forEach(([key, value]) => {
-    // On ajoute la clé seulement si elle n'existe pas déjà
-    if (!configMap.has(key)) {
-      configSheet.appendRow([key, value]);
-    }
   });
 
   // NOUVEAU: Ajout de données de test
@@ -502,7 +436,7 @@ function setupProject() {
     ]);
     ui.alert("Projet initialisé et 2 utilisateurs de test (client@test.com, senior@test.com) ont été ajoutés avec le mot de passe 'password123'.");
   } else {
-    ui.alert("Projet 'Gestion Compte' initialisé avec succès ! Les onglets 'Utilisateurs', 'Logs' et 'Config' sont prêts.");
+    ui.alert("Projet 'Gestion Compte' initialisé avec succès ! Les onglets 'Utilisateurs' et 'Logs' sont prêts.");
   }
 }
 
