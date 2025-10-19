@@ -49,7 +49,8 @@ function doPost(e) {
 
 function doOptions(e) {
   const config = getConfig();
-  const origin = (ontentService.createTextOutput(null);
+  const origin = ((e && e.headers && (e.headers.Origin || e.headers.origin)) || null)?.replace(/\/$/, '');
+  const output = ContentService.createTextOutput(null);
   let diagnostic = "";
 
   // Si l'origine de la requête est dans notre liste, on renvoie les en-têtes CORS.
@@ -67,7 +68,7 @@ function doOptions(e) {
       }
   }
 
-  // logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: !!diagnostic.includes('SUCCÈS'), diagnostic: diagnostic, allowedList: config.allowed_origins });
+  logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: !!diagnostic.includes('SUCCÈS'), diagnostic: diagnostic, allowedList: config.allowed_origins });
   return output;
 }
 

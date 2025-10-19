@@ -93,7 +93,7 @@ function doOptions(e) {
         }
     }
 
-    // logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: !!diagnostic.includes('SUCCÈS'), diagnostic: diagnostic, allowedList: config.allowed_origins });
+    logAction('PREFLIGHT_CHECK', { origin: origin, isAllowed: !!diagnostic.includes('SUCCÈS'), diagnostic: diagnostic, allowedList: config.allowed_origins });
 
     return output;
 }

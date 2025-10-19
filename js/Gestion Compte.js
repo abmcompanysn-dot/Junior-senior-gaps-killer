@@ -454,44 +454,44 @@ function setupProject() {
 }
 
 /**
- * NOUVEAU: Exécute la VRAIE fonction doOptions en mode test pour vérifier sa réponse.
+ * NOUVEAU: Teste la configuration CORS en envoyant une VRAIE requête OPTIONS au script déployé.
  * Pour l'utiliser :
  * 1. Allez dans l'éditeur de script Google pour ce projet.
- * 2. Dans la barre d'outils, sélectionnez la fonction "executeRealDoOptionsTest" dans le menu déroulant.
+ * 2. Dans la barre d'outils, sélectionnez la fonction "testLivePreflightRequest" dans le menu déroulant.
  * 3. Cliquez sur le bouton "Exécuter".
  * 4. Ouvrez les journaux d'exécution (Affichage > Journaux, ou Ctrl+Entrée) pour voir le résultat.
  */
-function executeRealDoOptionsTest() {
-  // On teste avec le slash final pour vérifier que la normalisation fonctionne.
-  const testOrigin = 'https://junior-senior-gaps-killer.vercel.app/';
+function testLivePreflightRequest() {
+  const SCRIPT_URL = ScriptApp.getService().getUrl();
+  const TEST_ORIGIN = 'https://junior-senior-gaps-killer.vercel.app';
 
-  // 1. Simuler l'objet événement 'e' avec une origine et le mode test.
-  const mockEvent = {
-    parameter: { test_mode: 'true' },
+  Logger.log("--- DÉBUT DU TEST LIVE PREFLIGHT ---");
+  Logger.log("Envoi d'une requête OPTIONS à : " + SCRIPT_URL);
+  Logger.log("Avec l'origine : " + TEST_ORIGIN);
+
+  const params = {
+    method: 'options',
     headers: {
-      'Origin': testOrigin
-    }
+      'Origin': TEST_ORIGIN,
+      'Access-Control-Request-Method': 'POST',
+      'Access-Control-Request-Headers': 'Content-Type'
+    },
+    muteHttpExceptions: true // Important pour pouvoir lire la réponse même en cas d'erreur
   };
 
-  Logger.log("--- DÉBUT DU TEST RÉEL de doOptions ---");
-  Logger.log("Exécution de doOptions avec l'origine : " + testOrigin);
+  const response = UrlFetchApp.fetch(SCRIPT_URL, params);
+  const responseHeaders = response.getHeaders();
 
-  // 2. Appeler la VRAIE fonction doOptions. Grâce au mode test, elle renvoie un objet.
-  const responseHeaders = doOptions(mockEvent);
+  Logger.log("Réponse du serveur (Code: " + response.getResponseCode() + ")");
+  Logger.log("En-têtes reçus : " + JSON.stringify(responseHeaders, null, 2));
 
-  // 3. Analyser la réponse.
-  Logger.log("En-têtes qui SERAIENT envoyés par le serveur :");
-  Logger.log(responseHeaders);
-
-  // On vérifie que la réponse correspond à l'origine SANS le slash final, car elle est normalisée.
-  if (responseHeaders['Access-Control-Allow-Origin'] === testOrigin.replace(/\/$/, '')) {
-    Logger.log("✅ SUCCÈS : L'en-tête 'Access-Control-Allow-Origin' est correct.");
-    Logger.log("   -> Votre configuration CORS semble correcte pour cette origine.");
+  if (responseHeaders['Access-Control-Allow-Origin'] === TEST_ORIGIN) {
+    Logger.log("✅ SUCCÈS : Le serveur a renvoyé le bon en-tête 'Access-Control-Allow-Origin'. Votre configuration CORS est correcte !");
   } else {
-    Logger.log("❌ ÉCHEC : L'en-tête 'Access-Control-Allow-Origin' est MANQUANT ou INCORRECT.");
-    Logger.log("   -> SOLUTION : Allez dans votre Google Sheet, dans l'onglet 'Config', et assurez-vous que la clé 'allowed_origins' contient bien la valeur '" + testOrigin.replace(/\/$/, '') + "'. Vérifiez les fautes de frappe.");
+    Logger.log("❌ ÉCHEC : L'en-tête 'Access-Control-Allow-Origin' est MANQUANT ou INCORRECT dans la réponse du serveur.");
+    Logger.log("   -> SOLUTION : Vérifiez que l'origine '" + TEST_ORIGIN + "' est bien dans la constante ALLOWED_ORIGINS de votre fonction doOptions.");
   }
-  Logger.log("--- FIN DU TEST RÉEL de doOptions ---");
+  Logger.log("--- FIN DU TEST LIVE PREFLIGHT ---");
 }
 
 /**
