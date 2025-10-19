@@ -559,9 +559,28 @@ function addCourseFromDashboard(data, origin) {
 
     const newId = `C-${new Date().getTime().toString().slice(-6)}`;
     
-    // Préparer la ligne avec les données fournies
+    // Préparer la ligne avec les données fournies, en respectant l'ordre des colonnes
+    // ["ID_Cours", "Nom_Cours", "Résumé", "Durée_Totale", "Niveau", "Prix", "URL_Vidéo_Intro", "Image_Couverture", "Freemium_Start", "Freemium_End", "Objectifs", "Prérequis", "Avantage_Senior", "Public_Cible", "Formateur_Nom", "Formateur_Titre", "Formateur_Bio", "Note_Moyenne", "Avis"]
     const newRow = [
-      newId, data.nom, data.resume, "", "", data.prix, "", "", "", "", "", "", "", "", data.formateurNom, data.formateurTitre, "", "", ""
+      newId,                // ID_Cours
+      data.nom,               // Nom_Cours
+      data.resume,            // Résumé
+      data.duree,             // Durée_Totale
+      data.niveau,            // Niveau
+      data.prix,              // Prix
+      data.videoIntro,        // URL_Vidéo_Intro
+      data.imageCouverture,   // Image_Couverture
+      "0",                    // Freemium_Start (valeur par défaut)
+      "1200",                 // Freemium_End (valeur par défaut, 20min)
+      data.objectifs,         // Objectifs
+      data.prerequis,         // Prérequis
+      data.avantageSenior || `Le savoir-faire d'un expert.`, // Avantage_Senior (avec une valeur par défaut)
+      data.publicCible,       // Public_Cible
+      data.formateurNom,      // Formateur_Nom
+      data.formateurTitre,    // Formateur_Titre
+      data.formateurBio,      // Formateur_Bio
+      "0",                    // Note_Moyenne (initiale)
+      "0 Avis"                // Avis (initial)
     ];
 
     coursSheet.appendRow(newRow);

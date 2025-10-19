@@ -155,6 +155,34 @@
                     <input type="number" id="course-price-input" class="mt-1 block w-full p-2 border rounded-md" required>
                 </div>
                 <div>
+                    <label for="course-level-input" class="block text-sm font-medium text-gray-700">Niveau requis</label>
+                    <select id="course-level-input" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="Débutant">Débutant</option>
+                        <option value="Intermédiaire">Intermédiaire</option>
+                        <option value="Expert">Expert</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="course-video-intro-input" class="block text-sm font-medium text-gray-700">URL de la vidéo d'introduction (YouTube Embed)</label>
+                    <input type="url" id="course-video-intro-input" class="mt-1 block w-full p-2 border rounded-md" placeholder="https://www.youtube.com/embed/xxxxxx" required>
+                </div>
+                <div>
+                    <label for="course-objectives-input" class="block text-sm font-medium text-gray-700">Objectifs du cours (séparés par un point-virgule ";")</label>
+                    <textarea id="course-objectives-input" rows="3" class="mt-1 block w-full p-2 border rounded-md" placeholder="Objectif 1; Objectif 2; Objectif 3" required></textarea>
+                </div>
+                <div>
+                    <label for="course-prerequisites-input" class="block text-sm font-medium text-gray-700">Prérequis (séparés par un point-virgule ";")</label>
+                    <textarea id="course-prerequisites-input" rows="2" class="mt-1 block w-full p-2 border rounded-md" placeholder="Prérequis 1; Prérequis 2" required></textarea>
+                </div>
+                <div>
+                    <label for="course-target-audience-input" class="block text-sm font-medium text-gray-700">Public Cible</label>
+                    <input type="text" id="course-target-audience-input" class="mt-1 block w-full p-2 border rounded-md" placeholder="Ex: Développeurs Backend avec 3+ ans d'expérience" required>
+                </div>
+                <div>
+                    <label for="course-duration-input" class="block text-sm font-medium text-gray-700">Durée du cours (ex: 8h 30min)</label>
+                    <input type="text" id="course-duration-input" class="mt-1 block w-full p-2 border rounded-md" placeholder="ex: 10h 45min" required>
+                </div>
+                <div>
                     <label for="course-cover-input" class="block text-sm font-medium text-gray-700">Image de couverture</label>
                     <input type="file" id="course-cover-input" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
                 </div>

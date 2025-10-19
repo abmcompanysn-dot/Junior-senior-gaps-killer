@@ -92,20 +92,20 @@
 
     <!-- Contenu de la page -->
     <main>
-        <section class="hero-section relative flex items-center justify-center text-center text-white" style="background-image: url('https://i.postimg.cc/g0XDVVnP/Blue-and-Yellow-Minimalist-Business-Landing-Page-Website-UI-Desktop-Prototype-3.png');">
-            <div class="absolute inset-0 bg-black opacity-50"></div>
-            <div class="relative z-10 p-4">
-                <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">Passez au niveau supérieur.</h1>
-                <div class="space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:space-x-4">
-                    <a href="promotions.html" class="inline-block bg-gold text-white px-10 py-4 rounded-lg font-semibold hover:bg-orange-600 transition text-lg shadow-lg">
-                        Commencer
-                    </a>
-                    <a href="authentification.html" class="inline-block bg-gray-100 text-gray-800 px-10 py-4 rounded-lg font-semibold hover:bg-gray-200 transition text-lg shadow-lg">
-                        S'inscrire maintenant
-                    </a>
+        <div class="w-full max-w-4xl mx-auto px-4 py-12 text-main-on-light">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Mon Historique d'Activité</h1>
+                <p class="text-gray-600 mb-8">Retrouvez ici un journal de vos activités récentes sur la plateforme, comme vos connexions, les cours que vous avez commencés, et votre progression.</p>
+    
+                <div id="history-log-container" class="space-y-6">
+                    <!-- Le journal d'activité sera injecté ici par JS -->
+                    <div class="text-center py-10">
+                        <div class="loader border-t-4 border-blue-500 rounded-full w-12 h-12 animate-spin mx-auto"></div>
+                        <p class="mt-4 text-gray-500">Chargement de votre historique...</p>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
     <!-- Footer -->

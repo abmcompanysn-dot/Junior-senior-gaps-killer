@@ -48,6 +48,10 @@ async function initializeApp() {
     if (window.location.pathname.endsWith('categorie.html')) {
         initializeCategoryPage();
     }
+    // NOUVEAU: Initialiser la page d'historique
+    if (window.location.pathname.endsWith('suivi-commande.html')) {
+        initializeHistoryPage();
+    }
 
     if (document.getElementById('countdown')) {
         startCountdown(); // Le compte à rebours est indépendant.
@@ -74,6 +78,7 @@ async function initializeApp() {
         if (window.location.pathname.endsWith('categorie.html')) updateWhatsAppLinkForCategory(catalog); // NOUVEAU
         if (window.location.pathname.endsWith('promotions.html')) displayPromotionProducts(catalog); // Gardé pour la page promo
         if (window.location.pathname.endsWith('produit.html')) loadCoursePage(catalog); // MODIFIÉ
+        if (window.location.pathname.endsWith('notification.html')) initializeNotificationPage(catalog);
         
         // Remplir les sections de la page d'accueil
         if (document.getElementById('superdeals-products')) {
@@ -2233,9 +2238,16 @@ async function handleAddCourseSubmit(event) {
             data: {
                 nom: document.getElementById('course-name-input').value,
                 resume: document.getElementById('course-summary-input').value,
-                prix: parseFloat(document.getElementById('course-price-input').value),
+                prix: parseFloat(document.getElementById('course-price-input').value), // Converti en nombre
+                duree: document.getElementById('course-duration-input').value,
+                niveau: document.getElementById('course-level-input').value,
+                videoIntro: document.getElementById('course-video-intro-input').value,
+                objectifs: document.getElementById('course-objectives-input').value,
+                prerequis: document.getElementById('course-prerequisites-input').value,
+                publicCible: document.getElementById('course-target-audience-input').value,
                 formateurNom: user.Nom,
                 formateurTitre: user.Titre || 'Formateur Expert',
+                formateurBio: user.Bio || 'Biographie à compléter.',
                 imageCouverture: coverImageUrl // Utiliser l'URL de l'image téléversée
             }
         };
@@ -2243,13 +2255,28 @@ async function handleAddCourseSubmit(event) {
         // 3. Envoyer la requête de création de cours
         const response = await fetch(targetCategory.ScriptURL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' }, // Utiliser text/plain pour éviter le pré-vol CORS
             body: JSON.stringify(payload)
         });
         const result = await response.json();
 
         if (result.success) {
-            alert('Cours créé avec succès !');
+            showToast('Cours créé avec succès ! Il sera visible après validation.', false);
+
+            // NOUVEAU: Envoyer une notification à l'admin
+            fetch(CONFIG.NOTIFICATION_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'createNotification',
+                    data: {
+                        userId: 'ADMIN', // ID spécial pour les notifications système
+                        type: 'Nouveau Cours',
+                        message: `Le formateur ${user.Nom} a soumis un nouveau cours : "${payload.data.nom}".`
+                    }
+                })
+            });
+
             document.getElementById('add-course-modal').classList.add('hidden');
             form.reset();
             // Ici, on pourrait rafraîchir la liste des cours du dashboard
@@ -2513,10 +2540,10 @@ function switchAccountTab(tabId) {
  * @param {string} userId L'ID de l'utilisateur.
  */
 async function loadMyCourses(userId) {
-    const container = document.getElementById('my-courses-list');
-    if (!container) return;
-    container.innerHTML = '<div class="loader mx-auto"></div><p class="text-center text-gray-500 mt-2">Chargement de vos cours...</p>';
-
+    const container = document.getElementById('my-courses-list'); // Pour la page compte
+    const historyContainer = document.getElementById('recent-courses-history'); // Pour la page historique
+    if (!container && !historyContainer) return;
+    
     try {
         // 1. Récupérer les IDs des cours achetés
         const purchasedResponse = await fetch(`${CONFIG.COURSE_API_URL}?action=getCoursAchetes&userId=${userId}`);
@@ -2525,17 +2552,24 @@ async function loadMyCourses(userId) {
         const purchasedCourseIds = purchasedResult.data;
 
         if (purchasedCourseIds.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-center">Vous n\'avez encore acheté aucun cours.</p>';
+            if (container) container.innerHTML = '<p class="text-gray-500 text-center">Vous n\'avez encore acheté aucun cours.</p>';
+            if (historyContainer) historyContainer.innerHTML = '<p class="text-gray-500 text-center">Aucun cours commencé récemment.</p>';
             return;
         }
 
         // 2. Récupérer le catalogue complet pour avoir les détails des cours
         const catalog = await getCatalogAndRefreshInBackground();
-        const myCourses = catalog.data.products.filter(course => purchasedCourseIds.includes(course.ID_Cours));
+        const allCoursesDetails = catalog.data.products;
+        const myCourses = allCoursesDetails.filter(course => purchasedCourseIds.includes(course.ID_Cours));
 
         // 3. Afficher les cartes des cours
-        container.innerHTML = myCourses.map(course => {
-            const progress = Math.floor(Math.random() * 100); // Progression simulée
+        const coursesHTML = myCourses.map(course => {
+            // NOUVEAU: Calcul de la progression basé sur le nombre de chapitres
+            const totalChapters = course.modules.reduce((sum, mod) => sum + (mod.chapitres ? mod.chapitres.length : 0), 0);
+            // Simulation: on suppose que l'utilisateur a complété 1/3 des chapitres
+            const completedChapters = Math.floor(totalChapters / 3); 
+            const progress = totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0;
+
             return `
                 <div class="border rounded-lg p-4 flex flex-col md:flex-row items-center gap-4">
                     <img src="${course.Image_Couverture || CONFIG.DEFAULT_PRODUCT_IMAGE}" alt="${course.Nom_Cours}" class="w-32 h-20 object-cover rounded-md flex-shrink-0">
@@ -2553,10 +2587,13 @@ async function loadMyCourses(userId) {
                 </div>
             `;
         }).join('');
+        
+        if (container) container.innerHTML = coursesHTML;
+        if (historyContainer) historyContainer.innerHTML = coursesHTML;
 
     } catch (error) {
         console.error("Erreur lors du chargement des cours de l'utilisateur:", error);
-        container.innerHTML = '<p class="text-red-500 text-center">Une erreur est survenue lors du chargement de vos cours.</p>';
+        if (container) container.innerHTML = '<p class="text-red-500 text-center">Une erreur est survenue lors du chargement de vos cours.</p>';
     }
 }
 
@@ -2565,10 +2602,10 @@ async function loadMyCourses(userId) {
  * @param {string} userId L'ID de l'utilisateur.
  */
 async function loadUserActivityLog(userId) {
-    const activitySection = document.getElementById('activity-log-section');
-    if (!activitySection) return;
-    activitySection.innerHTML = '<div class="loader mx-auto"></div><p class="text-center text-gray-500 mt-2">Chargement de votre historique...</p>';
-
+    const container = document.getElementById('history-log-container'); // Page Historique
+    if (!container) return;
+    container.innerHTML = '<div class="loader mx-auto"></div><p class="text-center text-gray-500 mt-2">Chargement de votre historique...</p>';
+    
     try {
         const response = await fetch(CONFIG.ACCOUNT_API_URL, {
             method: 'POST',
@@ -2585,26 +2622,29 @@ async function loadUserActivityLog(userId) {
         }
 
         if (result.logs.length === 0) {
-            activitySection.innerHTML = '<h4 class="text-lg font-semibold mb-4">Mon Activité</h4><p class="text-gray-500">Aucune activité récente à afficher.</p>';
+            container.innerHTML = '<p class="text-gray-500 text-center">Aucune activité récente à afficher.</p>';
             return;
         }
 
         const logsHTML = `
-            <h4 class="text-lg font-semibold mb-4">Mon Activité</h4>
             <div class="space-y-3">
                 ${result.logs.map(log => {
                     // log est un tableau: [Date, Source, Action, Détails]
                     const timestamp = new Date(log[0]).toLocaleString('fr-FR');
                     const action = log[2];
                     let description = '';
+                    let icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
 
                     // Simplifier l'affichage pour l'utilisateur
-                    if (action === 'connecterClient') description = 'Connexion à votre compte.';
+                    if (action === 'connecterClient') {
+                        description = 'Connexion à votre compte.';
+                        icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>';
+                    }
                     if (action === 'creerCompteClient') description = 'Création de votre compte.';
                     
                     return `
                         <div class="flex items-start p-3 bg-gray-50 rounded-md">
-                            <div class="text-gray-400 mr-3 pt-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+                            <div class="text-gray-400 mr-3 pt-1">${icon}</div>
                             <div>
                                 <p class="font-semibold text-sm">${description || action}</p>
                                 <p class="text-xs text-gray-500">${timestamp}</p>
@@ -2614,10 +2654,104 @@ async function loadUserActivityLog(userId) {
                 }).join('')}
             </div>
         `;
-        activitySection.innerHTML = logsHTML;
+        container.innerHTML = logsHTML;
 
     } catch (error) {
         console.error("Erreur lors du chargement du journal d'activité:", error);
-        activitySection.innerHTML = '<h4 class="text-lg font-semibold mb-4">Mon Activité</h4><p class="text-red-500">Une erreur est survenue lors du chargement de votre activité.</p>';
+        container.innerHTML = '<p class="text-red-500 text-center">Une erreur est survenue lors du chargement de votre activité.</p>';
+    }
+}
+
+/**
+ * NOUVEAU: Initialise la page d'historique.
+ */
+function initializeHistoryPage() {
+    const user = JSON.parse(localStorage.getItem('abmcyUser'));
+    if (!user) {
+        window.location.href = 'authentification.html';
+        return;
+    }
+    loadUserActivityLog(user.IDClient);
+}
+
+/**
+ * NOUVEAU: Initialise la page de notifications.
+ */
+async function initializeNotificationPage() {
+    const user = JSON.parse(localStorage.getItem('abmcyUser'));
+    if (!user) {
+        // Sur la page de notif, si pas connecté, on redirige
+        if (window.location.pathname.endsWith('notification.html')) {
+            window.location.href = 'authentification.html';
+        }
+        return;
+    }
+
+    const container = document.getElementById('notifications-list');
+    if (!container) return;
+    container.innerHTML = '<p class="text-center text-gray-500">Chargement des notifications...</p>';
+
+    try {
+        const response = await fetch(`${CONFIG.NOTIFICATION_API_URL}?action=getNotifications&userId=${user.IDClient}`);
+        const result = await response.json();
+
+        if (!result.success) throw new Error(result.error);
+
+        const notifications = result.data;
+        if (notifications.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500">Aucune notification.</p>';
+            return;
+        }
+
+        container.innerHTML = notifications.map(notif => `
+            <div class="p-4 rounded-md flex items-start gap-4 ${notif.Statut === 'Lue' ? 'bg-gray-50 text-gray-500' : 'bg-blue-50 border-l-4 border-blue-500'}">
+                <div>
+                    <p class="font-semibold">${notif.Type}</p>
+                    <p class="text-sm">${notif.Message}</p>
+                    <p class="text-xs mt-1">${new Date(notif.Date).toLocaleString('fr-FR')}</p>
+                </div>
+            </div>
+        `).join('');
+
+        // Marquer les notifications non lues comme lues après un délai
+        const unreadIds = notifications.filter(n => n.Statut === 'Non lue').map(n => n['ID Notification']);
+        if (unreadIds.length > 0) {
+            setTimeout(() => {
+                fetch(CONFIG.NOTIFICATION_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({
+                        action: 'markAsRead',
+                        data: { userId: user.IDClient, notificationIds: unreadIds }
+                    })
+                });
+            }, 3000);
+        }
+
+    } catch (error) {
+        console.error("Erreur de chargement des notifications:", error);
+        container.innerHTML = '<p class="text-center text-red-500">Impossible de charger les notifications.</p>';
+    }
+}
+
+/**
+ * NOUVEAU: Gère le changement d'onglet sur la page de notifications.
+ */
+function switchNotificationTab(tabId) {
+    const notifContent = document.getElementById('tab-content-notifications');
+    const favContent = document.getElementById('tab-content-favorites');
+    const notifBtn = document.getElementById('tab-btn-notifications');
+    const favBtn = document.getElementById('tab-btn-favorites');
+
+    if (tabId === 'notifications') {
+        notifContent.classList.remove('hidden');
+        favContent.classList.add('hidden');
+        notifBtn.classList.add('active');
+        favBtn.classList.remove('active');
+    } else {
+        notifContent.classList.add('hidden');
+        favContent.classList.remove('hidden');
+        notifBtn.classList.remove('active');
+        favBtn.classList.add('active');
     }
 }
