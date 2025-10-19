@@ -7,18 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold-color: #F97316; /* Orange */
-            --dark-color: #1E3A8A; /* Bleu foncé */
+         :root {
+            --gold-color: #FF7F00; /* Orange Vif / Énergique */
+            --dark-color: #1A233A; /* Bleu Nuit / Marine Foncé */
         }
         .text-gold { color: var(--gold-color); }
         .bg-gold { background-color: var(--gold-color); }
+        .text-main-on-light { color: #333333; }
         .border-gold { border-color: var(--gold-color); }
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
         body { overflow-x: hidden; }
     </style>
 </head>
-<body class="bg-gray-100 font-montserrat">
+<body class="font-montserrat" style="background-color: #F5F5F5;">
 
     <!-- En-tête -->
     <div class="sticky top-0 z-40 bg-white shadow-md">
@@ -36,7 +37,7 @@
     </div>
 
     <!-- Contenu de la page -->
-    <main class="w-full max-w-4xl mx-auto px-4 py-12">
+    <main class="w-full max-w-4xl mx-auto px-4 py-12 text-main-on-light">
         <div class="bg-white p-8 rounded-lg shadow-lg">
             <h1 class="text-3xl font-bold text-gray-800 mb-6">Politique de Retour</h1>
             <p class="text-sm text-gray-500 mb-6">Dernière mise à jour : [Date]</p>
@@ -78,7 +79,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark-color text-white pt-12 pb-8 mt-16">
+    <footer class="text-white pt-12 pb-8 mt-16" style="background-color: #1A233A;">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div><h4 class="font-bold text-lg mb-4 text-gold">Junior Senior Gaps Killer</h4><p class="text-gray-400 text-sm">Accélérateur de compétences. Révélateur de shortcuts.</p></div>

@@ -15,9 +15,10 @@
         .bg-gold { background-color: var(--gold-color); }
         .border-gold { border-color: var(--gold-color); }
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .text-main-on-light { color: #333333; }
     </style>
 </head>
-<body class="bg-gray-100 font-montserrat">
+<body class="font-montserrat" style="background-color: #F5F5F5;">
 
     <header class="bg-white shadow-sm">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -28,7 +29,7 @@
         </div>
     </header>
 
-    <main class="flex items-center justify-center py-12 px-4">
+    <main class="flex items-center justify-center py-12 px-4 text-main-on-light">
         <div id="auth-forms" class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
             <div class="text-center mb-8">
                 <h1 class="text-2xl font-bold text-gray-800">Espace Senior</h1>
@@ -51,7 +52,7 @@
                     <label for="login-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
                     <input type="password" id="login-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
                 </div>
-                <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">Se connecter</button>
+                <button type="submit" class="w-full bg-gold text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">Se connecter</button>
             </form>
 
             <!-- Formulaire d'Inscription -->
@@ -81,7 +82,7 @@
                     <label for="register-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
                     <input type="password" id="register-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
                 </div>
-                <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">Créer mon compte Senior</button>
+                <button type="submit" class="w-full bg-gold text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">Créer mon compte Senior</button>
             </form>
 
             <div id="auth-status" class="mt-4 text-center font-semibold"></div>

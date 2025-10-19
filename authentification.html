@@ -16,6 +16,7 @@
         .border-gold { border-color: var(--gold-color); }
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
         .dropdown:hover .dropdown-menu { display: block; }
+        .text-main-on-light { color: #333333; }
         .dropdown-menu { display: none; }
         /* Espace pour la barre de navigation inférieure */
         body { padding-bottom: 100px; } 
@@ -25,7 +26,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 font-montserrat">
+<body class="font-montserrat" style="background-color: #F5F5F5;">
 
     <!-- NOUVEAU: Conteneur sticky pour l'en-tête et la navigation -->
     <div class="sticky top-0 z-40 bg-white shadow-md">
@@ -60,7 +61,7 @@
         </header>
 
         <!-- Navigation principale -->
-        <nav class="border-b border-t bg-gradient-to-r from-sky-500 to-sky-300">
+        <nav class="border-b border-t" style="background-color: #1A233A;">
             <div class="container mx-auto px-4">
                 <div class="flex items-center text-sm font-semibold">
                     <div class="relative dropdown">
@@ -79,7 +80,7 @@
         </nav>
     </div>
 
-    <main class="flex items-center justify-center py-12 px-4">
+    <main class="flex items-center justify-center py-12 px-4 text-main-on-light">
         <div id="auth-forms" class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
             <div class="text-center mb-8">
                 <h1 class="text-2xl font-bold text-gray-800">Bienvenue sur Junior Senior Gaps Killer</h1>
@@ -101,7 +102,7 @@
                     <label for="login-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
                     <input type="password" id="login-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gold focus:border-gold" required>
                 </div>
-                <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">Se connecter</button>
+                <button type="submit" class="w-full bg-gold text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">Se connecter</button>
             </form>
 
             <!-- Formulaire d'Inscription -->
@@ -146,7 +147,7 @@
                         <option value="Senior">Formateur (Senior)</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">S'inscrire</button>
+                <button type="submit" class="w-full bg-gold text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">S'inscrire</button>
             </form>
 
             <div id="auth-status" class="mt-4 text-center font-semibold"></div>
@@ -155,7 +156,7 @@
             <div class="mt-6 pt-4 border-t text-center">
                 <p class="text-sm text-gray-600">
                     Vous êtes un formateur ?
-                    <a href="senior-auth.html" class="font-semibold text-blue-600 hover:underline">
+                    <a href="senior-auth.html" class="font-semibold text-gold hover:underline">
                         Accédez à votre espace Senior.
                     </a>
                 </p>
@@ -164,7 +165,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark-color text-white pt-12 pb-8">
+    <footer class="text-white pt-12 pb-8" style="background-color: #1A233A;">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div><h4 class="font-bold text-lg mb-4 text-gold">Junior Senior Gaps Killer</h4><p class="text-gray-400 text-sm">Accélérateur de compétences. Révélateur de shortcuts.</p></div>
@@ -185,7 +186,7 @@
     </footer>
 
     <!-- Barre de navigation inférieure -->
-    <nav class="mobile-nav bg-gold border-t-2 border-orange-300 fixed bottom-0 left-0 right-0 z-40">
+    <nav class="mobile-nav border-t-2 border-orange-300 fixed bottom-0 left-0 right-0 z-40" style="background-color: #FF7F00;">
         <div class="container mx-auto px-4">
             <div class="flex justify-around items-center h-16">
                 <a href="index.html" class="flex flex-col items-center text-white hover:text-blue-900 transition"><svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg><span class="text-xs font-semibold">Accueil</span></a>

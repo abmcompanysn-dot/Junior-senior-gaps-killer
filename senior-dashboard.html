@@ -7,17 +7,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold-color: #F97316;
-            --dark-color: #1E3A8A;
+         :root {
+            --gold-color: #FF7F00; /* Orange Vif / Énergique */
+            --dark-color: #1A233A; /* Bleu Nuit / Marine Foncé */
         }
         .text-gold { color: var(--gold-color); }
         .bg-gold { background-color: var(--gold-color); }
+        .text-main-on-light { color: #333333; }
         .border-gold { border-color: var(--gold-color); }
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
         /* NOUVEAU: Style pour l'onglet actif du tableau de bord */
         .dashboard-tab.active {
-            background-color: #FEF3C7; /* yellow-100 */
+            background-color: #FFF7ED; /* orange-100 */
             color: #92400E; /* yellow-800 */
         }
     </style>
@@ -36,7 +37,7 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-12">
+    <main class="container mx-auto px-4 py-12 text-main-on-light">
         <h1 class="text-3xl font-bold text-gray-800 mb-8">Tableau de Bord Senior</h1>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -67,8 +68,8 @@
                             <p class="text-sm text-green-600">Apprenants inscrits</p>
                         </div>
                         <div class="bg-yellow-50 p-4 rounded-lg">
-                            <p id="stats-revenue" class="text-3xl font-bold text-yellow-800">...</p>
-                            <p class="text-sm text-yellow-600">Revenu total</p>
+                            <p id="stats-revenue" class="text-3xl font-bold text-orange-800">...</p>
+                            <p class="text-sm text-orange-600">Revenu total</p>
                         </div>
                     </div>
 
@@ -83,7 +84,7 @@
                 <div id="content-courses" class="dashboard-content bg-white p-8 rounded-lg shadow hidden">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-bold">Gestion des Cours</h3>
-                        <button id="add-course-btn" class="bg-black text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-800 transition">
+                        <button id="add-course-btn" class="bg-gold text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition">
                             + Créer un cours
                         </button>
                     </div>
@@ -123,7 +124,7 @@
                             <label class="block text-sm font-medium text-gray-700">Biographie</label>
                             <textarea id="profile-bio-input" rows="4" class="mt-1 block w-full p-2 border rounded-md"></textarea>
                         </div>
-                        <button type="submit" class="px-4 py-2 bg-black text-white rounded-lg font-bold">Enregistrer les modifications</button>
+                        <button type="submit" class="px-4 py-2 bg-gold text-white rounded-lg font-bold">Enregistrer les modifications</button>
                     </form>
                 </div>
             </div>

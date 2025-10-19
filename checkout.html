@@ -7,15 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold-color: #F97316; /* Orange */
-            --dark-color: #1E3A8A; /* Bleu foncé */
+         :root {
+            --gold-color: #FF7F00; /* Orange Vif / Énergique */
+            --dark-color: #1A233A; /* Bleu Nuit / Marine Foncé */
         }
         .text-gold { color: var(--gold-color); }
+        .text-main-on-light { color: #333333; }
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-100 font-montserrat">
+<body class="font-montserrat" style="background-color: #F5F5F5;">
 
      <!-- NOUVEAU: Conteneur sticky pour l'en-tête et la navigation -->
     <header class="bg-white shadow-sm">
@@ -30,7 +31,7 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-12">
+    <main class="container mx-auto px-4 py-12 text-main-on-light">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <!-- Formulaire de paiement -->
             <div class="lg:col-span-1">
@@ -68,7 +69,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition">
+                    <button type="submit" class="w-full bg-gold text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">
                         Confirmer la commande
                     </button>
                 </form>
