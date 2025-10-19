@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentions Légales - Junior Senior Gaps Killer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-color: #FF7F00;
+            --dark-color: #1A233A;
+        }
+        .text-gold { color: var(--gold-color); }
+        .bg-gold { background-color: var(--gold-color); }
+        .border-gold { border-color: var(--gold-color); }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .text-main-on-light { color: #333333; }
+        body {
+            padding-bottom: 100px;
+            overflow-x: hidden;
+        }
+        @media (min-width: 768px) {
+            body { padding-bottom: 0; }
+            .mobile-nav { display: none; }
+        }
+    </style>
+</head>
+<body class="font-montserrat" style="background-color: #F5F5F5;">
+
+    <!-- En-tête -->
+    <div class="sticky top-0 z-40 bg-white shadow-md">
+        <header>
+            <div class="container mx-auto px-4 py-2">
+                <div class="flex items-center justify-between">
+                    <a href="index.html" class="flex items-center"><img src="https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png" alt="Logo" class="h-10"></a>
+                    <div class="flex items-center space-x-4">
+                        <a href="panier.html" aria-label="Panier" class="text-gray-600 hover:text-gold relative"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg><span class="cart-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span></a>
+                        <a href="authentification.html" class="text-gray-600 hover:text-gold"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></a>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <!-- Contenu de la page -->
+    <main class="w-full max-w-4xl mx-auto px-4 py-12 text-main-on-light">
+        <div class="bg-white p-8 md:p-12 rounded-lg shadow-lg">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Mentions Légales</h1>
+            <p class="text-sm text-gray-500 mb-6">En vigueur au [Date de mise en ligne]</p>
+
+            <div class="space-y-6 text-gray-700">
+                <section>
+                    <h2 class="text-xl font-semibold text-gold mb-2">1. Éditeur du site</h2>
+                    <p>Le site Junior Senior Gaps Killer, accessible à l'URL [votre-url.com], est édité par :</p>
+                    <p class="mt-2">
+                        <strong>[Nom de votre entreprise ou votre nom complet]</strong>,<br>
+                        Société [Forme juridique, ex: SAS, Auto-entrepreneur] au capital de [Montant du capital social] euros,<br>
+                        Inscrite au R.C.S. de [Ville] sous le numéro [Numéro RCS],<br>
+                        Dont le siège social est situé au [Votre adresse complète],<br>
+                        Numéro de téléphone : [Votre numéro de téléphone],<br>
+                        Adresse e-mail : [Votre adresse e-mail de contact].
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gold mb-2">2. Hébergement</h2>
+                    <p>Le site est hébergé par la société [Nom de l'hébergeur, ex: Vercel, Netlify, OVH], située au [Adresse de l'hébergeur], (contact : [Email ou téléphone de l'hébergeur]).</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gold mb-2">3. Directeur de la publication</h2>
+                    <p>Le Directeur de la publication du site est [Votre nom complet].</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gold mb-2">4. Propriété intellectuelle</h2>
+                    <p>Tous les contenus présents sur le site Junior Senior Gaps Killer, incluant, de façon non limitative, les graphismes, images, textes, vidéos, animations, sons, logos, gifs et icônes ainsi que leur mise en forme sont la propriété exclusive de la société [Nom de votre entreprise] à l'exception des marques, logos ou contenus appartenant à d'autres sociétés partenaires ou auteurs.</p>
+                    <p>Toute reproduction, distribution, modification, adaptation, retransmission ou publication, même partielle, de ces différents éléments est strictement interdite sans l'accord exprès par écrit de [Nom de votre entreprise].</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gold mb-2">5. Données personnelles</h2>
+                    <p>Pour plus d'informations sur la collecte et le traitement de vos données personnelles, veuillez vous référer à notre <a href="politique-confidentialite.html" class="text-blue-600 hover:underline">Politique de Confidentialité</a>.</p>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-white pt-12 pb-8 mt-16" style="background-color: #1A233A;">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div><h4 class="font-bold text-lg mb-4 text-gold">Junior Senior Gaps Killer</h4><p class="text-gray-400 text-sm">Accélérateur de compétences. Révélateur de shortcuts.</p></div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Navigation</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white">Accueil</a></li>
+                        <li><a href="promotions.html" class="text-gray-400 hover:text-white">Tous les cours</a></li>
+                        <li><a href="compte.html" class="text-gray-400 hover:text-white">Mon Compte</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4 text-gold">Aide & Contact</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="methodologie.html" class="text-gray-400 hover:text-white">Notre Méthodologie</a></li>
+                        <li><a href="politique-confidentialite.html" class="text-gray-400 hover:text-white">Politique de confidentialité</a></li>
+                        <li><a href="mentions-legales.html" class="text-gray-400 hover:text-white">Mentions Légales</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4 text-gold">Suivez-nous</h4>
+                    <div class="flex space-x-4"><a href="#" class="text-gray-400 hover:text-white">FB</a><a href="#" class="text-gray-400 hover:text-white">IG</a></div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500 text-sm"><p>&copy; 2024 Junior Senior Gaps Killer. Tous droits réservés.</p></div>
+        </div>
+    </footer>
+
+    <script src="js/main.js" defer></script>
+</body>
+</html>
