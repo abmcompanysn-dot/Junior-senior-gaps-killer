@@ -34,6 +34,16 @@
             background: linear-gradient(to right, #f3f4f6, #e5e7eb);
             border: 1px solid transparent;
         }
+        /* NOUVEAU: Style pour la barre d'icônes flottante */
+        .floating-icon-bar {
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: opacity 0.3s ease-in-out;
+        }
+        .floating-icon-bar:hover {
+            opacity: 1 !important;
+        }
     </style>
 </head>
 <body class="font-montserrat" style="background-color: #F5F5F5;">
@@ -59,23 +69,15 @@
                 </div>
             </div>
         </header>
-        <nav class="border-b border-t text-white" style="background-color: #1A233A;">
-            <div class="container mx-auto px-4">
-                <div class="flex items-center text-sm font-semibold">
-                    <div class="relative dropdown">
-                        <button class="flex items-center py-3">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                            Toutes les catégories
-                        </button>
-                        <div id="mobileMenu" class="dropdown-menu absolute bg-white shadow-lg rounded-md mt-1 w-64 z-30 border"></div>
-                    </div>
-                    <div id="main-nav-links" class="flex items-center space-x-6 overflow-x-auto whitespace-nowrap ml-4">
-                        <a href="promotions.html" class="py-3 text-red-500 hover:text-red-700 font-bold">SuperDeals</a>
-                        <a href="categorie.html?id=CAT-001" class="py-3 hover:text-gold" title="Développement Backend"><i class="fas fa-code fa-lg"></i></a>
-                        <a href="categorie.html?id=CAT-002" class="py-3 hover:text-gold" title="DevOps & Cloud"><i class="fas fa-cloud-upload-alt fa-lg"></i></a>
-                        <a href="categorie.html?id=CAT-003" class="py-3 hover:text-gold" title="Data Science & IA"><i class="fas fa-brain fa-lg"></i></a>
-                    </div>
+        <!-- NOUVEAU: Barre de navigation pour ordinateur -->
+        <nav class="hidden md:flex border-b border-t text-white" style="background-color: #1A233A;">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <div class="flex items-center space-x-8 text-sm font-semibold">
+                    <a href="index.html#about-us" class="py-3 hover:text-gold transition-colors">À Propos</a>
+                    <a href="methodologie.html" class="py-3 hover:text-gold transition-colors">Notre Méthode</a>
+                    <a href="senior-auth.html" class="py-3 hover:text-gold transition-colors">Devenir Formateur</a>
                 </div>
+                <a href="authentification.html" class="py-3 text-sm font-semibold hover:text-gold transition-colors">Se connecter</a>
             </div>
         </nav>
     </div>
@@ -127,6 +129,20 @@
             <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500 text-sm"><p>&copy; 2024 Junior Senior Gaps Killer. Tous droits réservés.</p></div>
         </div>
     </footer>
+
+    <!-- NOUVEAU: Barre d'icônes flottante pour ordinateur -->
+    <div class="hidden md:block fixed z-50 floating-icon-bar opacity-80">
+        <div class="bg-gray-900/80 backdrop-blur-sm text-white rounded-full shadow-lg px-6 py-3 flex items-center space-x-6">
+            <a href="promotions.html" class="text-red-500 hover:text-red-400 font-bold text-sm transition-colors" title="SuperDeals">SuperDeals</a>
+            <div class="w-px h-5 bg-gray-600"></div>
+            <a href="categorie.html?id=CAT-001" class="hover:text-gold transition-colors" title="Développement Backend"><i class="fas fa-code fa-lg"></i></a>
+            <a href="categorie.html?id=CAT-002" class="hover:text-gold transition-colors" title="DevOps & Cloud"><i class="fas fa-cloud-upload-alt fa-lg"></i></a>
+            <a href="categorie.html?id=CAT-003" class="hover:text-gold transition-colors" title="Data Science & IA"><i class="fas fa-brain fa-lg"></i></a>
+            <a href="categorie.html?id=CAT-005" class="hover:text-gold transition-colors" title="Design & UI/UX"><i class="fas fa-palette fa-lg"></i></a>
+            <a href="categorie.html?id=CAT-009" class="hover:text-gold transition-colors" title="Gestion de Projet Agile"><i class="fas fa-tasks fa-lg"></i></a>
+            <a href="categorie.html?id=CAT-007" class="hover:text-gold transition-colors" title="Sécurité Web"><i class="fas fa-shield-alt fa-lg"></i></a>
+        </div>
+    </div>
 
     <!-- Barre de navigation mobile -->
     <nav class="mobile-nav border-t-2 border-orange-300 fixed bottom-0 left-0 right-0 z-40" style="background-color: #FF7F00;">
