@@ -90,6 +90,29 @@
         .promo-carousel::-webkit-scrollbar {
             display: none; /* Chrome, Safari and Opera */
         }
+        /* NOUVEAU: Styles pour le carrousel de texte infini */
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            background-color: #1A233A; /* Fond Bleu Nuit */
+            padding: 4rem 0;
+        }
+        .ticker {
+            display: inline-flex;
+            white-space: nowrap;
+            animation: tick 40s linear infinite;
+        }
+        .ticker__item {
+            display: inline-block;
+            padding: 0 2rem;
+            font-size: 3rem; /* md:text-6xl */
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 700; /* font-bold */
+        }
+        @keyframes tick {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
         /* Style pour l'affichage décalé des produits sur mobile */
     </style>
 </head>
@@ -133,7 +156,7 @@
         </header>
 
         <!-- Navigation principale -->
-        <nav class="border-b border-t" style="background-color: #1A233A;">
+        <nav class="border-b border-t text-white" style="background-color: #1A233A;">
             <div class="container mx-auto px-4">
                 <div class="flex items-center text-sm font-semibold">
                     <div class="relative dropdown">
@@ -153,19 +176,19 @@
     </div>
 
     <!-- Bannière Principale Améliorée -->
-    <section class="relative text-white h-64 md:h-80 flex items-center justify-center text-center overflow-hidden" style="background-color: #1A233A;">
-        <img src="https://images.pexels.com/photos/5668774/pexels-photo-5668774.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Formateur senior guidant un apprenant sur un projet" class="absolute inset-0 w-full h-full object-cover opacity-50">
-        <div class="relative z-10 p-4">
-            <h2 class="text-4xl md:text-6xl font-extrabold mb-3 leading-tight">Accélérateur de compétences.</h2>
-            <!-- NOUVELLE BARRE DE NAVIGATION SECONDAIRE -->
-            <nav class="bg-white/10 backdrop-blur-sm rounded-full p-1 max-w-2xl mx-auto mt-8 mb-8">
-                <!-- Les liens de la bannière seront injectés ici -->
-                <div id="banner-nav-links" class="flex items-center justify-center text-xs text-white font-semibold"></div>
-            </nav>
-            <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Révélateur de shortcuts.</p>
-            <a href="#superdeals-products" class="bg-gold text-white px-8 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition text-lg">
-                Voir les Plus Populaires
-            </a>
+    <section class="ticker-wrap">
+        <div class="ticker">
+            <div class="ticker__item">Accélérateur de compétences.</div>
+            <div class="ticker__item">Révélateur de shortcuts.</div>
+            <div class="ticker__item">Du Junior au Senior.</div>
+            <div class="ticker__item">Le savoir des experts à votre portée.</div>
+            <div class="ticker__item">Maîtrisez les non-dits du métier.</div>
+            <!-- Dupliquer pour l'effet infini -->
+            <div class="ticker__item">Accélérateur de compétences.</div>
+            <div class="ticker__item">Révélateur de shortcuts.</div>
+            <div class="ticker__item">Du Junior au Senior.</div>
+            <div class="ticker__item">Le savoir des experts à votre portée.</div>
+            <div class="ticker__item">Maîtrisez les non-dits du métier.</div>
         </div>
     </section>
 

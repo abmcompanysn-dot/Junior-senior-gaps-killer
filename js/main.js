@@ -167,7 +167,7 @@ function populateNavLinks(catalog) {
         // Générer le HTML pour la navigation principale
         let mainNavHTML = '<a href="promotions.html" class="py-3 text-red-600 hover:text-red-800">SuperDeals</a>'; // Lien fixe
         mainNavHTML += mainNavCategories.map(cat => 
-            `<a href="categorie.html?id=${cat.IDCategorie}&name=${encodeURIComponent(cat.NomCategorie)}" class="py-3 text-gray-700 hover:text-gold">${cat.NomCategorie}</a>`
+            `<a href="categorie.html?id=${cat.IDCategorie}&name=${encodeURIComponent(cat.NomCategorie)}" class="py-3 hover:text-gold">${cat.NomCategorie}</a>`
         ).join('');
         mainLinksContainer.innerHTML = mainNavHTML;
 
