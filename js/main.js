@@ -756,7 +756,7 @@ async function handleProfileUpdate(event) {
         // 3. Envoyer la mise à jour au backend
         const response = await fetch(CONFIG.ACCOUNT_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple pour éviter le pré-vol CORS
             body: JSON.stringify({ action: 'updateProfile', data: profileData }),
             credentials: 'include'
         });
@@ -1389,7 +1389,7 @@ async function processCheckout(event) {
     try {
         const response = await fetch(CONFIG.COURSE_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple pour éviter le pré-vol CORS
             body: JSON.stringify(purchasePayload),
             credentials: 'include'
         });
@@ -1403,7 +1403,7 @@ async function processCheckout(event) {
             // NOUVEAU: Envoyer une notification même si la commande réussit
             fetch(CONFIG.NOTIFICATION_API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple
                 body: JSON.stringify({
                     action: 'sendOrderConfirmation',
                     data: { purchaseId: result.id, ...purchasePayload.data }
@@ -2285,7 +2285,7 @@ function logAppEvent(type, data) {
         try {
             fetch(CONFIG.ACCOUNT_API_URL, { // CORRECTION: Utiliser l'API des comptes pour la journalisation
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple
                 body: JSON.stringify(logPayload),
                 credentials: 'include',
                 keepalive: true
@@ -2360,7 +2360,7 @@ async function handleAuthForm(event, type, roleOverride = null) {
         form.querySelector('button[type="submit"]').disabled = true;
         const response = await fetch(CONFIG.ACCOUNT_API_URL, {
             method: 'POST', // Le mode 'no-cors' n'est pas nécessaire et cause des problèmes.
-            headers: { 'Content-Type': 'application/json' }, // Ajout de cet en-tête essentiel
+            headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple pour éviter le pré-vol CORS
             body: JSON.stringify(payload),
             credentials: 'include' // ESSENTIEL pour les requêtes authentifiées
         });
@@ -2565,7 +2565,7 @@ async function loadUserActivityLog(userId) {
     try {
         const response = await fetch(CONFIG.ACCOUNT_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple
             body: JSON.stringify({
                 action: 'getLogsByUserId',
                 data: { userId: userId }
