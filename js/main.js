@@ -128,7 +128,7 @@ function populateCategoryMenu(catalog) {
             menuHTML += categories.map(cat => `<a href="categorie.html?id=${cat.IDCategorie}&name=${encodeURIComponent(cat.NomCategorie)}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">${cat.NomCategorie}</a>`).join('');
         }
         // Ajout du lien vers les promotions (toujours visible)
-        menuHTML += '<a href="promotion.html" class="block px-4 py-2 text-sm text-red-600 font-semibold hover:bg-gray-100">Promotions</a>';
+        menuHTML += '<a href="promotions.html" class="block px-4 py-2 text-sm text-red-600 font-semibold hover:bg-gray-100">Promotions</a>';
         
         menu.innerHTML = menuHTML;
         if (boutiquesMenu) boutiquesMenu.innerHTML = menuHTML;
@@ -2511,6 +2511,14 @@ function initializeAccountPage() {
     };
 
     logoutNav.addEventListener('click', logoutAction);
+
+    // NOUVEAU: Ajouter le lien "Catalogue" au menu du dashboard
+    const dashboardNav = document.querySelector('.account-nav ul');
+    if (dashboardNav) {
+        const catalogLink = document.createElement('li');
+        catalogLink.innerHTML = `<a href="promotions.html" class="account-tab flex items-center p-3 text-gray-600 hover:bg-gray-100 rounded-lg"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path></svg>Catalogue</a>`;
+        dashboardNav.appendChild(catalogLink);
+    }
 
     // NOUVEAU: Gérer les onglets et charger les cours
     switchAccountTab('dashboard'); // Afficher l'onglet "Tableau de bord" par défaut
