@@ -757,8 +757,7 @@ async function handleProfileUpdate(event) {
         const response = await fetch(CONFIG.ACCOUNT_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple pour éviter le pré-vol CORS
-            body: JSON.stringify({ action: 'updateProfile', data: profileData }),
-            credentials: 'include'
+            body: JSON.stringify({ action: 'updateProfile', data: profileData })
         });
         const result = await response.json();
 
@@ -1390,8 +1389,7 @@ async function processCheckout(event) {
         const response = await fetch(CONFIG.COURSE_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple pour éviter le pré-vol CORS
-            body: JSON.stringify(purchasePayload),
-            credentials: 'include'
+            body: JSON.stringify(purchasePayload)
         });
         const result = await response.json();
 
@@ -1408,7 +1406,6 @@ async function processCheckout(event) {
                     action: 'sendOrderConfirmation',
                     data: { purchaseId: result.id, ...purchasePayload.data }
                 }),
-                credentials: 'include',
                 keepalive: true
             });
             throw new Error(result.error || "Une erreur inconnue est survenue.");
@@ -2287,7 +2284,6 @@ function logAppEvent(type, data) {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple
                 body: JSON.stringify(logPayload),
-                credentials: 'include',
                 keepalive: true
             });
         } catch (e) { console.error("Échec de l'envoi du log au serveur:", e); }
@@ -2361,8 +2357,7 @@ async function handleAuthForm(event, type, roleOverride = null) {
         const response = await fetch(CONFIG.ACCOUNT_API_URL, {
             method: 'POST', // Le mode 'no-cors' n'est pas nécessaire et cause des problèmes.
             headers: { 'Content-Type': 'text/plain' }, // Utiliser un Content-Type simple pour éviter le pré-vol CORS
-            body: JSON.stringify(payload),
-            credentials: 'include' // ESSENTIEL pour les requêtes authentifiées
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
@@ -2569,8 +2564,7 @@ async function loadUserActivityLog(userId) {
             body: JSON.stringify({
                 action: 'getLogsByUserId',
                 data: { userId: userId }
-            }),
-            credentials: 'include'
+            })
         });
         const result = await response.json();
 
