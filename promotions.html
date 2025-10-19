@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Promotions - Junior Senior Gaps Killer</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- NOUVEAU: Ajout de la bibliothèque d'icônes pour la nouvelle navigation -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -27,6 +29,11 @@
             body { padding-bottom: 0; }
             .mobile-nav { display: none; }
         }
+        /* NOUVEAU: Style pour la barre de recherche "luxueuse" */
+        .lux-search-input {
+            background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+            border: 1px solid transparent;
+        }
     </style>
 </head>
 <body class="font-montserrat" style="background-color: #F5F5F5;">
@@ -38,9 +45,11 @@
                 <div class="flex items-center justify-between">
                     <a href="index.html" class="flex items-center"><img src="https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png" alt="Logo" class="h-10"></a>
                     <form id="search-form-header" class="flex-1 mx-4" onsubmit="initializeSearch()">
-                        <div class="relative"><input type="search" placeholder="Rechercher des cours..." class="w-full p-2 pl-10 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"><svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
-                    </form>
-                    <div class="flex items-center space-x-4">
+                        <div class="relative flex items-center">
+                            <input type="search" placeholder="Que voulez-vous apprendre aujourd'hui ?" class="w-full p-3 pl-4 pr-28 text-sm text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-gold lux-search-input transition-all duration-300 ease-in-out">
+                            <button type="submit" class="absolute right-1 top-1/2 -translate-y-1/2 bg-gold text-white font-semibold rounded-full px-5 py-2 text-sm hover:bg-orange-600 transition">
+                                Rechercher
+                            <s="flex items-center space-x-4">
                         <a href="panier.html" aria-label="Panier" class="text-gray-600 hover:text-gold relative"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg><span class="cart-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span></a>
                         <a href="authentification.html" class="text-gray-600 hover:text-gold"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></a>
                     </div>
@@ -51,10 +60,18 @@
             <div class="container mx-auto px-4">
                 <div class="flex items-center text-sm font-semibold">
                     <div class="relative dropdown">
-                        <button class="flex items-center py-3"><svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>Toutes les catégories</button>
+                        <button class="flex items-center py-3">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                            Toutes les catégories
+                        </button>
                         <div id="mobileMenu" class="dropdown-menu absolute bg-white shadow-lg rounded-md mt-1 w-64 z-30 border"></div>
                     </div>
-                    <div id="main-nav-links" class="flex items-center space-x-8 overflow-x-auto whitespace-nowrap ml-4"></div>
+                    <div id="main-nav-links" class="flex items-center space-x-6 overflow-x-auto whitespace-nowrap ml-4">
+                        <a href="promotions.html" class="py-3 text-red-500 hover:text-red-700 font-bold">SuperDeals</a>
+                        <a href="categorie.html?id=CAT-001" class="py-3 hover:text-gold" title="Développement Backend"><i class="fas fa-code fa-lg"></i></a>
+                        <a href="categorie.html?id=CAT-002" class="py-3 hover:text-gold" title="DevOps & Cloud"><i class="fas fa-cloud-upload-alt fa-lg"></i></a>
+                        <a href="categorie.html?id=CAT-003" class="py-3 hover:text-gold" title="Data Science & IA"><i class="fas fa-brain fa-lg"></i></a>
+                    </div>
                 </div>
             </div>
         </nav>
