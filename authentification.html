@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion / Inscription - Junior Senior Gaps Killer</title>
@@ -16,11 +17,11 @@
         .border-gold { border-color: var(--gold-color); }
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
         .text-main-on-light { color: #333333; }
-
+        .floating-icon-bar { left: 1.5rem; top: 50%; transform: translateY(-50%); transition: opacity 0.3s ease-in-out; }
+        .floating-icon-bar:hover { opacity: 1 !important; }
         /* NOUVEAU: Styles pour la page de connexion */
         body {
-            background: linear-gradient(135deg, #0A1A2F 60%, #FF6A00 100%);
-            color: #FFFFFF;
+            background-color: #F5F5F5;
         }
         .auth-box {
             background-color: rgba(10, 26, 47, 0.85);
@@ -55,7 +56,32 @@
         }
     </style>
 </head>
-<body class="font-montserrat flex justify-center items-center min-h-screen">
+<body class="font-montserrat">
+
+    <div class="sticky top-0 z-40 bg-white shadow-md">
+        <!-- Header -->
+        <header>
+            <div class="container mx-auto px-4 py-2">
+                <div class="flex items-center justify-between">
+                    <!-- Logo -->
+                    <a href="index.html" class="flex items-center">
+                        <img src="https://i.postimg.cc/D0b7ZxQc/Logo-for-Training-Platform-Dynamic-Emblem.png" alt="Junior Senior Gaps Killer Logo" class="h-10">
+                    </a>
+
+                    <!-- NOUVEAU: Liens de navigation dans l'en-tête -->
+                    <div class="hidden md:flex items-center space-x-6 text-sm font-semibold text-gray-700">
+                        <a href="index.html#about-us" class="hover:text-gold transition-colors">À Propos</a>
+                        <a href="methodologie.html" class="hover:text-gold transition-colors">Notre Méthode</a>
+                        <a href="blog.html" class="hover:text-gold transition-colors">Blog</a>
+                        <a href="senior-auth.html" class="hover:text-gold transition-colors">Devenir Formateur</a>
+                        <a href="promotions.html" class="text-red-500 hover:text-red-700 font-bold">SuperDeals</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+
+<div class="flex justify-center items-center min-h-[calc(100vh-80px)]" style="background: linear-gradient(135deg, #0A1A2F 60%, #FF6A00 100%); color: #FFFFFF;">
 
     <div id="auth-forms" class="auth-box w-full max-w-md p-10">
             <div class="text-center mb-8">
@@ -136,6 +162,23 @@
                 </p>
             </div>
         </div>
+</div>
+
+    <!-- Barre d'icônes verticale flottante pour ordinateur -->
+    <div class="hidden md:block fixed z-50 floating-icon-bar opacity-90">
+        <div class="bg-gray-900/80 backdrop-blur-sm text-white rounded-lg shadow-lg px-3 py-4 flex flex-col items-center space-y-6">
+            <a href="https://wa.me/221769047999" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors" title="Aide & Support">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9Z"></path><path d="M10.29 21.71c.4.2.83.3 1.21.3s.81-.1 1.21-.3"></path><path d="M12 13a1 1 0 0 1 1-1h.01a1 1 0 0 1 0 2H13a1 1 0 0 1-1-1Z" fill="currentColor"></path></svg>
+            </a>
+            <a href="suivi-commande.html" class="text-gray-400 hover:text-white transition-colors" title="Historique"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></a>
+            <a href="notification.html" class="text-gray-400 hover:text-white transition-colors" title="Notifications"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V5a1 1 0 00-2 0v.083A6 6 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg></a>
+            <a href="panier.html" class="text-gray-400 hover:text-white transition-colors relative" title="Panier">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <span class="cart-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+            </a>
+            <a href="authentification.html" class="text-gray-400 hover:text-white transition-colors" title="Mon Compte"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></a>
+        </div>
+    </div>
 
     <script src="js/main.js"></script>
 </body>
